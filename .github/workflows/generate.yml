@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: elementor/elementor
-          ref: ${{ inputs.elementor_version == 'latest' && 'master' || format('v{0}', inputs.elementor_version) }}
+          ref: ${{ inputs.elementor_version == 'latest' && 'main' || format('v{0}', inputs.elementor_version) }}
           path: elementor-source
 
       - name: Checkout Elementor Pro
