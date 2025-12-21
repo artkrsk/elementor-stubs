@@ -9,9 +9,9 @@ on:
         default: 'latest'
         type: string
       elementor_pro_version:
-        description: 'Elementor Pro version (requires repo access): "latest", "3.33.6", or "skip"'
+        description: 'Elementor Pro version: "latest", "3.33.6", or "skip"'
         required: true
-        default: 'skip'
+        default: 'latest'
         type: string
 
 jobs:
@@ -49,17 +49,15 @@ jobs:
           ref: main
           path: elementor-source
 
-      # Elementor Pro: GitHub private repo (optional)
+      # Elementor Pro: GitHub public repo
       - name: Checkout Elementor Pro
         if: inputs.elementor_pro_version != 'skip'
-        continue-on-error: true
         id: checkout-pro
         uses: actions/checkout@v4
         with:
           repository: proelements/proelements
           ref: ${{ inputs.elementor_pro_version == 'latest' && 'master' || format('v{0}', inputs.elementor_pro_version) }}
           path: elementor-pro-source
-          token: ${{ secrets.PRO_ELEMENTS_TOKEN }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -73,7 +71,7 @@ jobs:
       - name: Generate stubs
         env:
           ELEMENTOR_PATH: ./elementor-source
-          ELEMENTOR_PRO_PATH: ${{ steps.checkout-pro.outcome == 'success' && './elementor-pro-source' || '' }}
+          ELEMENTOR_PRO_PATH: ${{ inputs.elementor_pro_version != 'skip' && './elementor-pro-source' || '' }}
         run: composer generate
 
       - name: Extract Elementor version

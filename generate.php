@@ -102,7 +102,7 @@ if ( $includeElementorPro ) {
 // 1. Generate stubs
 $finder = Finder::create()
 	->in( $elementorPath )
-	->exclude( array( 'lib', 'vendor', 'modules/dev-tools', 'modules/*/node_modules' ) )
+	->exclude( array( 'lib', 'vendor', 'tests', 'modules/dev-tools', 'modules/*/node_modules' ) )
 	->notName( '*/ElementorDeps/*' )
 	->sortByName();
 
