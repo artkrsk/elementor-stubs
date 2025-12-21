@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout elementor-stubs
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for tags
 
       - name: Checkout Elementor Free
         uses: actions/checkout@v4
@@ -39,7 +41,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '8.0'
           coverage: none
 
       - name: Install dependencies
@@ -51,10 +53,56 @@ jobs:
           ELEMENTOR_PRO_PATH: ./elementor-pro-source
         run: composer generate
 
-      - name: Commit changes
+      - name: Extract Elementor version
+        id: version
         run: |
+          VERSION=$(grep -oP "define\('ELEMENTOR_VERSION', '\K[^']+" elementor-stubs.php)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Elementor version: $VERSION"
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet elementor-stubs.php; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in stubs"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in stubs"
+          fi
+
+      - name: Commit and tag
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git add elementor-stubs.php
-          git commit -m "Update Elementor stubs (Free: ${{ inputs.elementor_version }}, Pro: ${{ inputs.elementor_pro_version }})" || exit 0
-          git push
+          git commit -m "chore(stubs): update for Elementor $VERSION"
+
+          # Determine tag version
+          BASE_TAG="v$VERSION"
+          if git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
+            # Base tag exists, find next patch version
+            PATCH=1
+            while git rev-parse "${BASE_TAG}.${PATCH}" >/dev/null 2>&1; do
+              PATCH=$((PATCH + 1))
+            done
+            TAG="${BASE_TAG}.${PATCH}"
+            echo "Base tag $BASE_TAG exists, creating patch: $TAG"
+          else
+            TAG="$BASE_TAG"
+            echo "Creating tag: $TAG"
+          fi
+
+          git tag "$TAG" -m "Stubs for Elementor $VERSION"
+          git push origin master --tags
+
+          echo "Successfully pushed commit and tag $TAG"
+
+      - name: No changes summary
+        if: steps.changes.outputs.changed == 'false'
+        run: |
+          echo "No changes to commit. Stubs are already up to date for Elementor ${{ steps.version.outputs.version }}"
