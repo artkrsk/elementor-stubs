@@ -1,0 +1,60 @@
+name: Generate Stubs
+
+on:
+  workflow_dispatch:
+    inputs:
+      elementor_version:
+        description: 'Elementor version (e.g., "3.33.4" or "latest")'
+        required: true
+        default: 'latest'
+        type: string
+      elementor_pro_version:
+        description: 'Elementor Pro version (e.g., "3.33.4" or "latest")'
+        required: true
+        default: 'latest'
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout elementor-stubs
+        uses: actions/checkout@v4
+
+      - name: Checkout Elementor Free
+        uses: actions/checkout@v4
+        with:
+          repository: elementor/elementor
+          ref: ${{ inputs.elementor_version == 'latest' && 'master' || format('v{0}', inputs.elementor_version) }}
+          path: elementor-source
+
+      - name: Checkout Elementor Pro
+        uses: actions/checkout@v4
+        with:
+          repository: proelements/proelements
+          ref: ${{ inputs.elementor_pro_version == 'latest' && 'master' || format('v{0}', inputs.elementor_pro_version) }}
+          path: elementor-pro-source
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Generate stubs
+        env:
+          ELEMENTOR_PATH: ./elementor-source
+          ELEMENTOR_PRO_PATH: ./elementor-pro-source
+        run: composer generate
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add elementor-stubs.php
+          git commit -m "Update Elementor stubs (Free: ${{ inputs.elementor_version }}, Pro: ${{ inputs.elementor_pro_version }})" || exit 0
+          git push
