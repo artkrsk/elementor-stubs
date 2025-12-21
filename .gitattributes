@@ -1,0 +1,10 @@
+/.editorconfig export-ignore
+/.env.example export-ignore
+/.gitattributes export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/captainhook.json export-ignore
+/generate.php export-ignore
+/phpcs.xml.dist export-ignore
+/phpunit.xml.dist export-ignore
+/tests export-ignore

@@ -1,0 +1,70 @@
+{
+  "name": "arts/elementor-stubs",
+  "description": "Comprehensive PHPStan stubs for Elementor and Elementor Pro WordPress page builder - auto-generated, self-contained, plug & play",
+  "license": "GPL-3.0-or-later",
+  "type": "library",
+  "keywords": [
+    "elementor",
+    "elementor-pro",
+    "page-builder",
+    "phpstan",
+    "static-analysis",
+    "stubs",
+    "type-definitions",
+    "wordpress"
+  ],
+  "readme": "README.md",
+  "authors": [
+    {
+      "name": "Artem Semkin",
+      "email": "me@artemsemkin.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.2",
+    "ergebnis/composer-normalize": "^2.48",
+    "php-stubs/woocommerce-stubs": "^10.4",
+    "php-stubs/wordpress-stubs": "^6.9",
+    "php-stubs/wp-cli-stubs": "^2.12"
+  },
+  "require-dev": {
+    "captainhook/captainhook": "^5.27",
+    "php-stubs/generator": "^0.8",
+    "phpstan/phpstan": "^2.0",
+    "phpunit/phpunit": "^9.5",
+    "squizlabs/php_codesniffer": "^3.0",
+    "vlucas/phpdotenv": "^5.6",
+    "wp-coding-standards/wpcs": "^3.0"
+  },
+  "minimum-stability": "stable",
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "ergebnis/composer-normalize": true
+    },
+    "optimize-autoloader": true,
+    "platform": {
+      "php": "8.0"
+    },
+    "sort-packages": true
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "vendor/bin/captainhook install -f -s"
+    ],
+    "post-update-cmd": [
+      "vendor/bin/captainhook install -f -s"
+    ],
+    "generate": "php generate.php",
+    "normalize": "composer-normalize",
+    "test": [
+      "@test:phpunit",
+      "@test:phpstan",
+      "@test:cs"
+    ],
+    "test:cs": "phpcs",
+    "test:cs:fix": "phpcbf",
+    "test:phpstan": "phpstan analyze -c tests/phpstan.neon",
+    "test:phpunit": "phpunit"
+  }
+}
