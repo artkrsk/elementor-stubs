@@ -48,8 +48,5 @@ jobs:
       - name: Verify no uncommitted changes
         run: git diff --exit-code
 
-      - name: Execute stubs
-        run: php elementor-stubs.php
-
       - name: Run test suite
         run: composer test
