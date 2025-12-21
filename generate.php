@@ -66,20 +66,22 @@ function extractElementorProVersion( string $elementorProPath ): ?string {
 	return null;
 }
 
-// Load .env configuration
+// Load .env configuration (optional - CI sets env vars directly)
 $dotenv = Dotenv::createImmutable( __DIR__ );
-try {
-	$dotenv->load();
-	$dotenv->required( 'ELEMENTOR_PATH' )->notEmpty();
-} catch ( \Exception $e ) {
-	echo color( "Error: {$e->getMessage()}\n", 'red' );
-	echo "Please create .env file with ELEMENTOR_PATH variable.\n";
+$dotenv->safeLoad(); // Won't throw if .env doesn't exist
+
+// Get paths from environment (supports both .env and CI env vars)
+$envElementorPath    = getenv( 'ELEMENTOR_PATH' );
+$envElementorProPath = getenv( 'ELEMENTOR_PRO_PATH' );
+$elementorPath       = $envElementorPath ? $envElementorPath : ( $_ENV['ELEMENTOR_PATH'] ?? null );
+$elementorProPath    = $envElementorProPath ? $envElementorProPath : ( $_ENV['ELEMENTOR_PRO_PATH'] ?? null );
+
+if ( empty( $elementorPath ) ) {
+	echo color( "Error: ELEMENTOR_PATH environment variable is required.\n", 'red' );
+	echo "Please create .env file or set the environment variable.\n";
 	echo "See .env.example for template.\n";
 	exit( 1 );
 }
-
-$elementorPath    = $_ENV['ELEMENTOR_PATH'];
-$elementorProPath = $_ENV['ELEMENTOR_PRO_PATH'] ?? null;
 
 if ( ! is_dir( $elementorPath ) ) {
 	echo color( "Error: Elementor source not found at $elementorPath\n", 'red' );
