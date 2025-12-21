@@ -121,6 +121,9 @@ $content = removeElementorDepsNamespace( $content );
 // 2.5. Remove stray code statements (code outside functions/classes)
 $content = removeStrayCodeStatements( $content );
 
+// 2.6. Resolve unqualified class names in PHPDoc annotations
+$content = resolvePhpDocClassNames( $content, $elementorPath, $includeElementorPro ? $elementorProPath : null );
+
 // 3. Extract version from source
 $version    = extractElementorVersion( $elementorPath );
 $proVersion = $includeElementorPro ? extractElementorProVersion( $elementorProPath ) : null;
@@ -263,6 +266,231 @@ PRO_CONSTANTS;
 	$constants .= "}\n\n";
 
 	return preg_replace( '/^(namespace )/m', $constants . '$1', $content, 1 );
+}
+
+/**
+ * Resolve unqualified class names in PHPDoc annotations by using the original source files' use statements.
+ *
+ * Fixes issues where stub generators use namespace blocks where `use` statements cannot be placed,
+ * causing PHPStan to resolve unqualified class names to the wrong namespace.
+ *
+ * Example fix:
+ *   Before: @var Kit (resolved as Elementor\Core\Kits\Documents\Tabs\Kit - wrong!)
+ *   After:  @var \Elementor\Core\Kits\Documents\Kit (correct fully-qualified name)
+ *
+ * @param string      $stubContent       The generated stub content
+ * @param string      $elementorPath     Path to Elementor source
+ * @param string|null $elementorProPath  Path to Elementor Pro source (optional)
+ * @return string                        Stub content with resolved class names
+ */
+function resolvePhpDocClassNames( string $stubContent, string $elementorPath, ?string $elementorProPath = null ): string {
+	// Build a mapping of namespaces to their use statements from source files
+	$useMap = buildUseStatementsMap( $elementorPath, $elementorProPath );
+
+	// Parse stub content and resolve unqualified class names in PHPDoc annotations
+	$lines  = explode( "\n", $stubContent );
+	$output = array();
+
+	$currentNamespace = '';
+	$inDocBlock       = false;
+
+	foreach ( $lines as $line ) {
+		// Track current namespace
+		if ( preg_match( '/^namespace\s+([\w\\\\]+)\s*[{;]/', $line, $matches ) ) {
+			$currentNamespace = $matches[1];
+		}
+
+		// Track if we're in a doc block
+		if ( str_contains( $line, '/**' ) ) {
+			$inDocBlock = true;
+		}
+
+		// Process PHPDoc annotations
+		if ( $inDocBlock && preg_match( '/@(var|param|return|throws)\s+/', $line ) ) {
+			$line = resolveAnnotationLine( $line, $currentNamespace, $useMap );
+		}
+
+		// Track if we're leaving a doc block
+		if ( str_contains( $line, '*/' ) ) {
+			$inDocBlock = false;
+		}
+
+		$output[] = $line;
+	}
+
+	return implode( "\n", $output );
+}
+
+/**
+ * Build a map of namespaces to their use statements from source files.
+ *
+ * @param string      $elementorPath    Path to Elementor source
+ * @param string|null $elementorProPath Path to Elementor Pro source (optional)
+ * @return array                        Map of namespace => [className => fullyQualifiedName]
+ */
+function buildUseStatementsMap( string $elementorPath, ?string $elementorProPath = null ): array {
+	$map   = array();
+	$paths = array( $elementorPath );
+
+	if ( $elementorProPath ) {
+		$paths[] = $elementorProPath;
+	}
+
+	foreach ( $paths as $path ) {
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $path, RecursiveDirectoryIterator::SKIP_DOTS )
+		);
+
+		foreach ( $iterator as $file ) {
+			if ( $file->getExtension() !== 'php' ) {
+				continue;
+			}
+
+			// Skip excluded directories
+			$filePath = $file->getPathname();
+			if ( preg_match( '#/(lib|vendor|tests|node_modules)/#', $filePath ) ) {
+				continue;
+			}
+
+			$fileUseMap = extractUseStatementsFromFile( $filePath );
+			foreach ( $fileUseMap as $namespace => $useStatements ) {
+				if ( ! isset( $map[ $namespace ] ) ) {
+					$map[ $namespace ] = array();
+				}
+				$map[ $namespace ] = array_merge( $map[ $namespace ], $useStatements );
+			}
+		}
+	}
+
+	return $map;
+}
+
+/**
+ * Extract use statements from a PHP source file.
+ *
+ * @param string $filePath Path to PHP source file
+ * @return array           Map of namespace => [className => fullyQualifiedName]
+ */
+function extractUseStatementsFromFile( string $filePath ): array {
+	$content = file_get_contents( $filePath );
+	$result  = array();
+
+	// Match namespace declaration
+	if ( ! preg_match( '/^namespace\s+([\w\\\\]+)\s*;/m', $content, $nsMatches ) ) {
+		return $result;
+	}
+
+	$namespace = $nsMatches[1];
+
+	// Extract all use statements
+	preg_match_all( '/^use\s+([\w\\\\]+)(?:\s+as\s+(\w+))?\s*;/m', $content, $useMatches, PREG_SET_ORDER );
+
+	$useMap = array();
+	foreach ( $useMatches as $match ) {
+		$fullyQualified   = $match[1];
+		$alias            = $match[2] ?? basename( str_replace( '\\', '/', $fullyQualified ) );
+		$useMap[ $alias ] = '\\' . $fullyQualified;
+	}
+
+	if ( ! empty( $useMap ) ) {
+		$result[ $namespace ] = $useMap;
+	}
+
+	return $result;
+}
+
+/**
+ * Resolve unqualified class names in a PHPDoc annotation line.
+ *
+ * @param string $line             The annotation line
+ * @param string $currentNamespace The current namespace context
+ * @param array  $useMap           Map of namespace => [className => fullyQualifiedName]
+ * @return string                  Line with resolved class names
+ */
+function resolveAnnotationLine( string $line, string $currentNamespace, array $useMap ): string {
+	// Pattern: @var|@param|@return followed by type (possibly with |, [], etc.)
+	// Examples: @var Kit, @var Kit[], @var Kit|null, @param array<Kit>
+	return preg_replace_callback(
+		'/@(var|param|return|throws)\s+([^\s*]+)/',
+		function ( $matches ) use ( $currentNamespace, $useMap ) {
+			$annotation = $matches[1];
+			$typeString = $matches[2];
+
+			// Resolve each type in the type string (handle unions, arrays, generics)
+			$resolvedType = resolveTypeString( $typeString, $currentNamespace, $useMap );
+
+			return '@' . $annotation . ' ' . $resolvedType;
+		},
+		$line
+	);
+}
+
+/**
+ * Resolve a complex type string (with unions, arrays, generics, etc.).
+ *
+ * @param string $typeString       The type string (e.g., "Kit|null", "Kit[]", "array<Kit>")
+ * @param string $currentNamespace The current namespace context
+ * @param array  $useMap           Map of namespace => [className => fullyQualifiedName]
+ * @return string                  Resolved type string
+ */
+function resolveTypeString( string $typeString, string $currentNamespace, array $useMap ): string {
+	// Split on type separators but preserve them
+	// Handle: | for unions, [] for arrays, <> for generics, () for callables
+	$parts = preg_split( '/([\|<>,\[\]\(\)\s]+)/', $typeString, -1, PREG_SPLIT_DELIM_CAPTURE );
+
+	$resolved = array();
+	foreach ( $parts as $part ) {
+		// Skip empty parts and delimiters
+		if ( empty( trim( $part ) ) || preg_match( '/^[\|<>,\[\]\(\)\s]+$/', $part ) ) {
+			$resolved[] = $part;
+			continue;
+		}
+
+		// Resolve the class name
+		$resolved[] = resolveClassName( $part, $currentNamespace, $useMap );
+	}
+
+	return implode( '', $resolved );
+}
+
+/**
+ * Resolve a single class name using the use map.
+ *
+ * @param string $className        Unqualified class name
+ * @param string $currentNamespace Current namespace context
+ * @param array  $useMap           Map of namespace => [className => fullyQualifiedName]
+ * @return string                  Fully-qualified class name or original if not resolvable
+ */
+function resolveClassName( string $className, string $currentNamespace, array $useMap ): string {
+	// Already fully-qualified (starts with \)
+	if ( isset( $className[0] ) && '\\' === $className[0] ) {
+		return $className;
+	}
+
+	// Scalar types, special types, or lowercase (not class names)
+	$scalarTypes = array( 'string', 'int', 'float', 'bool', 'array', 'object', 'callable', 'iterable', 'mixed', 'void', 'null', 'false', 'true', 'self', 'static', 'parent', 'resource', 'never' );
+	if ( in_array( strtolower( $className ), $scalarTypes, true ) ) {
+		return $className;
+	}
+
+	// Check if it's in the use map for current namespace
+	if ( isset( $useMap[ $currentNamespace ][ $className ] ) ) {
+		return $useMap[ $currentNamespace ][ $className ];
+	}
+
+	// Partial namespace path (contains \ but doesn't start with \)
+	// Treat as relative from root namespace
+	if ( str_contains( $className, '\\' ) ) {
+		return '\\' . $className;
+	}
+
+	// If not found in use map and starts with uppercase, assume it's in current namespace
+	if ( ctype_upper( $className[0] ) ) {
+		return '\\' . $currentNamespace . '\\' . $className;
+	}
+
+	// Return as-is if we can't resolve it
+	return $className;
 }
 
 function getClassAliases(): string {
