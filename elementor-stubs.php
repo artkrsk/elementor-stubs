@@ -3004,25 +3004,7 @@ namespace ElementorPro\Core\Admin {
         public function remove_go_pro_menu()
         {
         }
-        public function register_admin_tools_fields(\Elementor\Tools $tools)
-        {
-        }
-        public function post_elementor_pro_rollback()
-        {
-        }
-        public function plugin_row_meta($plugin_meta, $plugin_file)
-        {
-        }
         public function add_finder_items(array $categories)
-        {
-        }
-        public function register_ajax_actions($ajax_manager)
-        {
-        }
-        public function handle_hints_cta($request)
-        {
-        }
-        public function handle_send_app_campaign($request)
         {
         }
         /**
@@ -4593,37 +4575,6 @@ namespace ElementorPro\Core\Connect\Apps {
         public function get_slug()
         {
         }
-        protected function after_connect()
-        {
-        }
-        /**
-         * @since 2.3.0
-         * @access public
-         */
-        public function action_authorize()
-        {
-        }
-        public function action_activate_pro()
-        {
-        }
-        public function action_switch_license()
-        {
-        }
-        public function action_deactivate()
-        {
-        }
-        public function action_activate_license()
-        {
-        }
-        public function action_reset()
-        {
-        }
-        protected function get_popup_success_event_data()
-        {
-        }
-        protected function get_app_info()
-        {
-        }
     }
 }
 namespace ElementorPro\Core\Connect {
@@ -5887,11 +5838,6 @@ namespace Elementor\Core\Editor {
 namespace ElementorPro\Core\Editor {
     class Notice_Bar extends \Elementor\Core\Editor\Notice_Bar
     {
-        const ELEMENTOR_PRO_EDITOR_GO_PRO_TRIAL_ABOUT_TO_EXPIRE_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_go_pro_trial_about_to_expire_license_notice_dismissed';
-        const ELEMENTOR_PRO_EDITOR_GO_PRO_TRIAL_EXPIRED_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_go_pro_trial_expired_license_notice_dismissed';
-        const ELEMENTOR_PRO_EDITOR_RENEW_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_renew_license_notice_dismissed';
-        const ELEMENTOR_PRO_EDITOR_ACTIVATE_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_activate_license_notice_dismissed';
-        const ELEMENTOR_PRO_EDITOR_RENEW_ABOUT_TO_EXPIRE_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_renew_about_to_expire_license_notice_dismissed';
         protected function get_init_settings()
         {
         }
@@ -7749,80 +7695,26 @@ namespace ElementorPro\Data {
 namespace ElementorPro\License {
     class Admin
     {
-        const PAGE_ID = 'elementor-license';
-        const LICENSE_KEY_OPTION_NAME = 'elementor_pro_license_key';
-        const LICENSE_DATA_OPTION_NAME = '_elementor_pro_license_v2_data';
-        const LICENSE_DATA_FALLBACK_OPTION_NAME = self::LICENSE_DATA_OPTION_NAME . '_fallback';
-        /**
-         * @deprecated 3.6.0 Use `Plugin::instance()->updater` instead.
-         */
-        public static $updater = null;
+        const API_TEMPLATES_URL = 'https://my.elementor.com/api/connect/v1/library/templates';
         public function __construct()
-        {
-        }
-        public static function get_errors_details()
-        {
-        }
-        public static function deactivate()
-        {
-        }
-        /**
-         * @deprecated 3.6.0 Use `Plugin::instance()->updater` instead.
-         *
-         * @return \ElementorPro\License\Updater
-         */
-        public static function get_updater_instance()
-        {
-        }
-        public static function get_license_key()
-        {
-        }
-        public static function set_license_key($license_key)
-        {
-        }
-        public function action_activate_license()
-        {
-        }
-        protected function safe_redirect($url)
-        {
-        }
-        public function action_deactivate_license()
-        {
-        }
-        public function register_page()
-        {
-        }
-        public static function get_url()
-        {
-        }
-        public function display_page()
-        {
-        }
-        public function admin_license_details()
-        {
-        }
-        public function filter_library_get_templates_args($body_args)
-        {
-        }
-        public function handle_tracker_actions()
         {
         }
         public function get_installed_time()
         {
         }
-        public function plugin_action_links($links)
-        {
-        }
-        public function plugin_auto_update_setting_html($html, $plugin_file)
-        {
-        }
-        public function add_finder_item(array $categories)
-        {
-        }
-        public function on_deactivate_plugin($plugin)
+        public static function get_license_key()
         {
         }
         public function get_connect_url($params = [])
+        {
+        }
+        public static function get_url()
+        {
+        }
+        public function rest_remove_pro_templates($response, $handler, $request)
+        {
+        }
+        public function http_remove_pro_templates($response, $parsed_args, $url)
         {
         }
         public function register_actions()
@@ -7879,26 +7771,10 @@ namespace ElementorPro\License {
         const GENERATION_EMPTY = 'empty';
         const BC_VALIDATION_CALLBACK = 'should_allow_all_features';
         protected static $transient_data = [];
-        public static function activate_license($license_key)
-        {
-        }
-        public static function deactivate_license()
-        {
-        }
         public static function set_transient($cache_key, $value, $expiration = '+12 hours')
         {
         }
         public static function set_license_data($license_data, $expiration = null)
-        {
-        }
-        /**
-         * Check if another request is in progress.
-         *
-         * @param string $name Request name
-         *
-         * @return bool
-         */
-        public static function is_request_running($name)
         {
         }
         public static function get_license_data($force_request = false)
@@ -7908,9 +7784,6 @@ namespace ElementorPro\License {
         {
         }
         public static function get_plugin_package_url($version)
-        {
-        }
-        public static function get_previous_versions()
         {
         }
         public static function get_errors()
@@ -8006,101 +7879,6 @@ namespace ElementorPro\License\Data\Endpoints {
         {
         }
         public function permission_callback($request)
-        {
-        }
-    }
-}
-namespace Elementor\Core\Admin\Notices {
-    abstract class Base_Notice
-    {
-        /**
-         * Determine if the notice should be printed or not.
-         *
-         * @return boolean
-         */
-        abstract public function should_print();
-        /**
-         * Returns the config of the notice itself.
-         * based on that config the notice will be printed.
-         *
-         * @see \Elementor\Core\Admin\Admin_Notices::admin_notices
-         *
-         * @return array
-         */
-        abstract public function get_config();
-    }
-}
-namespace ElementorPro\License\Notices {
-    class Trial_Expired_Notice extends \Elementor\Core\Admin\Notices\Base_Notice
-    {
-        /**
-         * Notice ID.
-         */
-        const ID = 'elementor_trial_expired_promote';
-        /**
-         * @inheritDoc
-         */
-        public function should_print()
-        {
-        }
-        /**
-         * @inheritDoc
-         */
-        public function get_config()
-        {
-        }
-    }
-    class Trial_Period_Notice extends \Elementor\Core\Admin\Notices\Base_Notice
-    {
-        /**
-         * Notice ID.
-         */
-        const ID = 'elementor_trial_period_promote';
-        /**
-         * @inheritDoc
-         */
-        public function should_print()
-        {
-        }
-        /**
-         * @inheritDoc
-         */
-        public function get_config()
-        {
-        }
-    }
-}
-namespace ElementorPro\License {
-    class Updater
-    {
-        public $plugin_version;
-        public $plugin_name;
-        public $plugin_slug;
-        public function __construct()
-        {
-        }
-        public function delete_transients()
-        {
-        }
-        public function check_update($_transient_data)
-        {
-        }
-        public function plugins_api_filter($_data, $_action = '', $_args = null)
-        {
-        }
-        public function show_update_notification($file, $plugin)
-        {
-        }
-        protected function get_transient($cache_key)
-        {
-        }
-        protected function set_transient($cache_key, $value, $expiration = 0)
-        {
-        }
-        protected function delete_transient($cache_key)
-        {
-        }
-        protected function is_elementor_pro_rollback(): bool
         {
         }
     }
@@ -8453,7 +8231,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes {
          * Add a font type to the font manager
          *
          * @param string            $font_type
-         * @param \ElementorPro\Modules\AssetsManager\AssetTypes\Classes\Font_Base $instance
+         * @param \Classes\Font_Base $instance
          */
         public function add_font_type($font_type, $instance)
         {
@@ -9041,7 +8819,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes {
          * Add a font type to the font manager
          *
          * @param string            $icon_type
-         * @param \ElementorPro\Modules\AssetsManager\AssetTypes\Classes\Assets_Base $instance
+         * @param \Classes\Assets_Base $instance
          */
         public function add_icon_type($icon_type, $instance)
         {
@@ -10301,7 +10079,7 @@ namespace ElementorPro\Modules\CompatibilityTag {
          *
          * @var string
          */
-        const PLUGIN_VERSION_TESTED_HEADER = 'Elementor Pro tested up to';
+        const PLUGIN_VERSION_TESTED_HEADER = 'PRO Elements tested up to';
         /**
          * @return string
          */
@@ -10485,79 +10263,6 @@ namespace ElementorPro\Modules\CustomCode\AdminMenuItems {
         {
         }
         public function is_visible()
-        {
-        }
-    }
-}
-namespace ElementorPro\Modules\Tiers\AdminMenuItems {
-    abstract class Base_Promotion_Template implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
-    {
-        abstract protected function get_promotion_title(): string;
-        abstract protected function get_cta_url(): string;
-        abstract protected function get_content_lines(): array;
-        abstract protected function get_video_url(): string;
-        public function is_visible()
-        {
-        }
-        public function get_parent_slug()
-        {
-        }
-        public function get_capability()
-        {
-        }
-        protected function get_cta_text()
-        {
-        }
-        /**
-         * Should the promotion have a side note.
-         * @return string
-         */
-        protected function get_side_note(): string
-        {
-        }
-        public function render()
-        {
-        }
-    }
-}
-namespace ElementorPro\Modules\CustomCode\AdminMenuItems {
-    class Custom_Code_Promotion_Menu_Item extends \ElementorPro\Modules\Tiers\AdminMenuItems\Base_Promotion_Template
-    {
-        public function get_name(): string
-        {
-        }
-        public function get_cta_url(): string
-        {
-        }
-        public function get_cta_text()
-        {
-        }
-        public function get_label()
-        {
-        }
-        public function get_page_title()
-        {
-        }
-        public function get_promotion_title(): string
-        {
-        }
-        public function get_video_url(): string
-        {
-        }
-        public function get_promotion_description()
-        {
-        }
-        public function get_side_note(): string
-        {
-        }
-        /**
-         * @deprecated use get_promotion_description instead
-         * @return void
-         */
-        public function render_promotion_description()
-        {
-        }
-        protected function get_content_lines(): array
         {
         }
     }
@@ -12756,7 +12461,7 @@ namespace ElementorPro\Modules\DisplayConditions {
         {
         }
         /**
-         * @return \ElementorPro\Modules\DisplayConditions\Classes\Conditions_Manager
+         * @return \Classes\Conditions_Manager
          */
         public function get_conditions_manager()
         {
@@ -17326,8 +17031,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * validate uploaded file field
          *
          * @param array                $field
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
+         * @param \Classes\Form_Record  $record
+         * @param \Classes\Ajax_Handler $ajax_handler
          */
         public function validation($field, \ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -17336,8 +17041,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * process file and move it to uploads directory
          *
          * @param array                $field
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
+         * @param \Classes\Form_Record  $record
+         * @param \Classes\Ajax_Handler $ajax_handler
          */
         public function process_field($field, \ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -17347,8 +17052,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * value => file url
          * raw_value => file path
          *
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
+         * @param \Classes\Form_Record  $record
+         * @param \Classes\Ajax_Handler $ajax_handler
          */
         public function set_file_fields_values(\ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -17556,6 +17261,39 @@ namespace ElementorPro\Modules\Forms\Submissions\AdminMenuItems {
         {
         }
     }
+}
+namespace ElementorPro\Modules\Tiers\AdminMenuItems {
+    abstract class Base_Promotion_Template implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    {
+        abstract protected function get_promotion_title(): string;
+        abstract protected function get_cta_url(): string;
+        abstract protected function get_content_lines(): array;
+        abstract protected function get_video_url(): string;
+        public function is_visible()
+        {
+        }
+        public function get_parent_slug()
+        {
+        }
+        public function get_capability()
+        {
+        }
+        protected function get_cta_text()
+        {
+        }
+        /**
+         * Should the promotion have a side note.
+         * @return string
+         */
+        protected function get_side_note(): string
+        {
+        }
+        public function render()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\Forms\Submissions\AdminMenuItems {
     class Submissions_Promotion_Menu_Item extends \ElementorPro\Modules\Tiers\AdminMenuItems\Base_Promotion_Template
     {
         public function get_name(): string
@@ -30323,25 +30061,25 @@ namespace ElementorPro\Modules\ThemeBuilder {
         {
         }
         /**
-         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Conditions_Manager
+         * @return \Classes\Conditions_Manager
          */
         public function get_conditions_manager()
         {
         }
         /**
-         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Locations_Manager
+         * @return \Classes\Locations_Manager
          */
         public function get_locations_manager()
         {
         }
         /**
-         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Preview_Manager
+         * @return \Classes\Preview_Manager
          */
         public function get_preview_manager()
         {
         }
         /**
-         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Templates_Types_Manager
+         * @return \Classes\Templates_Types_Manager
          */
         public function get_types_manager()
         {
@@ -35215,7 +34953,7 @@ namespace ElementorPro {
          */
         public $app;
         /**
-         * @var \ElementorPro\License\Admin
+         * @var \License\Admin
          */
         public $license_admin;
         /**
@@ -35226,10 +34964,6 @@ namespace ElementorPro {
          * @var \ElementorPro\Core\Notifications\Notifications_Manager
          */
         public $notifications;
-        /**
-         * @var \ElementorPro\License\Updater
-         */
-        public $updater;
         /**
          * @var \ElementorPro\Core\PHP_Api
          */
@@ -35305,6 +35039,160 @@ namespace ElementorPro {
         {
         }
         final public static function get_title()
+        {
+        }
+    }
+}
+namespace ElementorPro\Core\Updater {
+    class Updater
+    {
+        /**
+         * @var $config the config for the updater
+         * @access public
+         */
+        var $config;
+        /**
+         * @var $missing_config any config that is missing from the initialization of this instance
+         * @access public
+         */
+        var $missing_config;
+        /**
+         * Class Constructor
+         *
+         * @since 1.0
+         * @param array $config the configuration required for the updater to work
+         * @see has_minimum_config()
+         * @return void
+         */
+        public function __construct($config = array())
+        {
+        }
+        /**
+         * Check wether or not the transients need to be overruled and API needs to be called for every single page load
+         *
+         * @return bool overrule or not
+         */
+        public function overrule_transients()
+        {
+        }
+        /**
+         * Set defaults
+         *
+         * @since 1.2
+         * @return void
+         */
+        public function set_defaults()
+        {
+        }
+        /**
+         * Callback fn for the http_request_timeout filter
+         *
+         * @since 1.0
+         * @return int timeout value
+         */
+        public function http_request_timeout()
+        {
+        }
+        /**
+         * Callback fn for the http_request_args filter
+         *
+         * @param unknown $args
+         * @param unknown $url
+         *
+         * @return mixed
+         */
+        public function http_request_sslverify($args, $url)
+        {
+        }
+        /**
+         * Get New Version from GitHub
+         *
+         * @since 1.0
+         * @return int $version the version number
+         */
+        public function get_new_version()
+        {
+        }
+        /**
+         * Interact with GitHub
+         *
+         * @param string $query
+         *
+         * @since 1.6
+         * @return mixed
+         */
+        public function remote_get($query)
+        {
+        }
+        /**
+         * Get GitHub Data from the specified repository
+         *
+         * @since 1.0
+         * @return array $github_data the data
+         */
+        public function get_github_data()
+        {
+        }
+        /**
+         * Get update date
+         *
+         * @since 1.0
+         * @return string $date the date
+         */
+        public function get_date()
+        {
+        }
+        /**
+         * Get plugin description
+         *
+         * @since 1.0
+         * @return string $description the description
+         */
+        public function get_description()
+        {
+        }
+        /**
+         * Get Plugin data
+         *
+         * @since 1.0
+         * @return object $data the data
+         */
+        public function get_plugin_data()
+        {
+        }
+        /**
+         * Hook into the plugin update check and connect to GitHub
+         *
+         * @since 1.0
+         * @param object  $transient the plugin data transient
+         * @return object $transient updated plugin data transient
+         */
+        public function check_update($transient)
+        {
+        }
+        /**
+         * Get Plugin info
+         *
+         * @since 1.0
+         * @param bool    $false  always false
+         * @param string  $action the API function being performed
+         * @param object  $args   plugin arguments
+         * @return object $response the plugin info
+         */
+        public function get_plugin_info($data, $action, $args)
+        {
+        }
+        /**
+         * Upgrader/Updater
+         * Move & activate the plugin, echo the update message
+         *
+         * @since 1.0
+         * @param boolean $true       always true
+         * @param mixed   $hook_extra not used
+         * @param array   $result     the result of the move
+         * @return array $result the result of the move
+         */
+        public function upgrader_post_install($true, $hook_extra, $result)
         {
         }
     }
@@ -38230,6 +38118,26 @@ namespace Elementor\Core\Admin\Menu {
         protected function register()
         {
         }
+    }
+}
+namespace Elementor\Core\Admin\Notices {
+    abstract class Base_Notice
+    {
+        /**
+         * Determine if the notice should be printed or not.
+         *
+         * @return boolean
+         */
+        abstract public function should_print();
+        /**
+         * Returns the config of the notice itself.
+         * based on that config the notice will be printed.
+         *
+         * @see \Elementor\Core\Admin\Admin_Notices::admin_notices
+         *
+         * @return array
+         */
+        abstract public function get_config();
     }
 }
 namespace Elementor\Core\Admin\UI\Components {
@@ -43286,7 +43194,7 @@ namespace Elementor\Core\Kits\Documents {
         {
         }
         /**
-         * @return \Elementor\Core\Kits\Documents\Tabs\Tab_Base[]
+         * @return \Tabs\Tab_Base[]
          */
         public function get_tabs()
         {
@@ -43296,7 +43204,7 @@ namespace Elementor\Core\Kits\Documents {
          *
          * @param $id
          *
-         * @return \Elementor\Core\Kits\Documents\Tabs\Tab_Base
+         * @return \Tabs\Tab_Base
          */
         public function get_tab($id)
         {
@@ -45508,7 +45416,7 @@ namespace Elementor\Core\Settings {
          * @access public
          * @static
          *
-         * @param \Elementor\Core\Settings\Base\Manager $manager Settings manager.
+         * @param \Base\Manager $manager Settings manager.
          */
         public static function add_settings_manager(\Elementor\Core\Settings\Base\Manager $manager)
         {
@@ -45529,7 +45437,7 @@ namespace Elementor\Core\Settings {
          * @param string $manager_name Optional. Settings manager name. Default is
          *                             null.
          *
-         * @return \Elementor\Core\Settings\Base\Manager|\Elementor\Core\Settings\Base\Manager[] Single settings manager, if it exists,
+         * @return \Base\Manager|\Base\Manager[] Single settings manager, if it exists,
          *                                     null if it doesn't exists, or the all
          *                                     the settings managers if no parameter
          *                                     defined.
@@ -54407,7 +54315,7 @@ namespace Elementor {
          * @since 2.0.0
          * @access public
          *
-         * @var \Elementor\Core\RoleManager\Role_Manager
+         * @var \Core\RoleManager\Role_Manager
          */
         public $role_manager;
         /**
@@ -54495,7 +54403,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var \Elementor\TemplateLibrary\Manager
+         * @var \TemplateLibrary\Manager
          */
         public $templates_manager;
         /**
@@ -54617,7 +54525,7 @@ namespace Elementor {
          *
          * @access public
          *
-         * @var \Elementor\Core\Upgrade\Manager
+         * @var \Core\Upgrade\Manager
          */
         public $upgrade;
         /**
@@ -54625,7 +54533,7 @@ namespace Elementor {
          *
          * Holds the plugin tasks manager.
          *
-         * @var \Elementor\Core\Upgrade\Custom_Tasks_Manager
+         * @var \Core\Upgrade\Custom_Tasks_Manager
          */
         public $custom_tasks;
         /**
@@ -54635,7 +54543,7 @@ namespace Elementor {
          *
          * @access public
          *
-         * @var \Elementor\Core\Kits\Manager
+         * @var \Core\Kits\Manager
          */
         public $kits_manager;
         /**
@@ -54660,7 +54568,7 @@ namespace Elementor {
          * @since 3.0.0
          * @access public
          *
-         * @var \Elementor\App\App
+         * @var \App\App
          */
         public $app;
         /**
