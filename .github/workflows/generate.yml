@@ -14,6 +14,9 @@ on:
         default: 'latest'
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   generate:
     runs-on: ubuntu-latest
