@@ -76,4 +76,56 @@ class StubSyntaxTest extends TestCase {
 			'ElementorPro\Plugin class should exist'
 		);
 	}
+
+	/**
+	 * Test that PHPDoc class names are fully qualified in generated stubs.
+	 *
+	 * This verifies that the resolvePhpDocClassNames() post-processor is working correctly.
+	 * Unqualified class names in PHPDoc annotations should be resolved to their
+	 * fully-qualified counterparts using the original source files' use statements.
+	 */
+	public function testPhpDocClassNamesAreFullyQualified(): void {
+		$stubContent = file_get_contents( $this->stubsFile );
+		$this->assertNotFalse( $stubContent, 'Stub file should be readable' );
+
+		// Test case 1: Tab_Base::$parent should use fully-qualified Kit class
+		// Before: @var Kit (PHPStan would resolve as Elementor\Core\Kits\Documents\Tabs\Kit - wrong!)
+		// After:  @var \Elementor\Core\Kits\Documents\Kit (correct fully-qualified name)
+		$this->assertStringContainsString(
+			'@var \Elementor\Core\Kits\Documents\Kit',
+			$stubContent,
+			'Tab_Base::$parent should use fully-qualified Kit class name'
+		);
+
+		// Test case 2: Verify unqualified Kit reference doesn't exist in Tab_Base context
+		// Match pattern: "namespace Elementor\Core\Kits\Documents\Tabs {" followed by "@var Kit" (without \)
+		$pattern = '/namespace\s+Elementor\\\\Core\\\\Kits\\\\Documents\\\\Tabs\s*\{[^}]*@var\s+Kit[^\\\\]/s';
+		$this->assertDoesNotMatchRegularExpression(
+			$pattern,
+			$stubContent,
+			'Tab_Base should not have unqualified Kit reference in @var annotation'
+		);
+
+		// Test case 3: Verify other common PHPDoc annotations use fully-qualified names
+		// Sample check: Look for patterns like "@param ClassName" without leading backslash
+		// Allow scalar types but catch class names that should be qualified
+		$unqualifiedClassPattern = '/@(var|param|return)\s+(?!array|string|int|float|bool|mixed|void|null|false|true|self|static|parent|callable|iterable|object|resource|never)([A-Z][a-zA-Z_]*[^\\\\|\[\]<>,\s])/';
+		$matches                 = array();
+		preg_match_all( $unqualifiedClassPattern, $stubContent, $matches );
+
+		// Filter out false positives (e.g., "Array<Type>" which is intentional in some docblocks)
+		$genuineUnqualified = array_filter(
+			$matches[2],
+			function ( $className ) {
+				// Allow "Array" as it might be used intentionally in some contexts
+				return 'Array' !== $className;
+			}
+		);
+
+		$this->assertLessThan(
+			5,
+			count( $genuineUnqualified ),
+			'Found ' . count( $genuineUnqualified ) . ' potentially unqualified class names in PHPDoc: ' . implode( ', ', array_unique( $genuineUnqualified ) )
+		);
+	}
 }

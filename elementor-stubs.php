@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '3.33.6');
+		define('ELEMENTOR_VERSION', '3.33.4');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -27,7 +27,7 @@ namespace {
 
 	// Elementor Pro constants
 	if (!defined('ELEMENTOR_PRO_VERSION')) {
-		define('ELEMENTOR_PRO_VERSION', '3.33.2');
+		define('ELEMENTOR_PRO_VERSION', '3.33.1');
 	}
 	if (!defined('ELEMENTOR_PRO__FILE__')) {
 		define('ELEMENTOR_PRO__FILE__', __FILE__);
@@ -1553,7 +1553,7 @@ namespace Elementor {
          *
          * @param array $element_data Element data.
          *
-         * @return Element_Base
+         * @return \Elementor\Element_Base
          */
         abstract protected function _get_default_child_type(array $element_data);
         /**
@@ -1651,7 +1651,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @return Element_Base[] Child elements.
+         * @return \Elementor\Element_Base[] Child elements.
          */
         public function get_children()
         {
@@ -1696,7 +1696,7 @@ namespace Elementor {
          * @param array $child_data Child element data.
          * @param array $child_args Child element arguments.
          *
-         * @return Element_Base|false Child element instance, or false if failed.
+         * @return \Elementor\Element_Base|false Child element instance, or false if failed.
          */
         public function add_child(array $child_data, array $child_args = [])
         {
@@ -1721,7 +1721,7 @@ namespace Elementor {
          * @param bool         $overwrite         Optional. Whether to overwrite existing
          *                                        attribute. Default is false, not to overwrite.
          *
-         * @return Element_Base Current instance of the element.
+         * @return \Elementor\Element_Base Current instance of the element.
          */
         public function add_link_attributes($element, array $url_control, $overwrite = false)
         {
@@ -2278,7 +2278,7 @@ namespace Elementor {
          * @param bool         $overwrite               Optional. Whether to overwrite existing
          *                                              attribute. Default is false, not to overwrite.
          *
-         * @return Widget_Base Current instance of the widget.
+         * @return \Elementor\Widget_Base Current instance of the widget.
          * @since 2.9.0
          * @access public
          */
@@ -2483,7 +2483,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Skin_Base $skin Skin instance.
+         * @param \Elementor\Skin_Base $skin Skin instance.
          */
         public function add_skin(\Elementor\Skin_Base $skin)
         {
@@ -2526,7 +2526,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @return Skin_Base|false Current skin or false.
+         * @return \Elementor\Skin_Base|false Current skin or false.
          */
         public function get_current_skin()
         {
@@ -2554,7 +2554,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @return Skin_Base[]
+         * @return \Elementor\Skin_Base[]
          */
         public function get_skins()
         {
@@ -2621,7 +2621,7 @@ namespace ElementorPro\Base {
          *
          * @param array              $element_config The config of the passed element.
          * @param array              $data           The data that requires updating/replacement when imported.
-         * @param array|Element_Base $controls       The available controls.
+         * @param array|\Elementor\Element_Base $controls       The available controls.
          *
          * @return array
          */
@@ -2702,7 +2702,7 @@ namespace Elementor\Core\Base {
          * @since 1.7.0
          * @access protected
          *
-         * @var Module
+         * @var \Elementor\Core\Base\Module
          */
         protected static $_instances = [];
         /**
@@ -2803,7 +2803,7 @@ namespace Elementor\Core\Base {
         /**
          * @since 2.3.0
          * @access public
-         * @return Module[]
+         * @return \Elementor\Core\Base\Module[]
          */
         public function get_components()
         {
@@ -3004,7 +3004,25 @@ namespace ElementorPro\Core\Admin {
         public function remove_go_pro_menu()
         {
         }
+        public function register_admin_tools_fields(\Elementor\Tools $tools)
+        {
+        }
+        public function post_elementor_pro_rollback()
+        {
+        }
+        public function plugin_row_meta($plugin_meta, $plugin_file)
+        {
+        }
         public function add_finder_items(array $categories)
+        {
+        }
+        public function register_ajax_actions($ajax_manager)
+        {
+        }
+        public function handle_hints_cta($request)
+        {
+        }
+        public function handle_send_app_campaign($request)
         {
         }
         /**
@@ -4028,13 +4046,13 @@ namespace ElementorPro\Core\App\Modules\SiteEditor {
          *
          * @access public
          *
-         * @param Ajax $ajax
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax
          */
         public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax)
         {
         }
         /**
-         * @param Render_Mode_Manager $manager
+         * @param \Elementor\Core\Frontend\Render_Mode_Manager $manager
          *
          * @throws \Exception
          */
@@ -4064,7 +4082,7 @@ namespace Elementor\Core\Frontend\RenderModes {
          */
         protected $post_id;
         /**
-         * @var Document
+         * @var \Elementor\Core\Base\Document
          */
         protected $document;
         /**
@@ -4127,7 +4145,7 @@ namespace Elementor\Core\Frontend\RenderModes {
         {
         }
         /**
-         * @return Document
+         * @return \Elementor\Core\Base\Document
          */
         public function get_document()
         {
@@ -4228,7 +4246,7 @@ namespace Elementor\Core\Common\Modules\Connect\Apps {
         protected $data = [];
         protected $auth_mode = '';
         /**
-         * @var Http
+         * @var \Elementor\Core\Utils\Http
          */
         protected $http;
         /**
@@ -4386,7 +4404,7 @@ namespace Elementor\Core\Common\Modules\Connect\Apps {
         {
         }
         /**
-         * @param       $action
+         * @param $action
          * @param array $request_body
          * @param false $as_array
          *
@@ -4424,8 +4442,8 @@ namespace Elementor\Core\Common\Modules\Connect\Apps {
         /**
          * Send an http request
          *
-         * @param       $method
-         * @param       $endpoint
+         * @param $method
+         * @param $endpoint
          * @param array $args
          * @param array $options
          *
@@ -4575,6 +4593,37 @@ namespace ElementorPro\Core\Connect\Apps {
         public function get_slug()
         {
         }
+        protected function after_connect()
+        {
+        }
+        /**
+         * @since 2.3.0
+         * @access public
+         */
+        public function action_authorize()
+        {
+        }
+        public function action_activate_pro()
+        {
+        }
+        public function action_switch_license()
+        {
+        }
+        public function action_deactivate()
+        {
+        }
+        public function action_activate_license()
+        {
+        }
+        public function action_reset()
+        {
+        }
+        protected function get_popup_success_event_data()
+        {
+        }
+        protected function get_app_info()
+        {
+        }
     }
 }
 namespace ElementorPro\Core\Connect {
@@ -4619,7 +4668,7 @@ namespace ElementorPro\Core\Data\Endpoints {
          *
          * runs `$this->register()`.
          *
-         * @param Controller $controller
+         * @param \ElementorPro\Core\Data\Controller $controller
          */
         public function __construct(\ElementorPro\Core\Data\Controller $controller)
         {
@@ -4712,7 +4761,7 @@ namespace ElementorPro\Core\Database {
         /**
          * Get all migrations inside a Collection.
          *
-         * @return Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         protected function get_collected_migrations()
         {
@@ -4732,7 +4781,7 @@ namespace ElementorPro\Core\Database {
         /**
          * Array of migration classes.
          *
-         * @return Base_Migration[]
+         * @return \ElementorPro\Core\Database\Base_Migration[]
          */
         abstract protected function get_migrations();
     }
@@ -4767,7 +4816,7 @@ namespace ElementorPro\Core\Database {
         /**
          * A util to run SQL for creating tables.
          *
-         * @param       $table_name
+         * @param $table_name
          * @param array $columns
          */
         protected function create_table($table_name, array $columns)
@@ -4776,7 +4825,7 @@ namespace ElementorPro\Core\Database {
         /**
          * Add columns.
          *
-         * @param       $table_name
+         * @param $table_name
          * @param array $columns
          */
         protected function add_columns($table_name, array $columns)
@@ -4785,7 +4834,7 @@ namespace ElementorPro\Core\Database {
         /**
          * Drop columns
          *
-         * @param       $table_name
+         * @param $table_name
          * @param array $columns
          */
         protected function drop_columns($table_name, array $columns)
@@ -4802,7 +4851,7 @@ namespace ElementorPro\Core\Database {
         /**
          * A util to run SQL for creating indexes.
          *
-         * @param       $table_name
+         * @param $table_name
          * @param array $column_names
          */
         protected function create_indexes($table_name, array $column_names)
@@ -5220,7 +5269,7 @@ namespace ElementorPro\Core\Database {
          *
          * @param string $type - JOIN type.
          *
-         * @return Join_Clause
+         * @return \ElementorPro\Core\Database\Join_Clause
          */
         public function new_join_clause($type)
         {
@@ -5399,7 +5448,7 @@ namespace ElementorPro\Core\Database {
          *
          * @param string $column - The column to pluck.
          *
-         * @return Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         public function pluck($column)
         {
@@ -5417,7 +5466,7 @@ namespace ElementorPro\Core\Database {
         /**
          * Get the query result.
          *
-         * @return Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         public function get()
         {
@@ -5580,7 +5629,7 @@ namespace ElementorPro\Core\Database {
         /**
          * @uses `$this->where()`.
          *
-         * @return Join_Clause
+         * @return \ElementorPro\Core\Database\Join_Clause
          */
         public function on($column, $operator, $value, $and_or = self::RELATION_AND)
         {
@@ -5588,7 +5637,7 @@ namespace ElementorPro\Core\Database {
         /**
          * @shortcut `$this->on()`.
          *
-         * @return Join_Clause
+         * @return \ElementorPro\Core\Database\Join_Clause
          */
         public function or_on($first, $operator, $second)
         {
@@ -5596,7 +5645,7 @@ namespace ElementorPro\Core\Database {
         /**
          * @uses `$this->where_column()`.
          *
-         * @return Join_Clause
+         * @return \ElementorPro\Core\Database\Join_Clause
          */
         public function on_column($first, $operator, $second, $and_or = self::RELATION_AND)
         {
@@ -5604,7 +5653,7 @@ namespace ElementorPro\Core\Database {
         /**
          * @shortcut `$this->on_column()`.
          *
-         * @return Join_Clause
+         * @return \ElementorPro\Core\Database\Join_Clause
          */
         public function or_on_column($first, $operator, $second)
         {
@@ -5652,7 +5701,7 @@ namespace ElementorPro\Core\Database {
          *
          * @param \wpdb|null $connection - MySQL connection to use.
          *
-         * @return Query_Builder
+         * @return \ElementorPro\Core\Database\Query_Builder
          */
         public static function query(\wpdb $connection = null)
         {
@@ -5838,6 +5887,11 @@ namespace Elementor\Core\Editor {
 namespace ElementorPro\Core\Editor {
     class Notice_Bar extends \Elementor\Core\Editor\Notice_Bar
     {
+        const ELEMENTOR_PRO_EDITOR_GO_PRO_TRIAL_ABOUT_TO_EXPIRE_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_go_pro_trial_about_to_expire_license_notice_dismissed';
+        const ELEMENTOR_PRO_EDITOR_GO_PRO_TRIAL_EXPIRED_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_go_pro_trial_expired_license_notice_dismissed';
+        const ELEMENTOR_PRO_EDITOR_RENEW_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_renew_license_notice_dismissed';
+        const ELEMENTOR_PRO_EDITOR_ACTIVATE_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_activate_license_notice_dismissed';
+        const ELEMENTOR_PRO_EDITOR_RENEW_ABOUT_TO_EXPIRE_LICENSE_NOTICE_DISMISSED = '_elementor_pro_editor_renew_about_to_expire_license_notice_dismissed';
         protected function get_init_settings()
         {
         }
@@ -5940,31 +5994,31 @@ namespace ElementorPro\Core\Integrations\Actions\Email {
         /**
          * Email sender.
          *
-         * @var Email_Address
+         * @var \ElementorPro\Core\Integrations\Actions\Email\Email_Address
          */
         public $from;
         /**
          * Email recipient.
          *
-         * @var Email_Address
+         * @var \ElementorPro\Core\Integrations\Actions\Email\Email_Address
          */
         public $to;
         /**
          * Email reply to address.
          *
-         * @var Email_Address[]
+         * @var \ElementorPro\Core\Integrations\Actions\Email\Email_Address[]
          */
         public $reply_to = [];
         /**
          * Email CC recipient.
          *
-         * @var Email_Address[]
+         * @var \ElementorPro\Core\Integrations\Actions\Email\Email_Address[]
          */
         public $cc = [];
         /**
          * Email BCC recipient.
          *
-         * @var Email_Address[]
+         * @var \ElementorPro\Core\Integrations\Actions\Email\Email_Address[]
          */
         public $bcc = [];
         /**
@@ -6111,7 +6165,7 @@ namespace ElementorPro\Core\Integrations\Actions\Email {
     class Email extends \ElementorPro\Core\Integrations\Actions\Action_Base
     {
         /**
-         * @param Email_Message $payload
+         * @param \ElementorPro\Core\Integrations\Actions\Email\Email_Message $payload
          *
          * @return void
          * @throws \Exception
@@ -6122,7 +6176,7 @@ namespace ElementorPro\Core\Integrations\Actions\Email {
         /**
          * @alias `$this->run()`
          *
-         * @param Email_Message $payload
+         * @param \ElementorPro\Core\Integrations\Actions\Email\Email_Message $payload
          *
          * @return void
          *@throws \Exception
@@ -6134,7 +6188,7 @@ namespace ElementorPro\Core\Integrations\Actions\Email {
         /**
          * Validate the email message DTO.
          *
-         * @param Email_Message $payload
+         * @param \ElementorPro\Core\Integrations\Actions\Email\Email_Message $payload
          *
          * @throws \ElementorPro\Core\Integrations\Exceptions\Action_Validation_Failed_Exception
          *
@@ -6233,7 +6287,7 @@ namespace ElementorPro\Core\Integrations {
         /**
          * Registered action types.
          *
-         * @var Registrar
+         * @var \ElementorPro\Core\Utils\Registrar
          */
         protected $actions_registrar;
         /**
@@ -6333,7 +6387,7 @@ namespace ElementorPro\Core {
         /**
          * @param string $module_name
          *
-         * @return Module_Base|Module_Base[]
+         * @return \ElementorPro\Base\Module_Base|\ElementorPro\Base\Module_Base[]
          */
         public function get_modules($module_name)
         {
@@ -6389,7 +6443,7 @@ namespace ElementorPro\Core\Notifications\Traits {
          * Usage:
          *  $model->notify( new User_Created_Notification( $new_user ) );
          *
-         * @param Notification $notification - Notification to send.
+         * @param \ElementorPro\Core\Notifications\Notification $notification - Notification to send.
          *
          * @throws \Exception
          *
@@ -6478,7 +6532,7 @@ namespace Elementor\Core\Base {
     abstract class Background_Task_Manager extends \Elementor\Core\Base\Module
     {
         /**
-         * @var Background_Task
+         * @var \Elementor\Core\Base\Background_Task
          */
         protected $task_runner;
         abstract public function get_action();
@@ -6736,7 +6790,7 @@ namespace ElementorPro\Core\Upgrade {
         {
         }
         /**
-         * @param Updater $updater
+         * @param \Elementor\Core\Upgrade\Updater $updater
          *
          * @return bool
          */
@@ -6783,8 +6837,8 @@ namespace ElementorPro\Core\Upgrade {
          *   'callback' => user callback to manipulate the control_ids
          * ]
          *
-         * @param       $widget_id
-         * @param       $updater
+         * @param $widget_id
+         * @param $updater
          * @param array $changes
          *
          * @return bool
@@ -7178,7 +7232,7 @@ namespace Elementor\Core\Utils {
         /**
          * Run a map over each of the items.
          *
-         * @param  callable $callback
+         * @param callable $callback
          * @return $this
          */
         public function map(callable $callback)
@@ -7266,7 +7320,7 @@ namespace Elementor\Core\Utils {
         /**
          * Get specific item from the collection.
          *
-         * @param      $key
+         * @param $key
          * @param null $fallback
          *
          * @return mixed|null
@@ -7427,7 +7481,7 @@ namespace ElementorPro\Core\Utils {
          *
          * @param string $key
          *
-         * @return Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         public function key_by($key)
         {
@@ -7647,7 +7701,7 @@ namespace ElementorPro\Core\Utils {
         /**
          * Register a new item.
          *
-         * @param           $instance - Item instance.
+         * @param $instance - Item instance.
          * @param string    $id - Optional - For BC - Deprecated.
          *
          * @return boolean - Whether the item was registered.
@@ -7695,26 +7749,80 @@ namespace ElementorPro\Data {
 namespace ElementorPro\License {
     class Admin
     {
-        const API_TEMPLATES_URL = 'https://my.elementor.com/api/connect/v1/library/templates';
+        const PAGE_ID = 'elementor-license';
+        const LICENSE_KEY_OPTION_NAME = 'elementor_pro_license_key';
+        const LICENSE_DATA_OPTION_NAME = '_elementor_pro_license_v2_data';
+        const LICENSE_DATA_FALLBACK_OPTION_NAME = self::LICENSE_DATA_OPTION_NAME . '_fallback';
+        /**
+         * @deprecated 3.6.0 Use `Plugin::instance()->updater` instead.
+         */
+        public static $updater = null;
         public function __construct()
         {
         }
-        public function get_installed_time()
+        public static function get_errors_details()
+        {
+        }
+        public static function deactivate()
+        {
+        }
+        /**
+         * @deprecated 3.6.0 Use `Plugin::instance()->updater` instead.
+         *
+         * @return \ElementorPro\License\Updater
+         */
+        public static function get_updater_instance()
         {
         }
         public static function get_license_key()
         {
         }
-        public function get_connect_url($params = [])
+        public static function set_license_key($license_key)
+        {
+        }
+        public function action_activate_license()
+        {
+        }
+        protected function safe_redirect($url)
+        {
+        }
+        public function action_deactivate_license()
+        {
+        }
+        public function register_page()
         {
         }
         public static function get_url()
         {
         }
-        public function rest_remove_pro_templates($response, $handler, $request)
+        public function display_page()
         {
         }
-        public function http_remove_pro_templates($response, $parsed_args, $url)
+        public function admin_license_details()
+        {
+        }
+        public function filter_library_get_templates_args($body_args)
+        {
+        }
+        public function handle_tracker_actions()
+        {
+        }
+        public function get_installed_time()
+        {
+        }
+        public function plugin_action_links($links)
+        {
+        }
+        public function plugin_auto_update_setting_html($html, $plugin_file)
+        {
+        }
+        public function add_finder_item(array $categories)
+        {
+        }
+        public function on_deactivate_plugin($plugin)
+        {
+        }
+        public function get_connect_url($params = [])
         {
         }
         public function register_actions()
@@ -7771,10 +7879,26 @@ namespace ElementorPro\License {
         const GENERATION_EMPTY = 'empty';
         const BC_VALIDATION_CALLBACK = 'should_allow_all_features';
         protected static $transient_data = [];
+        public static function activate_license($license_key)
+        {
+        }
+        public static function deactivate_license()
+        {
+        }
         public static function set_transient($cache_key, $value, $expiration = '+12 hours')
         {
         }
         public static function set_license_data($license_data, $expiration = null)
+        {
+        }
+        /**
+         * Check if another request is in progress.
+         *
+         * @param string $name Request name
+         *
+         * @return bool
+         */
+        public static function is_request_running($name)
         {
         }
         public static function get_license_data($force_request = false)
@@ -7784,6 +7908,9 @@ namespace ElementorPro\License {
         {
         }
         public static function get_plugin_package_url($version)
+        {
+        }
+        public static function get_previous_versions()
         {
         }
         public static function get_errors()
@@ -7879,6 +8006,101 @@ namespace ElementorPro\License\Data\Endpoints {
         {
         }
         public function permission_callback($request)
+        {
+        }
+    }
+}
+namespace Elementor\Core\Admin\Notices {
+    abstract class Base_Notice
+    {
+        /**
+         * Determine if the notice should be printed or not.
+         *
+         * @return boolean
+         */
+        abstract public function should_print();
+        /**
+         * Returns the config of the notice itself.
+         * based on that config the notice will be printed.
+         *
+         * @see \Elementor\Core\Admin\Admin_Notices::admin_notices
+         *
+         * @return array
+         */
+        abstract public function get_config();
+    }
+}
+namespace ElementorPro\License\Notices {
+    class Trial_Expired_Notice extends \Elementor\Core\Admin\Notices\Base_Notice
+    {
+        /**
+         * Notice ID.
+         */
+        const ID = 'elementor_trial_expired_promote';
+        /**
+         * @inheritDoc
+         */
+        public function should_print()
+        {
+        }
+        /**
+         * @inheritDoc
+         */
+        public function get_config()
+        {
+        }
+    }
+    class Trial_Period_Notice extends \Elementor\Core\Admin\Notices\Base_Notice
+    {
+        /**
+         * Notice ID.
+         */
+        const ID = 'elementor_trial_period_promote';
+        /**
+         * @inheritDoc
+         */
+        public function should_print()
+        {
+        }
+        /**
+         * @inheritDoc
+         */
+        public function get_config()
+        {
+        }
+    }
+}
+namespace ElementorPro\License {
+    class Updater
+    {
+        public $plugin_version;
+        public $plugin_name;
+        public $plugin_slug;
+        public function __construct()
+        {
+        }
+        public function delete_transients()
+        {
+        }
+        public function check_update($_transient_data)
+        {
+        }
+        public function plugins_api_filter($_data, $_action = '', $_args = null)
+        {
+        }
+        public function show_update_notification($file, $plugin)
+        {
+        }
+        protected function get_transient($cache_key)
+        {
+        }
+        protected function set_transient($cache_key, $value, $expiration = 0)
+        {
+        }
+        protected function delete_transient($cache_key)
+        {
+        }
+        protected function is_elementor_pro_rollback(): bool
         {
         }
     }
@@ -8231,7 +8453,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes {
          * Add a font type to the font manager
          *
          * @param string            $font_type
-         * @param Classes\Font_Base $instance
+         * @param \ElementorPro\Modules\AssetsManager\AssetTypes\Classes\Font_Base $instance
          */
         public function add_font_type($font_type, $instance)
         {
@@ -8533,7 +8755,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes\Fonts {
         /**
          * @param string $font_family
          * @param array  $font_data
-         * @param Base   $post_css
+         * @param \Elementor\Core\Files\CSS\Base   $post_css
          */
         public function enqueue_font($font_family, $font_data, $post_css)
         {
@@ -8819,7 +9041,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes {
          * Add a font type to the font manager
          *
          * @param string            $icon_type
-         * @param Classes\Assets_Base $instance
+         * @param \ElementorPro\Modules\AssetsManager\AssetTypes\Classes\Assets_Base $instance
          */
         public function add_icon_type($icon_type, $instance)
         {
@@ -9791,7 +10013,7 @@ namespace Elementor\Modules\Checklist\Steps {
         /**
          * Step_Base constructor.
          *
-         * @param Checklist_Module             $module
+         * @param \Elementor\Modules\Checklist\Module             $module
          * @param ?Wordpress_Adapter_Interface $wordpress_adapter
          * @param ?Elementor_Adapter_Interface $elementor_adapter
          * @return void
@@ -10026,7 +10248,7 @@ namespace Elementor\Modules\CompatibilityTag {
          * Add allowed headers to plugins.
          *
          * @param array $headers
-         * @param       $compatibility_tag_header
+         * @param $compatibility_tag_header
          *
          * @return array
          */
@@ -10034,7 +10256,7 @@ namespace Elementor\Modules\CompatibilityTag {
         {
         }
         /**
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         protected function get_plugins_to_check()
         {
@@ -10079,7 +10301,7 @@ namespace ElementorPro\Modules\CompatibilityTag {
          *
          * @var string
          */
-        const PLUGIN_VERSION_TESTED_HEADER = 'PRO Elements tested up to';
+        const PLUGIN_VERSION_TESTED_HEADER = 'Elementor Pro tested up to';
         /**
          * @return string
          */
@@ -10220,7 +10442,7 @@ namespace ElementorPro\Modules\CustomAttributes {
         {
         }
         /**
-         * @param Element_Base $element
+         * @param \Elementor\Element_Base $element
          */
         public function replace_go_pro_custom_attributes_controls(\Elementor\Element_Base $element)
         {
@@ -10263,6 +10485,79 @@ namespace ElementorPro\Modules\CustomCode\AdminMenuItems {
         {
         }
         public function is_visible()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\Tiers\AdminMenuItems {
+    abstract class Base_Promotion_Template implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    {
+        abstract protected function get_promotion_title(): string;
+        abstract protected function get_cta_url(): string;
+        abstract protected function get_content_lines(): array;
+        abstract protected function get_video_url(): string;
+        public function is_visible()
+        {
+        }
+        public function get_parent_slug()
+        {
+        }
+        public function get_capability()
+        {
+        }
+        protected function get_cta_text()
+        {
+        }
+        /**
+         * Should the promotion have a side note.
+         * @return string
+         */
+        protected function get_side_note(): string
+        {
+        }
+        public function render()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CustomCode\AdminMenuItems {
+    class Custom_Code_Promotion_Menu_Item extends \ElementorPro\Modules\Tiers\AdminMenuItems\Base_Promotion_Template
+    {
+        public function get_name(): string
+        {
+        }
+        public function get_cta_url(): string
+        {
+        }
+        public function get_cta_text()
+        {
+        }
+        public function get_label()
+        {
+        }
+        public function get_page_title()
+        {
+        }
+        public function get_promotion_title(): string
+        {
+        }
+        public function get_video_url(): string
+        {
+        }
+        public function get_promotion_description()
+        {
+        }
+        public function get_side_note(): string
+        {
+        }
+        /**
+         * @deprecated use get_promotion_description instead
+         * @return void
+         */
+        public function render_promotion_description()
+        {
+        }
+        protected function get_content_lines(): array
         {
         }
     }
@@ -10475,7 +10770,7 @@ namespace Elementor\Core\Base {
         {
         }
         /**
-         * @return null|Lock_Behavior
+         * @return null|\Elementor\Core\Behaviors\Interfaces\Lock_Behavior
          */
         public static function get_lock_behavior_v2()
         {
@@ -10547,7 +10842,7 @@ namespace Elementor\Core\Base {
          * @since 2.0.0
          * @access public
          *
-         * @return bool|Document
+         * @return bool|\Elementor\Core\Base\Document
          */
         public function get_newer_autosave()
         {
@@ -10582,7 +10877,7 @@ namespace Elementor\Core\Base {
          * @param int  $user_id
          * @param bool $create
          *
-         * @return bool|Document
+         * @return bool|\Elementor\Core\Base\Document
          */
         public function get_autosave($user_id = 0, $create = false)
         {
@@ -11418,7 +11713,7 @@ namespace Elementor {
     abstract class Sub_Controls_Stack
     {
         /**
-         * @var Controls_Stack
+         * @var \Elementor\Controls_Stack
          */
         protected $parent;
         /**
@@ -11445,7 +11740,7 @@ namespace Elementor {
          * Initializing the base class by setting parent stack.
          *
          * @access public
-         * @param Controls_Stack $element_parent
+         * @param \Elementor\Controls_Stack $element_parent
          */
         public function __construct($element_parent)
         {
@@ -11628,7 +11923,7 @@ namespace Elementor\Core\Kits\Documents\Tabs {
     abstract class Tab_Base extends \Elementor\Sub_Controls_Stack
     {
         /**
-         * @var Kit
+         * @var \Elementor\Core\Kits\Documents\Kit
          */
         protected $parent;
         abstract protected function register_tab_controls();
@@ -11730,7 +12025,7 @@ namespace ElementorPro\Modules\CustomCss {
         {
         }
         /**
-         * @param Controls_Stack $controls_stack
+         * @param \Elementor\Controls_Stack $controls_stack
          */
         public function replace_go_pro_custom_css_controls($controls_stack)
         {
@@ -11788,8 +12083,8 @@ namespace ElementorPro\Modules\DisplayConditions\Classes {
     {
         /**
          * @param string $comparator
-         * @param string|DateTime $value_to_check
-         * @param string|DateTime $set_value
+         * @param string|\DateTime $value_to_check
+         * @param string|\DateTime $set_value
          *
          * @return bool
          */
@@ -11825,7 +12120,7 @@ namespace ElementorPro\Modules\DisplayConditions\Classes {
         {
         }
         /**
-         * @param Condition_Base $instance
+         * @param \ElementorPro\Modules\DisplayConditions\Conditions\Base\Condition_Base $instance
          * @return false|void
          */
         public function register_condition_instance(\ElementorPro\Modules\DisplayConditions\Conditions\Base\Condition_Base $instance)
@@ -11847,7 +12142,7 @@ namespace ElementorPro\Modules\DisplayConditions\Classes {
         /**
          * @param $id
          *
-         * @return Condition_Base|bool
+         * @return \ElementorPro\Modules\DisplayConditions\Conditions\Base\Condition_Base|bool
          */
         public function get_condition($id)
         {
@@ -11940,7 +12235,7 @@ namespace ElementorPro\Modules\DisplayConditions\Conditions\Base {
     abstract class Condition_Base extends \Elementor\Controls_Stack
     {
         /**
-         * @var Wordpress_Adapter_Interface
+         * @var \ElementorPro\Core\Isolation\Wordpress_Adapter_Interface
          */
         protected $wordpress_adapter;
         public function __construct(array $data = [])
@@ -12461,13 +12756,13 @@ namespace ElementorPro\Modules\DisplayConditions {
         {
         }
         /**
-         * @return Classes\Conditions_Manager
+         * @return \ElementorPro\Modules\DisplayConditions\Classes\Conditions_Manager
          */
         public function get_conditions_manager()
         {
         }
         /**
-         * @param Ajax $ajax_manager
+         * @param \ElementorPro\Modules\DisplayConditions\Ajax $ajax_manager
          */
         public function register_ajax_actions($ajax_manager)
         {
@@ -12612,7 +12907,7 @@ namespace Elementor\Modules\DynamicTags {
          * @since 2.0.0
          * @access public
          *
-         * @param Manager $dynamic_tags
+         * @param \Elementor\Core\DynamicTags\Manager $dynamic_tags
          */
         public function register_tags($dynamic_tags)
         {
@@ -15333,12 +15628,12 @@ namespace ElementorPro\Modules\Forms\Classes {
         {
         }
         /**
-         * @param Form_Record  $record
-         * @param Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          */
         abstract public function run($record, $ajax_handler);
         /**
-         * @param Form $form
+         * @param \ElementorPro\Modules\Forms\Widgets\Form $form
          */
         abstract public function register_settings_section($form);
         /**
@@ -15895,14 +16190,14 @@ namespace ElementorPro\Modules\Forms\Classes {
         {
         }
         /**
-         * @param Form $form
+         * @param \ElementorPro\Modules\Forms\Widgets\Form $form
          */
         public function register_settings_section($form)
         {
         }
         /**
-         * @param Form_Record  $record
-         * @param Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          */
         public function validation($record, $ajax_handler)
         {
@@ -16021,7 +16316,7 @@ namespace ElementorPro\Modules\Forms\Classes {
         {
         }
         /**
-         * @param Ajax_Handler $ajax_handler An instance of the ajax handler.
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler An instance of the ajax handler.
          *
          * @return bool
          */
@@ -16029,7 +16324,7 @@ namespace ElementorPro\Modules\Forms\Classes {
         {
         }
         /**
-         * @param Ajax_Handler $ajax_handler An instance of the ajax handler.
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler An instance of the ajax handler.
          *
          */
         public function process_fields($ajax_handler)
@@ -16112,14 +16407,14 @@ namespace ElementorPro\Modules\Forms\Classes {
         /**
          * @param string      $item
          * @param integer     $item_index
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          */
         public function render_field($item, $item_index, $widget)
         {
         }
         /**
-         * @param Form_Record  $record
-         * @param Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          */
         public function validation($record, $ajax_handler)
         {
@@ -16249,14 +16544,14 @@ namespace ElementorPro\Modules\Forms\Classes {
         {
         }
         /**
-         * @param Form_Record  $record
-         * @param Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          */
         public function validation($record, $ajax_handler)
         {
         }
         /**
-         * @param Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          * @param $field
          * @param $message
          */
@@ -16344,7 +16639,7 @@ namespace ElementorPro\Modules\Forms\Classes {
         {
         }
         /**
-         * @param Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          * @param $field
          * @param $message
          */
@@ -16360,7 +16655,7 @@ namespace ElementorPro\Modules\Forms\Classes {
         /**
          * @param $item
          * @param $item_index
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          *
          * @return $item
          */
@@ -16932,7 +17227,7 @@ namespace ElementorPro\Modules\Forms\Fields {
         {
         }
         /**
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          */
         public function update_controls($widget)
         {
@@ -16956,7 +17251,7 @@ namespace ElementorPro\Modules\Forms\Fields {
         {
         }
         /**
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          */
         public function update_controls($widget)
         {
@@ -17014,15 +17309,15 @@ namespace ElementorPro\Modules\Forms\Fields {
         {
         }
         /**
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          */
         public function update_controls($widget)
         {
         }
         /**
-         * @param      $item
-         * @param      $item_index
-         * @param Form $form
+         * @param $item
+         * @param $item_index
+         * @param \ElementorPro\Modules\Forms\Widgets\Form $form
          */
         public function render($item, $item_index, $form)
         {
@@ -17031,8 +17326,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * validate uploaded file field
          *
          * @param array                $field
-         * @param Classes\Form_Record  $record
-         * @param Classes\Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
          */
         public function validation($field, \ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -17041,8 +17336,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * process file and move it to uploads directory
          *
          * @param array                $field
-         * @param Classes\Form_Record  $record
-         * @param Classes\Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
          */
         public function process_field($field, \ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -17052,8 +17347,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * value => file url
          * raw_value => file path
          *
-         * @param Classes\Form_Record  $record
-         * @param Classes\Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
          */
         public function set_file_fields_values(\ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -17067,11 +17362,11 @@ namespace ElementorPro\Modules\Forms {
     class Module extends \ElementorPro\Base\Module_Base
     {
         /**
-         * @var Form_Actions_Registrar
+         * @var \ElementorPro\Modules\Forms\Registrars\Form_Actions_Registrar
          */
         public $actions_registrar;
         /**
-         * @var Form_Fields_Registrar
+         * @var \ElementorPro\Modules\Forms\Registrars\Form_Fields_Registrar
          */
         public $fields_registrar;
         const ACTIVITY_LOG_LICENSE_FEATURE_NAME = 'activity-log';
@@ -17261,39 +17556,6 @@ namespace ElementorPro\Modules\Forms\Submissions\AdminMenuItems {
         {
         }
     }
-}
-namespace ElementorPro\Modules\Tiers\AdminMenuItems {
-    abstract class Base_Promotion_Template implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
-    {
-        abstract protected function get_promotion_title(): string;
-        abstract protected function get_cta_url(): string;
-        abstract protected function get_content_lines(): array;
-        abstract protected function get_video_url(): string;
-        public function is_visible()
-        {
-        }
-        public function get_parent_slug()
-        {
-        }
-        public function get_capability()
-        {
-        }
-        protected function get_cta_text()
-        {
-        }
-        /**
-         * Should the promotion have a side note.
-         * @return string
-         */
-        protected function get_side_note(): string
-        {
-        }
-        public function render()
-        {
-        }
-    }
-}
-namespace ElementorPro\Modules\Forms\Submissions\AdminMenuItems {
     class Submissions_Promotion_Menu_Item extends \ElementorPro\Modules\Tiers\AdminMenuItems\Base_Promotion_Template
     {
         public function get_name(): string
@@ -17629,7 +17891,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Database\Migrations {
          */
         protected $wpdb;
         /**
-         * @var Query
+         * @var \ElementorPro\Modules\Forms\Submissions\Database\Query
          */
         protected $query;
         /**
@@ -17692,7 +17954,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Database {
          *
          * @param $filter
          *
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function count_submissions_by_status($filter = [])
         {
@@ -17715,10 +17977,10 @@ namespace ElementorPro\Modules\Forms\Submissions\Database {
         {
         }
         /**
-         * @param       $submissions
+         * @param $submissions
          * @param false $only_main
          *
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function get_submissions_meta($submissions, $only_main = false)
         {
@@ -17727,7 +17989,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Database {
          * @param $post_id
          * @param $element_id
          *
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function get_submissions_value_keys($post_id, $element_id)
         {
@@ -17752,7 +18014,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Database {
         {
         }
         /**
-         * @param       $submission_id
+         * @param $submission_id
          * @param array $data
          * @param array $values
          *
@@ -17793,7 +18055,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Database {
         }
         /**
          * @param $submission_id
-         * @param Action_Base $action Should be class based on ActionBase (do not type hint to support third party plugins)
+         * @param \ElementorPro\Modules\Forms\Classes\Action_Base $action Should be class based on ActionBase (do not type hint to support third party plugins)
          * @param $status
          * @param null $log_message
          *
@@ -17833,11 +18095,11 @@ namespace ElementorPro\Modules\Forms\Submissions\Database\Repositories {
         /**
          * Get specific form.
          *
-         * @param      $post_id
-         * @param      $form_id
+         * @param $post_id
+         * @param $form_id
          * @param bool $from_cache
          *
-         * @return Form_Snapshot|null
+         * @return \ElementorPro\Modules\Forms\Submissions\Database\Entities\Form_Snapshot|null
          */
         public function find($post_id, $form_id, $from_cache = true)
         {
@@ -17845,7 +18107,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Database\Repositories {
         /**
          * Get all the forms.
          *
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function all()
         {
@@ -17855,7 +18117,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Database\Repositories {
          * @param $form_id
          * @param $data
          *
-         * @return Form_Snapshot
+         * @return \ElementorPro\Modules\Forms\Submissions\Database\Entities\Form_Snapshot
          */
         public function create_or_update($post_id, $form_id, $data)
         {
@@ -17879,7 +18141,7 @@ namespace ElementorPro\Modules\Forms\Submissions\Export {
          *
          * Csv_Export constructor.
          *
-         * @param Collection $submissions
+         * @param \Elementor\Core\Utils\Collection $submissions
          */
         public function __construct(\Elementor\Core\Utils\Collection $submissions)
         {
@@ -18231,7 +18493,7 @@ namespace ElementorPro\Modules\GlobalWidget {
         {
         }
         /**
-         * @param Documents_Manager $documents_manager
+         * @param \Elementor\Core\Documents_Manager $documents_manager
          */
         public function register_documents($documents_manager)
         {
@@ -19526,7 +19788,7 @@ namespace Elementor\Core\Files\CSS {
          *
          * @access protected
          *
-         * @var Stylesheet
+         * @var \Elementor\Stylesheet
          */
         protected $stylesheet_obj;
         /**
@@ -19675,7 +19937,7 @@ namespace Elementor\Core\Files\CSS {
          * @since 1.2.0
          * @access public
          *
-         * @return Stylesheet The stylesheet object.
+         * @return \Elementor\Stylesheet The stylesheet object.
          */
         public function get_stylesheet()
         {
@@ -19690,7 +19952,7 @@ namespace Elementor\Core\Files\CSS {
          * @since 1.6.0
          * @access public
          *
-         * @param Controls_Stack $controls_stack The controls stack.
+         * @param \Elementor\Controls_Stack $controls_stack The controls stack.
          * @param array          $controls       Controls array.
          * @param array          $values         Values array.
          * @param array          $placeholders   Placeholders.
@@ -19801,7 +20063,7 @@ namespace Elementor\Core\Files\CSS {
          * @since 2.0.0
          * @access private
          *
-         * @param Controls_Stack $controls_stack   The control stack.
+         * @param \Elementor\Controls_Stack $controls_stack   The control stack.
          * @param array          $repeater_control The repeater control.
          * @param array          $repeater_values  Repeater values array.
          * @param array          $placeholders     Placeholders.
@@ -19899,7 +20161,7 @@ namespace Elementor\Core\Files\CSS {
          * @since 1.2.0
          * @access public
          *
-         * @param Element_Base $element The element.
+         * @param \Elementor\Element_Base $element The element.
          *
          * @return string Unique element selector.
          */
@@ -19991,7 +20253,7 @@ namespace Elementor\Core\Files\CSS {
          * @since 1.6.0
          * @access public
          *
-         * @param Controls_Stack $controls_stack The controls stack.
+         * @param \Elementor\Controls_Stack $controls_stack The controls stack.
          * @param array          $controls       Controls array.
          * @param array          $values         Values array.
          * @param array          $placeholders   Placeholders.
@@ -20048,7 +20310,7 @@ namespace Elementor\Core\Files\CSS {
          * @since 1.2.0
          * @access protected
          *
-         * @param Element_Base $element The element.
+         * @param \Elementor\Element_Base $element The element.
          */
         protected function render_styles(\Elementor\Element_Base $element)
         {
@@ -20093,7 +20355,7 @@ namespace Elementor\Core\DynamicTags {
          * @access public
          *
          * @param int      $post_id Post ID.
-         * @param Post_CSS $post_css_file
+         * @param \Elementor\Core\Files\CSS\Post $post_css_file
          */
         public function __construct($post_id, \Elementor\Core\Files\CSS\Post $post_css_file)
         {
@@ -20457,7 +20719,7 @@ namespace Elementor {
          *
          * @access protected
          *
-         * @var Widget_Base|null
+         * @var \Elementor\Widget_Base|null
          */
         protected $parent = null;
         /**
@@ -20468,7 +20730,7 @@ namespace Elementor {
          *
          * @since 1.0.0
          * @access public
-         * @param Widget_Base $element_parent
+         * @param \Elementor\Widget_Base $element_parent
          */
         public function __construct(\Elementor\Widget_Base $element_parent)
         {
@@ -20660,7 +20922,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Widget_Base $element_parent Parent widget.
+         * @param \Elementor\Widget_Base $element_parent Parent widget.
          */
         public function set_parent($element_parent)
         {
@@ -21390,7 +21652,7 @@ namespace ElementorPro\Modules\Posts\Traits {
          * Checks a set of elements if there is a posts/archive widget that may be paginated to a specific page number.
          *
          * @param array $elements
-         * @param       $current_page
+         * @param $current_page
          *
          * @return bool
          */
@@ -22675,7 +22937,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Controls_Stack $element   The element stack.
+         * @param \Elementor\Controls_Stack $element   The element stack.
          * @param array          $user_args The control arguments defined by the user.
          * @param array          $options   Optional. The element options. Default is
          *                                  an empty array.
@@ -23193,7 +23455,7 @@ namespace ElementorPro\Modules\Notes {
         /**
          * Redirect to a note - Used for testing.
          *
-         * @param Note $note
+         * @param \ElementorPro\Modules\Notes\Database\Models\Note $note
          *
          * @return void
          */
@@ -23351,7 +23613,7 @@ namespace Elementor\Data\V2\Base {
          *
          * @return bool
          *
-         * @throws WP_Error_Exception If API request validation fails, permissions are insufficient, or processing errors occur.
+         * @throws \Elementor\Data\V2\Base\Exceptions\WP_Error_Exception If API request validation fails, permissions are insufficient, or processing errors occur.
          */
         public function get_permission_callback($request)
         {
@@ -23472,7 +23734,7 @@ namespace Elementor\Data\V2\Base {
          *
          * That will be later attached to the endpoint class.
          *
-         * @param Processor $processor
+         * @param \Elementor\Data\V2\Base\Processor $processor
          *
          * @return \Elementor\Data\V2\Base\Processor $processor_instance
          */
@@ -23554,9 +23816,9 @@ namespace ElementorPro\Modules\Notes\Data {
         /**
          * Run all user models in the note through user transformer.
          *
-         * @param Note $note
+         * @param \ElementorPro\Modules\Notes\Database\Models\Note $note
          *
-         * @return Note
+         * @return \ElementorPro\Modules\Notes\Database\Models\Note
          */
         protected function transform_users(\ElementorPro\Modules\Notes\Database\Models\Note $note)
         {
@@ -24141,7 +24403,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @param \wpdb|null $connection
          *
-         * @return Query_Builder
+         * @return \ElementorPro\Core\Database\Query_Builder
          */
         public static function query(\wpdb $connection = null)
         {
@@ -24207,7 +24469,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @param \wpdb|null $connection
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public static function query(\wpdb $connection = null)
         {
@@ -24317,25 +24579,25 @@ namespace ElementorPro\Modules\Notes\Database\Models {
         /**
          * Note's replies.
          *
-         * @var Collection <Note>
+         * @var \ElementorPro\Core\Utils\Collection <Note>
          */
         public $replies;
         /**
          * Note's mentions.
          *
-         * @var Collection<User>
+         * @var \ElementorPro\Core\Utils\Collection<\ElementorPro\Modules\Notes\Database\Models\User>
          */
         public $mentions;
         /**
          * Note's author.
          *
-         * @var User
+         * @var \ElementorPro\Modules\Notes\Database\Models\User
          */
         public $author;
         /**
          * Note's document
          *
-         * @var Document
+         * @var \ElementorPro\Modules\Notes\Database\Models\Document
          */
         public $document;
         /**
@@ -24353,7 +24615,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
         /**
          * Note's readers.
          *
-         * @var Collection <User>
+         * @var \ElementorPro\Core\Utils\Collection <User>
          */
         public $readers;
         /**
@@ -24398,7 +24660,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @param \wpdb|null $connection
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public static function query(\wpdb $connection = null)
         {
@@ -24486,11 +24748,11 @@ namespace ElementorPro\Modules\Notes\Database\Models {
         /**
          * Remove old relations and add new ones.
          *
-         * @param        $type
+         * @param $type
          * @param array  $user_keys
          * @param string $key
          *
-         * @return Collection Only users with a newly created relation (excluding the existing ones).
+         * @return \ElementorPro\Core\Utils\Collection Only users with a newly created relation (excluding the existing ones).
          */
         public function sync_user_relation($type, array $user_keys, $key = 'ID')
         {
@@ -24498,7 +24760,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
         /**
          * Remove user relation.
          *
-         * @param       $type
+         * @param $type
          * @param array $user_ids
          */
         public function remove_user_relation($type, array $user_ids)
@@ -24507,7 +24769,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
         /**
          * Add user relation.
          *
-         * @param       $type
+         * @param $type
          * @param array $user_ids
          *
          * @throws \Exception
@@ -24521,7 +24783,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          * @param integer $user_id - User ID to use.
          * @param bool $recursive - Whether to add the capabilities also to the replies.
          *
-         * @return Note
+         * @return \ElementorPro\Modules\Notes\Database\Models\Note
          */
         public function attach_user_capabilities($user_id, $recursive = true)
         {
@@ -24613,7 +24875,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @param $id
          *
-         * @return Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         public static function generate_avatars_urls($id)
         {
@@ -24621,7 +24883,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
         /**
          * Get the user's avatars.
          *
-         * @return Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         public function get_avatars()
         {
@@ -24741,7 +25003,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
          *
          * @param integer $user_id - User ID to check.
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public function only_visible($user_id)
         {
@@ -24761,7 +25023,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
          *
          * @param int $user_id - User ID to check.
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public function only_relevant($user_id)
         {
@@ -24771,7 +25033,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
          *
          * @param integer $user_id - User id that the notes are unread by.
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public function only_unread($user_id)
         {
@@ -24779,7 +25041,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
         /**
          * Filter only threads.
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public function only_threads()
         {
@@ -24787,7 +25049,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
         /**
          * Filter only replies.
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public function only_replies()
         {
@@ -24795,7 +25057,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
         /**
          * Filter only trashed notes.
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public function only_trashed()
         {
@@ -24805,7 +25067,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
          *
          * @param int $user_id - User ID to check.
          *
-         * @return Note_Query_Builder
+         * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
         public function with_unread_replies_count($user_id)
         {
@@ -24854,7 +25116,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
         /**
          * Filter only users who are relevant to note (created / replied to / mention in thread).
          *
-         * @param Note $note
+         * @param \ElementorPro\Modules\Notes\Database\Models\Note $note
          *
          * @return $this
          */
@@ -24869,7 +25131,7 @@ namespace ElementorPro\Modules\Notes\Database\Transformers {
         /**
          * Apply transformations to the $user received.
          *
-         * @param User $user
+         * @param \ElementorPro\Modules\Notes\Database\Models\User $user
          * @param array $dependencies{post_id: int}
          *
          * @return array
@@ -24880,7 +25142,7 @@ namespace ElementorPro\Modules\Notes\Database\Transformers {
         /**
          * Maps the user properties to new keys.
          *
-         * @param User $user
+         * @param \ElementorPro\Modules\Notes\Database\Models\User $user
          *
          * @return array
          */
@@ -24952,7 +25214,7 @@ namespace ElementorPro\Modules\Notes\Notifications {
     abstract class Base_Notes_Notification extends \ElementorPro\Core\Notifications\Notification
     {
         /**
-         * @var Note
+         * @var \ElementorPro\Modules\Notes\Database\Models\Note
          */
         public $note;
         /**
@@ -24960,14 +25222,14 @@ namespace ElementorPro\Modules\Notes\Notifications {
          */
         public $exclude;
         /**
-         * @var User
+         * @var \ElementorPro\Modules\Notes\Database\Models\User
          */
         public $actor;
         /**
          * Note_Notification constructor.
          *
-         * @param Note $note
-         * @param User $actor
+         * @param \ElementorPro\Modules\Notes\Database\Models\Note $note
+         * @param \ElementorPro\Modules\Notes\Database\Models\User $actor
          * @param array $exclude
          *
          * @return void
@@ -24978,7 +25240,7 @@ namespace ElementorPro\Modules\Notes\Notifications {
         /**
          * Get the notification payloads.
          *
-         * @param User $notifiable
+         * @param \ElementorPro\Modules\Notes\Database\Models\User $notifiable
          *
          * @return array
          */
@@ -25448,7 +25710,7 @@ namespace ElementorPro\Modules\PageTransitions {
         /**
          * Replace the Page Transition teaser with actual controls.
          *
-         * @param Controls_Stack $controls_stack
+         * @param \Elementor\Controls_Stack $controls_stack
          *
          * @return void
          */
@@ -25955,7 +26217,7 @@ namespace ElementorPro\Modules\Payments {
          *
          * @since 3.7.0
          *
-         * @param Settings $settings
+         * @param \Elementor\Settings $settings
          */
         public function register_admin_fields(\Elementor\Settings $settings)
         {
@@ -27027,7 +27289,7 @@ namespace ElementorPro\Modules\QueryControl\Classes {
      */
     class Elementor_Post_Query
     {
-        /** @var Widget_Base */
+        /** @var \Elementor\Widget_Base */
         protected $widget;
         protected $query_args;
         protected $prefix;
@@ -27035,7 +27297,7 @@ namespace ElementorPro\Modules\QueryControl\Classes {
         /**
          * Elementor_Post_Query constructor.
          *
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          * @param string $group_query_name
          * @param array $query_args
          */
@@ -27108,8 +27370,8 @@ namespace ElementorPro\Modules\QueryControl\Classes {
         {
         }
         /**
-         * @param       $key
-         * @param       $value
+         * @param $key
+         * @param $value
          * @param false $override
          */
         protected function set_query_arg($key, $value, $override = false)
@@ -27151,7 +27413,7 @@ namespace ElementorPro\Modules\QueryControl\Classes {
         /**
          * Elementor_Post_Query constructor.
          *
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          * @param string $group_query_name
          * @param array $query_args
          * @param array $fallback_args
@@ -27481,7 +27743,7 @@ namespace ElementorPro\Modules\QueryControl {
         /**
          * @deprecated 2.5.0 Use `Group_Control_Query` class capabilities instead.
          *
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          */
         public static function add_exclude_controls($widget)
         {
@@ -27558,7 +27820,7 @@ namespace ElementorPro\Modules\QueryControl {
         {
         }
         /**
-         * @param Ajax $ajax_manager
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax_manager
          */
         public function register_ajax_actions($ajax_manager)
         {
@@ -27679,7 +27941,7 @@ namespace ElementorPro\Modules\Screenshots {
         {
         }
         /**
-         * @param Render_Mode_Manager $manager
+         * @param \Elementor\Core\Frontend\Render_Mode_Manager $manager
          *
          * @throws \Exception
          */
@@ -27694,8 +27956,8 @@ namespace ElementorPro\Modules\Screenshots {
          * @return bool
          * @throws \Requests_Exception_HTTP_400
          * @throws \Requests_Exception_HTTP_403
-         * @throws Status400
-         * @throws Status403
+         * @throws \ElementorPro\Modules\Screenshots\Status400
+         * @throws \ElementorPro\Modules\Screenshots\Status403
          */
         protected function is_screenshot_proxy_mode(array $query_params)
         {
@@ -28281,7 +28543,7 @@ namespace ElementorPro\Modules\Social\Classes {
         {
         }
         /**
-         * @param Widget_Base $widget
+         * @param \Elementor\Widget_Base $widget
          */
         public static function add_app_id_control($widget)
         {
@@ -28660,7 +28922,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         {
         }
         /**
-         * @param Theme_Document $document
+         * @param \ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document $document
          * @param array          $conditions
          *
          * @return $this
@@ -28677,7 +28939,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         {
         }
         /**
-         * @param Theme_Document $document
+         * @param \ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document $document
          * @param array          $conditions
          *
          * @return $this
@@ -28718,7 +28980,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         /**
          * @access public
          *
-         * @param Ajax $ajax_manager
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax_manager
          */
         public function register_ajax_actions($ajax_manager)
         {
@@ -28742,7 +29004,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         {
         }
         /**
-         * @param Condition_Base $instance
+         * @param \ElementorPro\Modules\ThemeBuilder\Conditions\Condition_Base $instance
          */
         public function register_condition_instance($instance)
         {
@@ -28750,7 +29012,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         /**
          * @param $id
          *
-         * @return Condition_Base|bool
+         * @return \ElementorPro\Modules\ThemeBuilder\Conditions\Condition_Base|bool
          */
         public function get_condition($id)
         {
@@ -28774,7 +29036,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         {
         }
         /**
-         * @param Theme_Document $document
+         * @param \ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document $document
          *
          * @return array
          */
@@ -28787,7 +29049,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         /**
          * @param $location
          *
-         * @return Theme_Document[]
+         * @return \ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document[]
          */
         public function get_documents_for_location($location)
         {
@@ -29224,7 +29486,7 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         {
         }
         /**
-         * @param Locations_Manager $location_manager
+         * @param \ElementorPro\Modules\ThemeBuilder\Classes\Locations_Manager $location_manager
          */
         public function after_register_locations($location_manager)
         {
@@ -30061,25 +30323,25 @@ namespace ElementorPro\Modules\ThemeBuilder {
         {
         }
         /**
-         * @return Classes\Conditions_Manager
+         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Conditions_Manager
          */
         public function get_conditions_manager()
         {
         }
         /**
-         * @return Classes\Locations_Manager
+         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Locations_Manager
          */
         public function get_locations_manager()
         {
         }
         /**
-         * @return Classes\Preview_Manager
+         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Preview_Manager
          */
         public function get_preview_manager()
         {
         }
         /**
-         * @return Classes\Templates_Types_Manager
+         * @return \ElementorPro\Modules\ThemeBuilder\Classes\Templates_Types_Manager
          */
         public function get_types_manager()
         {
@@ -30087,7 +30349,7 @@ namespace ElementorPro\Modules\ThemeBuilder {
         /**
          * @param $post_id
          *
-         * @return Theme_Document
+         * @return \ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document
          */
         public function get_document($post_id)
         {
@@ -30153,7 +30415,7 @@ namespace ElementorPro\Modules\ThemeBuilder {
          * Add attributes to the document wrapper element.
          *
          * @param array $attributes - The document's wrapper element attributes.
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          *
          * @return array
          */
@@ -30250,7 +30512,7 @@ namespace ElementorPro\Modules\ThemeBuilder\ThemeSupport {
     class GeneratePress_Theme_Support
     {
         /**
-         * @param Locations_Manager $manager
+         * @param \ElementorPro\Modules\ThemeBuilder\Classes\Locations_Manager $manager
          */
         public function register_locations($manager)
         {
@@ -30274,7 +30536,7 @@ namespace ElementorPro\Modules\ThemeBuilder\ThemeSupport {
     class Safe_Mode_Theme_Support
     {
         /**
-         * @param Locations_Manager $manager
+         * @param \ElementorPro\Modules\ThemeBuilder\Classes\Locations_Manager $manager
          */
         public function register_locations($manager)
         {
@@ -31941,7 +32203,7 @@ namespace Elementor\Core\DocumentTypes {
          * @since 2.0.0
          * @access public
          * @static
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          */
         public static function register_hide_title_control($document)
         {
@@ -31950,7 +32212,7 @@ namespace Elementor\Core\DocumentTypes {
          * @since 2.0.0
          * @access public
          * @static
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          */
         public static function register_style_controls($document)
         {
@@ -31962,7 +32224,7 @@ namespace Elementor\Core\DocumentTypes {
          * @since 2.0.0
          * @access public
          * @static
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          */
         public static function register_post_fields_control($document)
         {
@@ -32188,13 +32450,13 @@ namespace ElementorPro\Modules\Woocommerce {
         {
         }
         /**
-         * @param Conditions_Manager $conditions_manager
+         * @param \ElementorPro\Modules\ThemeBuilder\Classes\Conditions_Manager $conditions_manager
          */
         public function register_conditions($conditions_manager)
         {
         }
         /**
-         * @param Documents_Manager $documents_manager
+         * @param \Elementor\Core\Documents_Manager $documents_manager
          */
         public function register_documents($documents_manager)
         {
@@ -32355,7 +32617,7 @@ namespace ElementorPro\Modules\Woocommerce {
          *
          * @since 3.5.0
          *
-         * @param Ajax $ajax
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax
          */
         public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax)
         {
@@ -34929,31 +35191,31 @@ namespace ElementorPro {
     class Plugin
     {
         /**
-         * @var Modules_Manager
+         * @var \ElementorPro\Core\Modules_Manager
          */
         public $modules_manager;
         /**
-         * @var UpgradeManager
+         * @var \ElementorPro\Core\Upgrade\Manager
          */
         public $upgrade;
         /**
-         * @var Editor
+         * @var \ElementorPro\Core\Editor\Editor
          */
         public $editor;
         /**
-         * @var Preview
+         * @var \ElementorPro\Core\Preview\Preview
          */
         public $preview;
         /**
-         * @var Admin
+         * @var \ElementorPro\Core\Admin\Admin
          */
         public $admin;
         /**
-         * @var App
+         * @var \ElementorPro\Core\App\App
          */
         public $app;
         /**
-         * @var License\Admin
+         * @var \ElementorPro\License\Admin
          */
         public $license_admin;
         /**
@@ -34965,7 +35227,11 @@ namespace ElementorPro {
          */
         public $notifications;
         /**
-         * @var PHP_Api
+         * @var \ElementorPro\License\Updater
+         */
+        public $updater;
+        /**
+         * @var \ElementorPro\Core\PHP_Api
          */
         public $php_api;
         /**
@@ -34996,7 +35262,7 @@ namespace ElementorPro {
         {
         }
         /**
-         * @return Plugin
+         * @return \ElementorPro\Plugin
          */
         public static function instance(): \ElementorPro\Plugin
         {
@@ -35039,160 +35305,6 @@ namespace ElementorPro {
         {
         }
         final public static function get_title()
-        {
-        }
-    }
-}
-namespace ElementorPro\Core\Updater {
-    class Updater
-    {
-        /**
-         * @var $config the config for the updater
-         * @access public
-         */
-        var $config;
-        /**
-         * @var $missing_config any config that is missing from the initialization of this instance
-         * @access public
-         */
-        var $missing_config;
-        /**
-         * Class Constructor
-         *
-         * @since 1.0
-         * @param array $config the configuration required for the updater to work
-         * @see has_minimum_config()
-         * @return void
-         */
-        public function __construct($config = array())
-        {
-        }
-        /**
-         * Check wether or not the transients need to be overruled and API needs to be called for every single page load
-         *
-         * @return bool overrule or not
-         */
-        public function overrule_transients()
-        {
-        }
-        /**
-         * Set defaults
-         *
-         * @since 1.2
-         * @return void
-         */
-        public function set_defaults()
-        {
-        }
-        /**
-         * Callback fn for the http_request_timeout filter
-         *
-         * @since 1.0
-         * @return int timeout value
-         */
-        public function http_request_timeout()
-        {
-        }
-        /**
-         * Callback fn for the http_request_args filter
-         *
-         * @param unknown $args
-         * @param unknown $url
-         *
-         * @return mixed
-         */
-        public function http_request_sslverify($args, $url)
-        {
-        }
-        /**
-         * Get New Version from GitHub
-         *
-         * @since 1.0
-         * @return int $version the version number
-         */
-        public function get_new_version()
-        {
-        }
-        /**
-         * Interact with GitHub
-         *
-         * @param string $query
-         *
-         * @since 1.6
-         * @return mixed
-         */
-        public function remote_get($query)
-        {
-        }
-        /**
-         * Get GitHub Data from the specified repository
-         *
-         * @since 1.0
-         * @return array $github_data the data
-         */
-        public function get_github_data()
-        {
-        }
-        /**
-         * Get update date
-         *
-         * @since 1.0
-         * @return string $date the date
-         */
-        public function get_date()
-        {
-        }
-        /**
-         * Get plugin description
-         *
-         * @since 1.0
-         * @return string $description the description
-         */
-        public function get_description()
-        {
-        }
-        /**
-         * Get Plugin data
-         *
-         * @since 1.0
-         * @return object $data the data
-         */
-        public function get_plugin_data()
-        {
-        }
-        /**
-         * Hook into the plugin update check and connect to GitHub
-         *
-         * @since 1.0
-         * @param object  $transient the plugin data transient
-         * @return object $transient updated plugin data transient
-         */
-        public function check_update($transient)
-        {
-        }
-        /**
-         * Get Plugin info
-         *
-         * @since 1.0
-         * @param bool    $false  always false
-         * @param string  $action the API function being performed
-         * @param object  $args   plugin arguments
-         * @return object $response the plugin info
-         */
-        public function get_plugin_info($data, $action, $args)
-        {
-        }
-        /**
-         * Upgrader/Updater
-         * Move & activate the plugin, echo the update message
-         *
-         * @since 1.0
-         * @param boolean $true       always true
-         * @param mixed   $hook_extra not used
-         * @param array   $result     the result of the move
-         * @return array $result the result of the move
-         */
-        public function upgrader_post_install($true, $hook_extra, $result)
         {
         }
     }
@@ -35510,19 +35622,19 @@ namespace Elementor\App\Modules\ImportExportCustomization {
         /**
          * Assigning the export process to a property, so we can use the process from outside the class.
          *
-         * @var Export
+         * @var \Elementor\App\Modules\ImportExportCustomization\Processes\Export
          */
         public $export;
         /**
          * Assigning the import process to a property, so we can use the process from outside the class.
          *
-         * @var Import
+         * @var \Elementor\App\Modules\ImportExportCustomization\Processes\Import
          */
         public $import;
         /**
          * Assigning the revert process to a property, so we can use the process from outside the class.
          *
-         * @var Revert
+         * @var \Elementor\App\Modules\ImportExportCustomization\Processes\Revert
          */
         public $revert;
         /**
@@ -35650,7 +35762,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
     {
         const ZIP_ARCHIVE_MODULE_MISSING = 'zip-archive-module-is-missing';
         /**
-         * @var Export_Runner_Base[]
+         * @var \Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base[]
          */
         protected $runners = [];
         public function __construct($settings = [])
@@ -35659,7 +35771,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
         /**
          * Register a runner.
          *
-         * @param Export_Runner_Base $runner_instance
+         * @param \Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base $runner_instance
          */
         public function register(\Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base $runner_instance)
         {
@@ -35708,7 +35820,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
         const ZIP_FILE_ERROR_KEY = 'invalid-zip-file';
         const ZIP_ARCHIVE_ERROR_KEY = 'zip-archive-module-missing';
         /**
-         * @var Import_Runner_Base[]
+         * @var \Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base[]
          */
         protected $runners = [];
         /**
@@ -35727,7 +35839,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
          *
          * @param string $session_id
          *
-         * @return Import
+         * @return \Elementor\App\Modules\ImportExportCustomization\Processes\Import
          * @throws \Exception If the import session does not exist.
          */
         public static function from_session(string $session_id): \Elementor\App\Modules\ImportExportCustomization\Processes\Import
@@ -35737,7 +35849,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
          * Register a runner.
          * Be aware that the runner will be executed in the order of registration, the order is crucial for the import process.
          *
-         * @param Import_Runner_Base $runner_instance
+         * @param \Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base $runner_instance
          */
         public function register(\Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base $runner_instance)
         {
@@ -35842,7 +35954,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
          * Prevent saving elements on elementor post creation.
          *
          * @param array    $data
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          *
          * @return array
          */
@@ -35862,7 +35974,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
     class Revert
     {
         /**
-         * @var Revert_Runner_Base[]
+         * @var \Elementor\App\Modules\ImportExportCustomization\Runners\Revert\Revert_Runner_Base[]
          */
         protected $runners = [];
         public function __construct()
@@ -35871,7 +35983,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
         /**
          * Register a runner.
          *
-         * @param Revert_Runner_Base $runner_instance
+         * @param \Elementor\App\Modules\ImportExportCustomization\Runners\Revert\Revert_Runner_Base $runner_instance
          */
         public function register(\Elementor\App\Modules\ImportExportCustomization\Runners\Revert\Revert_Runner_Base $runner_instance)
         {
@@ -36415,19 +36527,19 @@ namespace Elementor\App\Modules\ImportExport {
         /**
          * Assigning the export process to a property, so we can use the process from outside the class.
          *
-         * @var Export
+         * @var \Elementor\App\Modules\ImportExport\Processes\Export
          */
         public $export;
         /**
          * Assigning the import process to a property, so we can use the process from outside the class.
          *
-         * @var Import
+         * @var \Elementor\App\Modules\ImportExport\Processes\Import
          */
         public $import;
         /**
          * Assigning the revert process to a property, so we can use the process from outside the class.
          *
-         * @var Revert
+         * @var \Elementor\App\Modules\ImportExport\Processes\Revert
          */
         public $revert;
         /**
@@ -36567,7 +36679,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
     {
         const ZIP_ARCHIVE_MODULE_MISSING = 'zip-archive-module-is-missing';
         /**
-         * @var Export_Runner_Base[]
+         * @var \Elementor\App\Modules\ImportExport\Runners\Export\Export_Runner_Base[]
          */
         protected $runners = [];
         public function __construct($settings = [])
@@ -36576,7 +36688,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
         /**
          * Register a runner.
          *
-         * @param Export_Runner_Base $runner_instance
+         * @param \Elementor\App\Modules\ImportExport\Runners\Export\Export_Runner_Base $runner_instance
          */
         public function register(\Elementor\App\Modules\ImportExport\Runners\Export\Export_Runner_Base $runner_instance)
         {
@@ -36619,7 +36731,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
         const ZIP_FILE_ERROR_KEY = 'invalid-zip-file';
         const ZIP_ARCHIVE_ERROR_KEY = 'zip-archive-module-missing';
         /**
-         * @var Import_Runner_Base[]
+         * @var \Elementor\App\Modules\ImportExport\Runners\Import\Import_Runner_Base[]
          */
         protected $runners = [];
         /**
@@ -36639,7 +36751,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
          *
          * @param string $session_id
          *
-         * @return Import
+         * @return \Elementor\App\Modules\ImportExport\Processes\Import
          * @throws \Exception If the import session does not exist.
          */
         public static function from_session(string $session_id): \Elementor\App\Modules\ImportExport\Processes\Import
@@ -36649,7 +36761,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
          * Register a runner.
          * Be aware that the runner will be executed in the order of registration, the order is crucial for the import process.
          *
-         * @param Import_Runner_Base $runner_instance
+         * @param \Elementor\App\Modules\ImportExport\Runners\Import\Import_Runner_Base $runner_instance
          */
         public function register(\Elementor\App\Modules\ImportExport\Runners\Import\Import_Runner_Base $runner_instance)
         {
@@ -36754,7 +36866,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
          * Prevent saving elements on elementor post creation.
          *
          * @param array    $data
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          *
          * @return array
          */
@@ -36768,7 +36880,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
     class Revert
     {
         /**
-         * @var Revert_Runner_Base[]
+         * @var \Elementor\App\Modules\ImportExport\Runners\Revert\Revert_Runner_Base[]
          */
         protected $runners = [];
         public function __construct()
@@ -36777,7 +36889,7 @@ namespace Elementor\App\Modules\ImportExport\Processes {
         /**
          * Register a runner.
          *
-         * @param Revert_Runner_Base $runner_instance
+         * @param \Elementor\App\Modules\ImportExport\Runners\Revert\Revert_Runner_Base $runner_instance
          */
         public function register(\Elementor\App\Modules\ImportExport\Runners\Revert\Revert_Runner_Base $runner_instance)
         {
@@ -37293,7 +37405,7 @@ namespace Elementor\App\Modules\KitLibrary\Data {
     abstract class Base_Controller extends \Elementor\Data\V2\Base\Controller
     {
         /**
-         * @return Repository
+         * @return \Elementor\App\Modules\KitLibrary\Data\Repository
          */
         public function get_repository()
         {
@@ -37378,15 +37490,15 @@ namespace Elementor\App\Modules\KitLibrary\Data {
         const KITS_CACHE_TTL_HOURS = 12;
         const KITS_TAXONOMIES_CACHE_TTL_HOURS = 12;
         /**
-         * @var Kit_Library
+         * @var \Elementor\App\Modules\KitLibrary\Connect\Kit_Library
          */
         protected $api;
         /**
-         * @var User_Favorites
+         * @var \Elementor\Modules\Library\User_Favorites
          */
         protected $user_favorites;
         /**
-         * @var Collection
+         * @var \Elementor\Core\Utils\Collection
          */
         protected $subscription_plans;
         /**
@@ -37394,7 +37506,7 @@ namespace Elementor\App\Modules\KitLibrary\Data {
          *
          * @param false $force_api_request
          *
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function get_all($force_api_request = false)
         {
@@ -37402,12 +37514,12 @@ namespace Elementor\App\Modules\KitLibrary\Data {
         /**
          * Get specific kit.
          *
-         * @param       $id
+         * @param $id
          * @param array $options
          *
          * @return array|null
          *
-         * @throws WP_Error_Exception If kit is not found.
+         * @throws \Elementor\Data\V2\Base\Exceptions\WP_Error_Exception If kit is not found.
          */
         public function find($id, $options = [])
         {
@@ -37415,7 +37527,7 @@ namespace Elementor\App\Modules\KitLibrary\Data {
         /**
          * @param false $force_api_request
          *
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function get_taxonomies($force_api_request = false)
         {
@@ -37425,7 +37537,7 @@ namespace Elementor\App\Modules\KitLibrary\Data {
          *
          * @return array
          *
-         * @throws WP_Error_Exception If download link retrieval fails or API errors occur.
+         * @throws \Elementor\Data\V2\Base\Exceptions\WP_Error_Exception If download link retrieval fails or API errors occur.
          */
         public function get_download_link($id)
         {
@@ -37435,7 +37547,7 @@ namespace Elementor\App\Modules\KitLibrary\Data {
          *
          * @return array
          *
-         * @throws Error_404 If kit is not found.
+         * @throws \Elementor\Data\V2\Base\Exceptions\Error_404 If kit is not found.
          */
         public function add_to_favorites($id)
         {
@@ -37445,15 +37557,15 @@ namespace Elementor\App\Modules\KitLibrary\Data {
          *
          * @return array
          *
-         * @throws Error_404 If kit is not found.
+         * @throws \Elementor\Data\V2\Base\Exceptions\Error_404 If kit is not found.
          */
         public function remove_from_favorites($id)
         {
         }
         /**
-         * @param Kit_Library    $kit_library
-         * @param User_Favorites $user_favorites
-         * @param Collection     $subscription_plans
+         * @param \Elementor\App\Modules\KitLibrary\Connect\Kit_Library    $kit_library
+         * @param \Elementor\Modules\Library\User_Favorites $user_favorites
+         * @param \Elementor\Core\Utils\Collection     $subscription_plans
          */
         public function __construct(\Elementor\App\Modules\KitLibrary\Connect\Kit_Library $kit_library, \Elementor\Modules\Library\User_Favorites $user_favorites, \Elementor\Core\Utils\Collection $subscription_plans)
         {
@@ -38118,26 +38230,6 @@ namespace Elementor\Core\Admin\Menu {
         protected function register()
         {
         }
-    }
-}
-namespace Elementor\Core\Admin\Notices {
-    abstract class Base_Notice
-    {
-        /**
-         * Determine if the notice should be printed or not.
-         *
-         * @return boolean
-         */
-        abstract public function should_print();
-        /**
-         * Returns the config of the notice itself.
-         * based on that config the notice will be printed.
-         *
-         * @see \Elementor\Core\Admin\Admin_Notices::admin_notices
-         *
-         * @return array
-         */
-        abstract public function get_config();
     }
 }
 namespace Elementor\Core\Admin\UI\Components {
@@ -39064,7 +39156,7 @@ namespace Elementor\Core\Breakpoints {
          * @since 3.2.0
          *
          * @param $breakpoint_name
-         * @return Breakpoint[]|Breakpoint
+         * @return \Elementor\Core\Breakpoints\Breakpoint[]|\Elementor\Core\Breakpoints\Breakpoint
          */
         public function get_breakpoints($breakpoint_name = null)
         {
@@ -39077,7 +39169,7 @@ namespace Elementor\Core\Breakpoints {
          * @since 3.2.0
          *
          * @param string|null $breakpoint_name
-         * @return Breakpoint[]|Breakpoint
+         * @return \Elementor\Core\Breakpoints\Breakpoint[]|\Elementor\Core\Breakpoints\Breakpoint
          */
         public function get_active_breakpoints($breakpoint_name = null)
         {
@@ -39542,7 +39634,7 @@ namespace Elementor\Core\Common\Modules\Connect {
          * @since 2.3.0
          * @access protected
          *
-         * @var Base_App[]
+         * @var \Elementor\Core\Common\Modules\Connect\Apps\Base_App[]
          */
         protected $apps = [];
         /**
@@ -39601,7 +39693,7 @@ namespace Elementor\Core\Common\Modules\Connect {
          *
          * @param $slug
          *
-         * @return Base_App|null
+         * @return \Elementor\Core\Common\Modules\Connect\Apps\Base_App|null
          */
         public function get_app($slug)
         {
@@ -39609,7 +39701,7 @@ namespace Elementor\Core\Common\Modules\Connect {
         /**
          * @since 2.3.0
          * @access public
-         * @return Base_App[]
+         * @return \Elementor\Core\Common\Modules\Connect\Apps\Base_App[]
          */
         public function get_apps()
         {
@@ -39915,7 +40007,7 @@ namespace Elementor\Core\Common\Modules\Finder {
          * @access public
          *
          * @param string        $category_name
-         * @param Base_Category $category
+         * @param \Elementor\Core\Common\Modules\Finder\Base_Category $category
          *
          * @deprecated 3.5.0 Use `register()` method instead.
          */
@@ -39928,7 +40020,7 @@ namespace Elementor\Core\Common\Modules\Finder {
          * @since 3.5.0
          * @access public
          *
-         * @param Base_Category $finder_category_instance An Instance of a category.
+         * @param \Elementor\Core\Common\Modules\Finder\Base_Category $finder_category_instance An Instance of a category.
          * @param string        $finder_category_name     A Category name. Deprecated parameter.
          *
          * @return void
@@ -39959,7 +40051,7 @@ namespace Elementor\Core\Common\Modules\Finder {
          *
          * @param string $category Category name.
          *
-         * @return Base_Category|Base_Category[]|null
+         * @return \Elementor\Core\Common\Modules\Finder\Base_Category|\Elementor\Core\Common\Modules\Finder\Base_Category[]|null
          */
         public function get_categories($category = '')
         {
@@ -40234,7 +40326,7 @@ namespace Elementor\Core\Common\Modules\Finder {
          * @since 2.3.0
          * @access public
          *
-         * @param Ajax $ajax
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax
          */
         public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax)
         {
@@ -40432,7 +40524,7 @@ namespace Elementor\Core\Debug {
         {
         }
         /**
-         * @param Inspection_Base $inspection
+         * @param \Elementor\Core\Debug\Classes\Inspection_Base $inspection
          */
         public function register_inspection($inspection)
         {
@@ -40526,7 +40618,7 @@ namespace Elementor\Core {
          * @since 2.0.0
          * @access protected
          *
-         * @var Document[]
+         * @var \Elementor\Core\Base\Document[]
          */
         protected $types = [];
         /**
@@ -40537,7 +40629,7 @@ namespace Elementor\Core {
          * @since 2.0.0
          * @access protected
          *
-         * @var Document[]
+         * @var \Elementor\Core\Base\Document[]
          */
         protected $documents = [];
         /**
@@ -40548,7 +40640,7 @@ namespace Elementor\Core {
          * @since 2.0.0
          * @access protected
          *
-         * @var Document
+         * @var \Elementor\Core\Base\Document
          */
         protected $current_doc;
         /**
@@ -40584,7 +40676,7 @@ namespace Elementor\Core {
          * @since 2.0.0
          * @access public
          *
-         * @param Ajax $ajax_manager An instance of the ajax manager.
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax_manager An instance of the ajax manager.
          */
         public function register_ajax_actions($ajax_manager)
         {
@@ -40612,7 +40704,7 @@ namespace Elementor\Core {
          * @param string $class_name The name of the class that registers the document type.
          *                           Full name with the namespace.
          *
-         * @return Documents_Manager The updated document manager instance.
+         * @return \Elementor\Core\Documents_Manager The updated document manager instance.
          */
         public function register_document_type($type, $class_name)
         {
@@ -40628,7 +40720,7 @@ namespace Elementor\Core {
          * @param int  $post_id    Post ID.
          * @param bool $from_cache Optional. Whether to retrieve cached data. Default is true.
          *
-         * @return false|Document Document data or false if post ID was not entered.
+         * @return false|\Elementor\Core\Base\Document Document data or false if post ID was not entered.
          */
         public function get($post_id, $from_cache = true)
         {
@@ -40637,7 +40729,7 @@ namespace Elementor\Core {
          * Retrieve a document after checking it exist and allowed to edit.
          *
          * @param string $id
-         * @return Document
+         * @return \Elementor\Core\Base\Document
          * @throws \Exception If the document is not found or the current user is not allowed to edit it.
          * @since 3.13.0
          */
@@ -40665,7 +40757,7 @@ namespace Elementor\Core {
          * @param int $id      Optional. Post ID. Default is `0`.
          * @param int $user_id Optional. User ID. Default is `0`.
          *
-         * @return false|Document The document if it exist, False otherwise.
+         * @return false|\Elementor\Core\Base\Document The document if it exist, False otherwise.
          */
         public function get_doc_or_auto_save($id, $user_id = 0)
         {
@@ -40680,7 +40772,7 @@ namespace Elementor\Core {
          *
          * @param int $post_id Optional. Post ID. Default is `0`.
          *
-         * @return false|Document The document if it exist, False otherwise.
+         * @return false|\Elementor\Core\Base\Document The document if it exist, False otherwise.
          */
         public function get_doc_for_frontend($post_id)
         {
@@ -40697,7 +40789,7 @@ namespace Elementor\Core {
          *
          * @param string $fallback
          *
-         * @return Document|bool The type of the document.
+         * @return \Elementor\Core\Base\Document|bool The type of the document.
          */
         public function get_document_type($type, $fallback = 'post')
         {
@@ -40716,7 +40808,7 @@ namespace Elementor\Core {
          *                               element from the array needs to match; 'and' means all elements
          *                               must match; 'not' means no elements may match. Default 'and'.
          *
-         * @return Document[] All the registered document types.
+         * @return \Elementor\Core\Base\Document[] All the registered document types.
          */
         public function get_document_types($args = [], $operator = 'and')
         {
@@ -40741,7 +40833,7 @@ namespace Elementor\Core {
          * @param array  $post_data An array containing the post data.
          * @param array  $meta_data An array containing the post meta data.
          *
-         * @return Document The type of the document.
+         * @return \Elementor\Core\Base\Document The type of the document.
          */
         public function create($type, $post_data = [], $meta_data = [])
         {
@@ -40817,7 +40909,7 @@ namespace Elementor\Core {
          * @since 2.0.0
          * @access public
          *
-         * @param Document $document The document to switch to.
+         * @param \Elementor\Core\Base\Document $document The document to switch to.
          */
         public function switch_to_document($document)
         {
@@ -40841,7 +40933,7 @@ namespace Elementor\Core {
          * @since 2.0.0
          * @access public
          *
-         * @return Document The current document.
+         * @return \Elementor\Core\Base\Document The current document.
          */
         public function get_current()
         {
@@ -40945,7 +41037,7 @@ namespace Elementor\Core\DynamicTags {
          * @since 2.0.0
          * @access public
          *
-         * @param Base_Tag $tag An instance of the dynamic tag.
+         * @param \Elementor\Core\DynamicTags\Base_Tag $tag An instance of the dynamic tag.
          *
          * @return string The shortcode that represents the dynamic tag.
          */
@@ -40971,7 +41063,7 @@ namespace Elementor\Core\DynamicTags {
          * @param string $tag_name
          * @param array  $settings
          *
-         * @return Tag|null
+         * @return \Elementor\Core\DynamicTags\Tag|null
          */
         public function create_tag($tag_id, $tag_name, array $settings = [])
         {
@@ -40980,8 +41072,8 @@ namespace Elementor\Core\DynamicTags {
          * @since 2.0.0
          * @access public
          *
-         * @param       $tag_id
-         * @param       $tag_name
+         * @param $tag_id
+         * @param $tag_name
          * @param array $settings
          *
          * @return null|string
@@ -41020,7 +41112,7 @@ namespace Elementor\Core\DynamicTags {
         /**
          * Register a new Dynamic Tag.
          *
-         * @param Base_Tag $dynamic_tag_instance
+         * @param \Elementor\Core\DynamicTags\Base_Tag $dynamic_tag_instance
          *
          * @return void
          * @since  3.5.0
@@ -41056,7 +41148,7 @@ namespace Elementor\Core\DynamicTags {
          * @since 2.0.0
          * @access public
          *
-         * @param       $group_name
+         * @param $group_name
          * @param array $group_settings
          */
         public function register_group($group_name, array $group_settings)
@@ -41111,7 +41203,7 @@ namespace Elementor\Core\DynamicTags {
         /**
          * @since 2.1.0
          * @access public
-         * @param Post $css_file
+         * @param \Elementor\Core\Files\CSS\Post $css_file
          */
         public function after_enqueue_post_css($css_file)
         {
@@ -41218,11 +41310,11 @@ namespace Elementor\Core\Editor {
          */
         const EDITING_CAPABILITY = 'edit_posts';
         /**
-         * @var Notice_Bar
+         * @var \Elementor\Core\Editor\Notice_Bar
          */
         public $notice_bar;
         /**
-         * @var Promotion
+         * @var \Elementor\Core\Editor\Promotion
          */
         public $promotion;
         /**
@@ -41483,16 +41575,16 @@ namespace Elementor\Core\Editor\Loader {
     abstract class Editor_Base_Loader implements \Elementor\Core\Editor\Loader\Editor_Loader_Interface
     {
         /**
-         * @var Collection
+         * @var \Elementor\Core\Utils\Collection
          */
         protected $config;
         /**
-         * @var Assets_Config_Provider
+         * @var \Elementor\Core\Utils\Assets_Config_Provider
          */
         protected $assets_config_provider;
         /**
-         * @param Collection             $config
-         * @param Assets_Config_Provider $assets_config_provider
+         * @param \Elementor\Core\Utils\Collection             $config
+         * @param \Elementor\Core\Utils\Assets_Config_Provider $assets_config_provider
          */
         public function __construct(\Elementor\Core\Utils\Collection $config, \Elementor\Core\Utils\Assets_Config_Provider $assets_config_provider)
         {
@@ -41531,7 +41623,7 @@ namespace Elementor\Core\Editor\Loader {
     class Editor_Loader_Factory
     {
         /**
-         * @return Editor_Loader_Interface
+         * @return \Elementor\Core\Editor\Loader\Editor_Loader_Interface
          */
         public static function create()
         {
@@ -41718,7 +41810,7 @@ namespace Elementor\Core\Experiments {
          * @param array $options Feature options.
          * @return array|null
          *
-         * @throws Dependency_Exception If can't change feature state.
+         * @throws \Elementor\Core\Experiments\Exceptions\Dependency_Exception If can't change feature state.
          */
         public function add_feature(array $options)
         {
@@ -42609,7 +42701,7 @@ namespace Elementor\Core\Files {
          *
          * @deprecated 3.5.0
          *
-         * @param Ajax $ajax
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax
          */
         public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax)
         {
@@ -42732,7 +42824,7 @@ namespace Elementor\Core\Files {
          * @access public
          *
          * @param string|null $file_extension - file extension
-         * @return File_Type_Base[]|File_Type_Base
+         * @return \Elementor\Core\Files\File_Types\Base[]|\Elementor\Core\Files\File_Types\Base
          */
         public function get_file_type_handlers($file_extension = null)
         {
@@ -42821,7 +42913,7 @@ namespace Elementor\Core\Files {
          * @since 3.5.0
          * @access public
          *
-         * @param Ajax $ajax
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax
          */
         public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax)
         {
@@ -42935,7 +43027,7 @@ namespace Elementor\Core\Frontend {
         /**
          * Get the current render mode.
          *
-         * @return Render_Mode_Base
+         * @return \Elementor\Core\Frontend\RenderModes\Render_Mode_Base
          */
         public function get_current()
         {
@@ -43079,7 +43171,7 @@ namespace Elementor\Core\Isolation {
         /**
          * Retrieves an array of pages (or hierarchical post type items).
          *
-         * @return WP_Post[]|false Array of pages (or hierarchical post type items). Boolean false if the
+         * @return \Elementor\Core\Isolation\WP_Post[]|false Array of pages (or hierarchical post type items). Boolean false if the
          *                         specified post type is not hierarchical or the specified status is not
          *                         supported by the post type.
          */
@@ -43194,7 +43286,7 @@ namespace Elementor\Core\Kits\Documents {
         {
         }
         /**
-         * @return Tabs\Tab_Base[]
+         * @return \Elementor\Core\Kits\Documents\Tabs\Tab_Base[]
          */
         public function get_tabs()
         {
@@ -43204,7 +43296,7 @@ namespace Elementor\Core\Kits\Documents {
          *
          * @param $id
          *
-         * @return Tabs\Tab_Base
+         * @return \Elementor\Core\Kits\Documents\Tabs\Tab_Base
          */
         public function get_tab($id)
         {
@@ -43595,7 +43687,7 @@ namespace Elementor\Core\Kits {
         {
         }
         /**
-         * @param Documents_Manager $documents_manager
+         * @param \Elementor\Core\Documents_Manager $documents_manager
          */
         public function register_document($documents_manager)
         {
@@ -43689,7 +43781,7 @@ namespace Elementor\Core\Logger\Items {
          */
         public function get_fingerprint();
         /**
-         * @param Log_Item_Interface $item
+         * @param \Elementor\Core\Logger\Items\Log_Item_Interface $item
          * @param bool               $truncate
          */
         public function increase_times($item, $truncate = true);
@@ -43727,7 +43819,7 @@ namespace Elementor\Core\Logger\Items {
         {
         }
         /**
-         * @return Log_Item_Interface | null
+         * @return \Elementor\Core\Logger\Items\Log_Item_Interface | null
          */
         public static function from_json($str)
         {
@@ -43878,7 +43970,7 @@ namespace Elementor\Core\Logger\Loggers {
     {
         abstract protected function save_log(\Elementor\Core\Logger\Items\Log_Item_Interface $item);
         /**
-         * @return Log_Item_Interface[]
+         * @return \Elementor\Core\Logger\Items\Log_Item_Interface[]
          */
         abstract public function get_log();
         public function log($item, $type = self::LEVEL_INFO, $args = [])
@@ -43955,7 +44047,7 @@ namespace Elementor\Core\Logger {
         /**
          * @param string $name
          *
-         * @return Logger_Interface
+         * @return \Elementor\Core\Logger\Loggers\Logger_Interface
          */
         public function get_logger($name = '')
         {
@@ -44055,7 +44147,7 @@ namespace Elementor\Core {
          *
          * @param string $module_name Module name.
          *
-         * @return null|Module|Module[] All the registered modules or a specific module.
+         * @return null|\Elementor\Core\Base\Module|\Elementor\Core\Base\Module[] All the registered modules or a specific module.
          */
         public function get_modules($module_name)
         {
@@ -44892,7 +44984,7 @@ namespace Elementor\Core\Settings\Base {
          * @since 2.0.0
          * @access public
          *
-         * @param Ajax $ajax_manager
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax_manager
          */
         public function register_ajax_actions($ajax_manager)
         {
@@ -44906,7 +44998,7 @@ namespace Elementor\Core\Settings\Base {
          * @access public
          * @abstract
          *
-         * @return Model The model object.
+         * @return \Elementor\Core\Settings\Base\Model The model object.
          */
         abstract public function get_model_for_config();
         /**
@@ -44929,7 +45021,7 @@ namespace Elementor\Core\Settings\Base {
          *
          * @param int $id Optional. Model ID. Default is `0`.
          *
-         * @return Model The model.
+         * @return \Elementor\Core\Settings\Base\Model The model.
          */
         final public function get_model($id = 0)
         {
@@ -45068,9 +45160,9 @@ namespace Elementor\Core\Settings\Base {
          * @access protected
          * @abstract
          *
-         * @param CSS_File $css_file The requested CSS file.
+         * @param \Elementor\Core\Files\CSS\Base $css_file The requested CSS file.
          *
-         * @return CSS_Model
+         * @return \Elementor\Core\Settings\Base\CSS_Model
          */
         abstract protected function get_model_for_css_file(\Elementor\Core\Files\CSS\Base $css_file);
         /**
@@ -45084,7 +45176,7 @@ namespace Elementor\Core\Settings\Base {
          *
          * @param int $id Post ID.
          *
-         * @return CSS_File
+         * @return \Elementor\Core\Files\CSS\Base
          */
         abstract protected function get_css_file_for_update($id);
         /**
@@ -45122,7 +45214,7 @@ namespace Elementor\Core\Settings\Base {
          * @since 2.8.0
          * @access public
          *
-         * @param CSS_File $css_file The requested CSS file.
+         * @param \Elementor\Core\Files\CSS\Base $css_file The requested CSS file.
          */
         public function add_settings_css_rules(\Elementor\Core\Files\CSS\Base $css_file)
         {
@@ -45176,7 +45268,7 @@ namespace Elementor\Core\Settings\EditorPreferences {
          * @since 2.8.0
          * @access public
          *
-         * @return BaseModel The model object.
+         * @return \Elementor\Core\Settings\Base\Model The model object.
          */
         public function get_model_for_config()
         {
@@ -45304,7 +45396,7 @@ namespace Elementor\Core\Settings\General {
          * @deprecated 3.0.0
          * @access public
          *
-         * @return BaseModel The model object.
+         * @return \Elementor\Core\Settings\Base\Model The model object.
          */
         public function get_model_for_config()
         {
@@ -45416,7 +45508,7 @@ namespace Elementor\Core\Settings {
          * @access public
          * @static
          *
-         * @param Base\Manager $manager Settings manager.
+         * @param \Elementor\Core\Settings\Base\Manager $manager Settings manager.
          */
         public static function add_settings_manager(\Elementor\Core\Settings\Base\Manager $manager)
         {
@@ -45437,7 +45529,7 @@ namespace Elementor\Core\Settings {
          * @param string $manager_name Optional. Settings manager name. Default is
          *                             null.
          *
-         * @return Base\Manager|Base\Manager[] Single settings manager, if it exists,
+         * @return \Elementor\Core\Settings\Base\Manager|\Elementor\Core\Settings\Base\Manager[] Single settings manager, if it exists,
          *                                     null if it doesn't exists, or the all
          *                                     the settings managers if no parameter
          *                                     defined.
@@ -45523,7 +45615,7 @@ namespace Elementor\Core\Settings\Page {
          * @since 1.6.0
          * @access public
          *
-         * @return BaseModel The model object.
+         * @return \Elementor\Core\Settings\Base\Model The model object.
          */
         public function get_model_for_config()
         {
@@ -45620,9 +45712,9 @@ namespace Elementor\Core\Settings\Page {
          * @since 1.6.0
          * @access protected
          *
-         * @param Base $css_file The requested CSS file.
+         * @param \Elementor\Core\Files\CSS\Base $css_file The requested CSS file.
          *
-         * @return BaseModel The model object.
+         * @return \Elementor\Core\Settings\Base\Model The model object.
          */
         protected function get_model_for_css_file(\Elementor\Core\Files\CSS\Base $css_file)
         {
@@ -45811,7 +45903,7 @@ namespace Elementor\Core\Upgrade {
     class Task extends \Elementor\Core\Base\Background_Task
     {
         /**
-         * @var DB_Upgrades_Manager
+         * @var \Elementor\Core\Base\DB_Upgrades_Manager
          */
         protected $manager;
         protected function format_callback_log($item)
@@ -45824,7 +45916,7 @@ namespace Elementor\Core\Upgrade {
     class Updater extends \Elementor\Core\Base\Background_Task
     {
         /**
-         * @var DB_Upgrades_Manager
+         * @var \Elementor\Core\Base\DB_Upgrades_Manager
          */
         protected $manager;
         protected function format_callback_log($item)
@@ -45840,7 +45932,7 @@ namespace Elementor\Core\Upgrade {
          *  _update_widget_settings
          *
          * @param string  $widget_id widget type id.
-         * @param Updater $updater   updater instance.
+         * @param \Elementor\Core\Upgrade\Updater $updater   updater instance.
          * @param array   $changes   array containing updating control_ids, callback and other data needed by the callback.
          *
          * @return bool
@@ -45942,7 +46034,7 @@ namespace Elementor\Core\Upgrade {
         {
         }
         /**
-         * @param Updater $updater
+         * @param \Elementor\Core\Upgrade\Updater $updater
          *
          * @return bool
          */
@@ -45950,7 +46042,7 @@ namespace Elementor\Core\Upgrade {
         {
         }
         /**
-         * @param Updater $updater
+         * @param \Elementor\Core\Upgrade\Updater $updater
          *
          * @return bool
          */
@@ -45977,7 +46069,7 @@ namespace Elementor\Core\Upgrade {
         /**
          * Set FontAwesome 5 value Migration on for button widget
          *
-         * @param Updater $updater
+         * @param \Elementor\Core\Upgrade\Updater $updater
          */
         public static function _v_2_6_6_fa4_migration_button($updater)
         {
@@ -45985,7 +46077,7 @@ namespace Elementor\Core\Upgrade {
         /**
          *  Update database to separate page from post.
          *
-         * @param Updater $updater
+         * @param \Elementor\Core\Upgrade\Updater $updater
          * @param string  $type
          *
          * @return bool
@@ -46003,7 +46095,7 @@ namespace Elementor\Core\Upgrade {
         /**
          * Recalc usage.
          *
-         * @param Updater $updater
+         * @param \Elementor\Core\Upgrade\Updater $updater
          *
          * @return bool
          */
@@ -46019,7 +46111,7 @@ namespace Elementor\Core\Upgrade {
         /**
          * Move general & lightbox settings to active kit and all it's revisions.
          *
-         * @param Updater $updater
+         * @param \Elementor\Core\Upgrade\Updater $updater
          *
          * @return bool
          */
@@ -46352,7 +46444,7 @@ namespace Elementor\Core\Utils\ImportExport\Parsers {
         /**
          * @param string $file
          *
-         * @return array|WP_Error
+         * @return array|\WP_Error
          */
         public function parse($file)
         {
@@ -46532,7 +46624,7 @@ namespace Elementor\Core\Utils {
         /**
          * The current Collection instance.
          *
-         * @var Collection
+         * @var \Elementor\Core\Utils\Collection
          */
         protected $collection;
         /**
@@ -46689,7 +46781,7 @@ namespace Elementor\Core\Utils {
         /**
          * Creates a Version instance from a string.
          *
-         * @param      $version
+         * @param $version
          * @param bool $should_validate
          *
          * @return static
@@ -46701,8 +46793,8 @@ namespace Elementor\Core\Utils {
         /**
          * Compare the current version instance with another version.
          *
-         * @param        $operator
-         * @param        $version
+         * @param $operator
+         * @param $version
          * @param string $part
          *
          * @return bool
@@ -46730,13 +46822,13 @@ namespace Elementor\Core {
     class Wp_Api
     {
         /**
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function get_plugins()
         {
         }
         /**
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         public function get_active_plugins()
         {
@@ -46836,7 +46928,7 @@ namespace Elementor\Data\Base {
     abstract class SubEndpoint extends \Elementor\Data\Base\Endpoint
     {
         /**
-         * @var Endpoint
+         * @var \Elementor\Data\Base\Endpoint
          */
         protected $parent_endpoint;
         /**
@@ -46987,7 +47079,7 @@ namespace Elementor\Data {
         /**
          * Run processor.
          *
-         * @param Processor $processor
+         * @param \Elementor\Data\Base\Processor $processor
          * @param array     $data
          *
          * @return mixed
@@ -47000,7 +47092,7 @@ namespace Elementor\Data {
          *
          * Filter them by class.
          *
-         * @param Processor[] $processors
+         * @param \Elementor\Data\Base\Processor[] $processors
          * @param string      $filter_by_class
          * @param array       $data
          *
@@ -47396,7 +47488,7 @@ namespace Elementor\Data\V2 {
         /**
          * Run processor.
          *
-         * @param Processor $processor
+         * @param \Elementor\Data\V2\Base\Processor $processor
          * @param array     $data
          *
          * @return mixed
@@ -47409,7 +47501,7 @@ namespace Elementor\Data\V2 {
          *
          * Filter them by class.
          *
-         * @param Processor[] $processors
+         * @param \Elementor\Data\V2\Base\Processor[] $processors
          * @param string      $filter_by_class
          * @param array       $data
          *
@@ -51252,7 +51344,7 @@ namespace Elementor {
          *
          * @param array $element_data Element ID.
          *
-         * @return Element_Base|false Column default child type.
+         * @return \Elementor\Element_Base|false Column default child type.
          */
         protected function _get_default_child_type(array $element_data)
         {
@@ -51806,7 +51898,7 @@ namespace Elementor {
          *
          * @param array $element_data Element ID.
          *
-         * @return Element_Base Section default child type.
+         * @return \Elementor\Element_Base Section default child type.
          */
         protected function _get_default_child_type(array $element_data)
         {
@@ -52066,7 +52158,7 @@ namespace Elementor {
         /**
          * Holds the class that respond to manage the render mode.
          *
-         * @var Render_Mode_Manager
+         * @var \Elementor\Core\Frontend\Render_Mode_Manager
          */
         public $render_mode_manager;
         /**
@@ -52269,7 +52361,7 @@ namespace Elementor {
          * @param string $file_prefix
          * @param string $template_file_path
          *
-         * @return FrontendFile
+         * @return \Elementor\Core\Responsive\Files\Frontend
          */
         public function get_frontend_file($frontend_file_name, $file_prefix = 'custom-', $template_file_path = '')
         {
@@ -52642,7 +52734,7 @@ namespace Elementor {
          * @since 1.4.0
          * @access public
          *
-         * @param Tools $tools An instance of the Tools settings page.
+         * @param \Elementor\Tools $tools An instance of the Tools settings page.
          */
         public function register_settings_fields(\Elementor\Tools $tools)
         {
@@ -52998,7 +53090,7 @@ namespace Elementor {
          * @deprecated 3.5.0 Use `register()` method instead.
          *
          * @param string       $control_id       Control ID.
-         * @param Base_Control $control_instance Control instance, usually the
+         * @param \Elementor\Base_Control $control_instance Control instance, usually the
          *                                       current instance.
          */
         public function register_control($control_id, \Elementor\Base_Control $control_instance)
@@ -53013,7 +53105,7 @@ namespace Elementor {
          * @since 3.5.0
          * @access public
          *
-         * @param Base_Control $control_instance Control instance, usually the current instance.
+         * @param \Elementor\Base_Control $control_instance Control instance, usually the current instance.
          * @param string       $control_id       Control ID. Deprecated parameter.
          *
          * @return void
@@ -53060,7 +53152,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @return Base_Control[] Controls list.
+         * @return \Elementor\Base_Control[] Controls list.
          */
         public function get_controls()
         {
@@ -53075,7 +53167,7 @@ namespace Elementor {
          *
          * @param string $control_id Control ID.
          *
-         * @return bool|Base_Control Control instance, or False otherwise.
+         * @return bool|\Elementor\Base_Control Control instance, or False otherwise.
          */
         public function get_control($control_id)
         {
@@ -53124,7 +53216,7 @@ namespace Elementor {
          *
          * @param string $id Optional. Group ID. Default is null.
          *
-         * @return null|Group_Control_Base|Group_Control_Base[]
+         * @return null|\Elementor\Group_Control_Base|\Elementor\Group_Control_Base[]
          */
         public function get_control_groups($id = null)
         {
@@ -53139,10 +53231,10 @@ namespace Elementor {
          * @access public
          *
          * @param string             $id       Group control ID.
-         * @param Group_Control_Base $instance Group control instance, usually the
+         * @param \Elementor\Group_Control_Base $instance Group control instance, usually the
          *                                     current instance.
          *
-         * @return Group_Control_Base Group control instance.
+         * @return \Elementor\Group_Control_Base Group control instance.
          */
         public function add_group_control($id, $instance)
         {
@@ -53167,7 +53259,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Controls_Stack $controls_stack Controls stack.
+         * @param \Elementor\Controls_Stack $controls_stack Controls stack.
          */
         public function open_stack(\Elementor\Controls_Stack $controls_stack)
         {
@@ -53177,7 +53269,7 @@ namespace Elementor {
          *
          * Removes the stack of a passed instance from the Controls Manager's stacks cache.
          *
-         * @param Controls_Stack $controls_stack
+         * @param \Elementor\Controls_Stack $controls_stack
          * @return void
          */
         public function delete_stack(\Elementor\Controls_Stack $controls_stack)
@@ -53191,7 +53283,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Controls_Stack $element      Element stack.
+         * @param \Elementor\Controls_Stack $element      Element stack.
          * @param string         $control_id   Control ID.
          * @param array          $control_data Control data.
          * @param array          $options      Optional. Control additional options.
@@ -53266,7 +53358,7 @@ namespace Elementor {
          * @since 1.1.0
          * @access public
          *
-         * @param Controls_Stack $element      Element stack.
+         * @param \Elementor\Controls_Stack $element      Element stack.
          * @param string         $control_id   Control ID.
          * @param array          $control_data Control data.
          * @param array          $options      Optional. Control additional options.
@@ -53304,7 +53396,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Controls_Stack $controls_stack  Controls stack.
+         * @param \Elementor\Controls_Stack $controls_stack  Controls stack.
          *
          * @return null|array Stack data if it exists, `null` otherwise.
          */
@@ -53321,7 +53413,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Controls_Stack $controls_stack .
+         * @param \Elementor\Controls_Stack $controls_stack .
          * @param string         $tab
          * @param array          $additional_messages
          */
@@ -53335,7 +53427,7 @@ namespace Elementor {
          * version of elementor uses this method to display an upgrade message to
          * Elementor Pro.
          *
-         * @param Controls_Stack $controls_stack .
+         * @param \Elementor\Controls_Stack $controls_stack .
          * @param string         $tab
          * @param array          $additional_messages
          *
@@ -53363,7 +53455,7 @@ namespace Elementor {
          * version of elementor uses this method to display an upgrade message to
          * Elementor Pro.
          *
-         * @param Controls_Stack $controls_stack .
+         * @param \Elementor\Controls_Stack $controls_stack .
          * @param string         $tab
          * @since 2.8.3
          * @access public
@@ -53410,9 +53502,9 @@ namespace Elementor {
          * @param array        $element_data Element data.
          * @param array        $element_args Optional. Element arguments. Default is
          *                                   an empty array.
-         * @param Element_Base $element_type Optional. Element type. Default is null.
+         * @param \Elementor\Element_Base $element_type Optional. Element type. Default is null.
          *
-         * @return Element_Base|null Element instance if element created, or null
+         * @return \Elementor\Element_Base|null Element instance if element created, or null
          *                           otherwise.
          */
         public function create_element_instance(array $element_data, array $element_args = [], ?\Elementor\Element_Base $element_type = null)
@@ -53453,7 +53545,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Element_Base $element Element instance.
+         * @param \Elementor\Element_Base $element Element instance.
          *
          * @return bool Whether the element type was registered.
          */
@@ -53486,7 +53578,7 @@ namespace Elementor {
          *
          * @param string $element_name Optional. Element name. Default is null.
          *
-         * @return null|Element_Base|Element_Base[] Element types, or a list of all the element
+         * @return null|\Elementor\Element_Base|\Elementor\Element_Base[] Element types, or a list of all the element
          *                             types, or null if element does not exist.
          */
         public function get_element_types($element_name = null)
@@ -53640,7 +53732,7 @@ namespace Elementor {
          *
          * Adds Font Awesome migration / update admin settings
          *
-         * @param Settings $settings
+         * @param \Elementor\Settings $settings
          */
         public function register_admin_settings(\Elementor\Settings $settings)
         {
@@ -53777,8 +53869,8 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Widget_Base $widget Elementor widget.
-         * @param Skin_Base   $skin   Elementor skin.
+         * @param \Elementor\Widget_Base $widget Elementor widget.
+         * @param \Elementor\Skin_Base   $skin   Elementor skin.
          *
          * @return true True if skin added.
          */
@@ -53793,7 +53885,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Widget_Base $widget  Elementor widget.
+         * @param \Elementor\Widget_Base $widget  Elementor widget.
          * @param string      $skin_id Elementor skin ID.
          *
          * @return true|\WP_Error True if skin removed, `WP_Error` otherwise.
@@ -53809,7 +53901,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @param Widget_Base $widget Elementor widget.
+         * @param \Elementor\Widget_Base $widget Elementor widget.
          *
          * @return false|array Skins if the widget has skins, False otherwise.
          */
@@ -53847,7 +53939,7 @@ namespace Elementor {
          * @access public
          * @deprecated 3.5.0 Use `register()` method instead.
          *
-         * @param Widget_Base $widget Elementor widget.
+         * @param \Elementor\Widget_Base $widget Elementor widget.
          *
          * @return true True if the widget was registered.
          */
@@ -53907,7 +53999,7 @@ namespace Elementor {
          *
          * @param string $widget_name Optional. Widget name. Default is null.
          *
-         * @return Widget_Base|Widget_Base[]|null Registered widget types.
+         * @return \Elementor\Widget_Base|\Elementor\Widget_Base[]|null Registered widget types.
          */
         public function get_widget_types($widget_name = null)
         {
@@ -54093,7 +54185,7 @@ namespace Elementor {
          * @since 2.0.0
          * @access public
          *
-         * @param Ajax $ajax_manager
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax_manager
          */
         public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax_manager)
         {
@@ -54177,7 +54269,7 @@ namespace Elementor {
          * @access public
          * @static
          *
-         * @var Plugin
+         * @var \Elementor\Plugin
          */
         public static $instance = null;
         /**
@@ -54189,7 +54281,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var DB
+         * @var \Elementor\DB
          */
         public $db;
         /**
@@ -54201,7 +54293,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Controls_Manager
+         * @var \Elementor\Controls_Manager
          */
         public $controls_manager;
         /**
@@ -54212,7 +54304,7 @@ namespace Elementor {
          * @since 2.0.0
          * @access public
          *
-         * @var Documents_Manager
+         * @var \Elementor\Core\Documents_Manager
          */
         public $documents;
         /**
@@ -54223,7 +54315,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Elements_Manager
+         * @var \Elementor\Elements_Manager
          */
         public $elements_manager;
         /**
@@ -54235,7 +54327,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Widgets_Manager
+         * @var \Elementor\Widgets_Manager
          */
         public $widgets_manager;
         /**
@@ -54247,7 +54339,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Revisions_Manager
+         * @var \Elementor\Modules\History\Revisions_Manager
          */
         public $revisions_manager;
         /**
@@ -54259,7 +54351,7 @@ namespace Elementor {
          * @since 2.9.0
          * @access public
          *
-         * @var Images_Manager
+         * @var \Elementor\Images_Manager
          */
         public $images_manager;
         /**
@@ -54271,7 +54363,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Maintenance_Mode
+         * @var \Elementor\Maintenance_Mode
          */
         public $maintenance_mode;
         /**
@@ -54282,7 +54374,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Page_Settings_Manager
+         * @var \Elementor\Core\Settings\Page\Manager
          */
         public $page_settings_manager;
         /**
@@ -54293,7 +54385,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Dynamic_Tags_Manager
+         * @var \Elementor\Core\DynamicTags\Manager
          */
         public $dynamic_tags;
         /**
@@ -54304,7 +54396,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Settings
+         * @var \Elementor\Settings
          */
         public $settings;
         /**
@@ -54315,7 +54407,7 @@ namespace Elementor {
          * @since 2.0.0
          * @access public
          *
-         * @var Core\RoleManager\Role_Manager
+         * @var \Elementor\Core\RoleManager\Role_Manager
          */
         public $role_manager;
         /**
@@ -54326,7 +54418,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Admin
+         * @var \Elementor\Core\Admin\Admin
          */
         public $admin;
         /**
@@ -54337,7 +54429,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Tools
+         * @var \Elementor\Tools
          */
         public $tools;
         /**
@@ -54348,7 +54440,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Preview
+         * @var \Elementor\Preview
          */
         public $preview;
         /**
@@ -54359,7 +54451,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Editor
+         * @var \Elementor\Core\Editor\Editor
          */
         public $editor;
         /**
@@ -54370,7 +54462,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Frontend
+         * @var \Elementor\Frontend
          */
         public $frontend;
         /**
@@ -54381,7 +54473,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Heartbeat
+         * @var \Elementor\Heartbeat
          */
         public $heartbeat;
         /**
@@ -54392,7 +54484,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var System_Info_Module
+         * @var \Elementor\Modules\System_Info\Module
          */
         public $system_info;
         /**
@@ -54403,7 +54495,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var TemplateLibrary\Manager
+         * @var \Elementor\TemplateLibrary\Manager
          */
         public $templates_manager;
         /**
@@ -54414,7 +54506,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Skins_Manager
+         * @var \Elementor\Skins_Manager
          */
         public $skins_manager;
         /**
@@ -54425,7 +54517,7 @@ namespace Elementor {
          * @since 2.1.0
          * @access public
          *
-         * @var Files_Manager
+         * @var \Elementor\Core\Files\Manager
          */
         public $files_manager;
         /**
@@ -54436,7 +54528,7 @@ namespace Elementor {
          * @since 2.6.0
          * @access public
          *
-         * @var Assets_Manager
+         * @var \Elementor\Core\Files\Assets\Manager
          */
         public $assets_manager;
         /**
@@ -54446,7 +54538,7 @@ namespace Elementor {
          *
          * @access public
          *
-         * @var Icons_Manager
+         * @var \Elementor\Icons_Manager
          */
         public $icons_manager;
         /**
@@ -54457,7 +54549,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var WordPress_Widgets_Manager
+         * @var \Elementor\WordPress_Widgets_Manager
          */
         public $wordpress_widgets_manager;
         /**
@@ -54468,7 +54560,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Modules_Manager
+         * @var \Elementor\Core\Modules_Manager
          */
         public $modules_manager;
         /**
@@ -54479,7 +54571,7 @@ namespace Elementor {
          * @since 1.0.0
          * @access public
          *
-         * @var Beta_Testers
+         * @var \Elementor\Beta_Testers
          */
         public $beta_testers;
         /**
@@ -54490,11 +54582,11 @@ namespace Elementor {
          * @since 2.1.2
          * @access public
          *
-         * @var Inspector
+         * @var \Elementor\Core\Debug\Inspector
          */
         public $inspector;
         /**
-         * @var Admin_Menu_Manager
+         * @var \Elementor\Core\Admin\Menu\Admin_Menu_Manager
          */
         public $admin_menu_manager;
         /**
@@ -54505,7 +54597,7 @@ namespace Elementor {
          * @since 2.3.0
          * @access public
          *
-         * @var CommonApp
+         * @var \Elementor\Core\Common\App
          */
         public $common;
         /**
@@ -54515,7 +54607,7 @@ namespace Elementor {
          *
          * @access public
          *
-         * @var Log_Manager
+         * @var \Elementor\Core\Logger\Manager
          */
         public $logger;
         /**
@@ -54525,7 +54617,7 @@ namespace Elementor {
          *
          * @access public
          *
-         * @var Core\Upgrade\Manager
+         * @var \Elementor\Core\Upgrade\Manager
          */
         public $upgrade;
         /**
@@ -54533,7 +54625,7 @@ namespace Elementor {
          *
          * Holds the plugin tasks manager.
          *
-         * @var Core\Upgrade\Custom_Tasks_Manager
+         * @var \Elementor\Core\Upgrade\Custom_Tasks_Manager
          */
         public $custom_tasks;
         /**
@@ -54543,7 +54635,7 @@ namespace Elementor {
          *
          * @access public
          *
-         * @var Core\Kits\Manager
+         * @var \Elementor\Core\Kits\Manager
          */
         public $kits_manager;
         /**
@@ -54568,7 +54660,7 @@ namespace Elementor {
          * @since 3.0.0
          * @access public
          *
-         * @var App\App
+         * @var \Elementor\App\App
          */
         public $app;
         /**
@@ -54579,7 +54671,7 @@ namespace Elementor {
          * @since 3.0.0
          * @access public
          *
-         * @var Wp_Api
+         * @var \Elementor\Core\Wp_Api
          */
         public $wp;
         /**
@@ -54590,7 +54682,7 @@ namespace Elementor {
          * @since 3.1.0
          * @access public
          *
-         * @var Experiments_Manager
+         * @var \Elementor\Core\Experiments\Manager
          */
         public $experiments;
         /**
@@ -54602,7 +54694,7 @@ namespace Elementor {
          * @since 3.3.0
          * @access public
          *
-         * @var Uploads_Manager
+         * @var \Elementor\Core\Files\Uploads_Manager
          */
         public $uploads_manager;
         /**
@@ -54613,7 +54705,7 @@ namespace Elementor {
          * @since 3.2.0
          * @access public
          *
-         * @var Breakpoints_Manager
+         * @var \Elementor\Core\Breakpoints\Manager
          */
         public $breakpoints;
         /**
@@ -54625,7 +54717,7 @@ namespace Elementor {
          * @since 3.3.0
          * @access public
          *
-         * @var Assets_Loader
+         * @var \Elementor\Core\Page_Assets\Loader
          */
         public $assets_loader;
         /**
@@ -54662,7 +54754,7 @@ namespace Elementor {
          * @access public
          * @static
          *
-         * @return Plugin An instance of the class.
+         * @return \Elementor\Plugin An instance of the class.
          */
         public static function instance()
         {
@@ -55587,7 +55679,7 @@ namespace Elementor {
          * @param string $device_name      Device name.
          * @param string $device_max_point Device maximum point.
          *
-         * @return Stylesheet The current stylesheet class instance.
+         * @return \Elementor\Stylesheet The current stylesheet class instance.
          */
         public function add_device($device_name, $device_max_point)
         {
@@ -55604,7 +55696,7 @@ namespace Elementor {
          * @param array|string $style_rules Optional. Style rules. Default is `null`.
          * @param array        $query       Optional. Media query. Default is `null`.
          *
-         * @return Stylesheet The current stylesheet class instance.
+         * @return \Elementor\Stylesheet The current stylesheet class instance.
          */
         public function add_rules($selector, $style_rules = null, ?array $query = null)
         {
@@ -55620,7 +55712,7 @@ namespace Elementor {
          * @param string $css    The raw CSS.
          * @param string $device Optional. The device. Default is empty.
          *
-         * @return Stylesheet The current stylesheet class instance.
+         * @return \Elementor\Stylesheet The current stylesheet class instance.
          */
         public function add_raw_css($css, $device = '')
         {
@@ -55849,16 +55941,16 @@ namespace Elementor\TemplateLibrary {
          *
          * @access protected
          *
-         * @var Source_Base[]
+         * @var \Elementor\TemplateLibrary\Source_Base[]
          */
         protected $_registered_sources = [];
         // phpcs:ignore PSR2.Classes.PropertyDeclaration.Underscore
         /**
-         * @var Wordpress_Adapter_Interface
+         * @var \Elementor\Core\Isolation\Wordpress_Adapter_Interface
          */
         protected $wordpress_adapter = null;
         /**
-         * @var Elementor_Adapter_Interface
+         * @var \Elementor\Core\Isolation\Elementor_Adapter_Interface
          */
         protected $elementor_adapter = null;
         /**
@@ -55888,7 +55980,7 @@ namespace Elementor\TemplateLibrary {
          * @since 1.0.0
          * @access public
          *
-         * @return Import_Images Imported images instance.
+         * @return \Elementor\TemplateLibrary\Classes\Import_Images Imported images instance.
          */
         public function get_import_images_instance()
         {
@@ -55942,7 +56034,7 @@ namespace Elementor\TemplateLibrary {
          * @since 1.0.0
          * @access public
          *
-         * @return Source_Base[] Registered template sources.
+         * @return \Elementor\TemplateLibrary\Source_Base[] Registered template sources.
          */
         public function get_registered_sources()
         {
@@ -55957,7 +56049,7 @@ namespace Elementor\TemplateLibrary {
          *
          * @param string $id The source ID.
          *
-         * @return false|Source_Base Template sources if one exist, False otherwise.
+         * @return false|\Elementor\TemplateLibrary\Source_Base Template sources if one exist, False otherwise.
          */
         public function get_source($id)
         {
@@ -56020,7 +56112,7 @@ namespace Elementor\TemplateLibrary {
          *
          * @param array $template_data New template data.
          *
-         * @return \WP_Error|Source_Base Template sources instance if the templates
+         * @return \WP_Error|\Elementor\TemplateLibrary\Source_Base Template sources instance if the templates
          *                               was updated, `WP_Error` otherwise.
          */
         public function update_template(array $template_data)
@@ -56185,7 +56277,7 @@ namespace Elementor\TemplateLibrary {
          * @since 2.3.0
          * @access public
          *
-         * @param Ajax $ajax
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax
          */
         public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax)
         {
@@ -56502,7 +56594,7 @@ namespace Elementor\TemplateLibrary {
          * @since 1.5.0
          * @access protected
          *
-         * @param Controls_Stack $element
+         * @param \Elementor\Controls_Stack $element
          * @param string         $method
          *
          * @return array Processed element data.
@@ -56690,7 +56782,7 @@ namespace Elementor\TemplateLibrary {
         }
         /**
          * @param int $template_id
-         * @return Document|\WP_Error
+         * @return \Elementor\Core\Base\Document|\WP_Error
          * @throws \Exception If the user has no permission or the post is not found.
          */
         public function create_document_for_preview(int $template_id)
@@ -57812,7 +57904,7 @@ namespace Elementor {
         {
         }
         /**
-         * @param Ajax $ajax
+         * @param \Elementor\Core\Common\Modules\Ajax\Module $ajax
          * @since 2.1.0
          * @access public
          * @static
@@ -62046,7 +62138,7 @@ namespace Elementor\Modules\AdminBar {
         /**
          * Collect the documents that was rendered in the current page.
          *
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          * @param $is_excerpt
          */
         public function add_document_to_admin_bar(\Elementor\Core\Base\Document $document, $is_excerpt)
@@ -62583,7 +62675,7 @@ namespace Elementor\Modules\Announcements\Classes {
          *
          * @param $trigger
          *
-         * @return IsFlexContainerInactive|false
+         * @return \Elementor\Modules\Announcements\Classes\IsFlexContainerInactive|false
          */
         public static function get_trigger_object($trigger)
         {
@@ -63224,7 +63316,7 @@ namespace Elementor\Modules\AtomicWidgets\DynamicTags {
     {
         /**
          * @param array $control
-         * @return Plain_Prop_Type|Object_Prop_Type|null
+         * @return \Elementor\Modules\AtomicWidgets\PropTypes\Base\Plain_Prop_Type|\Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type|null
          */
         public static function convert_control_to_prop_type(array $control)
         {
@@ -64465,7 +64557,7 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
         {
         }
         /**
-         * @param Prop_Type $item_type
+         * @param \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $item_type
          *
          * @return $this
          */
@@ -64521,7 +64613,7 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
         use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Settings;
         use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Transformable_Validation;
         /**
-         * @var array<Prop_Type>
+         * @var array<\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>
          */
         protected array $shape;
         protected ?array $dependencies = null;
@@ -64570,7 +64662,7 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
         {
         }
         /**
-         * @return array<Prop_Type>
+         * @return array<\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>
          */
         abstract protected function define_shape(): array;
         public function set_dependencies(?array $dependencies): self
@@ -66020,19 +66112,19 @@ namespace Elementor\Modules\Checklist {
         {
         }
         /**
-         * @return Steps_Manager
+         * @return \Elementor\Modules\Checklist\Steps_Manager
          */
         public function get_steps_manager(): \Elementor\Modules\Checklist\Steps_Manager
         {
         }
         /**
-         * @return Wordpress_Adapter
+         * @return \Elementor\Core\Isolation\Wordpress_Adapter
          */
         public function get_wordpress_adapter(): \Elementor\Core\Isolation\Wordpress_Adapter
         {
         }
         /**
-         * @return Elementor_Adapter
+         * @return \Elementor\Core\Isolation\Elementor_Adapter
          */
         public function get_elementor_adapter(): \Elementor\Core\Isolation\Elementor_Adapter
         {
@@ -66489,7 +66581,7 @@ namespace Elementor\Modules\CloudLibrary {
         {
         }
         /**
-         * @param Render_Mode_Manager $manager
+         * @param \Elementor\Core\Frontend\Render_Mode_Manager $manager
          *
          * @throws \Exception If render mode registration fails.
          */
@@ -66532,11 +66624,11 @@ namespace Elementor\Modules\CompatibilityTag {
     class Compatibility_Tag_Report extends \Elementor\Modules\System_Info\Reporters\Base
     {
         /**
-         * @var Compatibility_Tag
+         * @var \Elementor\Modules\CompatibilityTag\Compatibility_Tag
          */
         protected $compatibility_tag_service;
         /**
-         * @var Version
+         * @var \Elementor\Core\Utils\Version
          */
         protected $plugin_version;
         /**
@@ -66604,7 +66696,7 @@ namespace Elementor\Modules\CompatibilityTag {
         /**
          * Return if plugins is compatible or not.
          *
-         * @param Version $version
+         * @param \Elementor\Core\Utils\Version $version
          * @param array   $plugins_names
          *
          * @return array
@@ -66652,7 +66744,7 @@ namespace Elementor\Modules\CompatibilityTag {
         {
         }
         /**
-         * @return Collection
+         * @return \Elementor\Core\Utils\Collection
          */
         protected function get_plugins_to_check()
         {
@@ -67082,7 +67174,7 @@ namespace Elementor\Modules\Favorites {
         /**
          * Get the favorites module instance.
          *
-         * @return Module
+         * @return \Elementor\Modules\Favorites\Module
          */
         protected function get_module()
         {
@@ -67105,7 +67197,7 @@ namespace Elementor\Modules\Favorites {
         /**
          * Prepare favorites before taking any action.
          *
-         * @param Collection|array|string $favorites
+         * @param \Elementor\Core\Utils\Collection|array|string $favorites
          *
          * @return array
          */
@@ -67118,7 +67210,7 @@ namespace Elementor\Modules\Favorites {
         /**
          * List of registered favorites type.
          *
-         * @var Favorites_Type[]
+         * @var \Elementor\Modules\Favorites\Favorites_Type[]
          */
         protected $types = [];
         const OPTION_NAME = 'elementor_editor_user_favorites';
@@ -67190,9 +67282,9 @@ namespace Elementor\Modules\Favorites {
         /**
          * Update favorites on a type by merging or deleting from it.
          *
-         * @param      $type
-         * @param      $favorites
-         * @param      $action
+         * @param $type
+         * @param $favorites
+         * @param $action
          * @param bool $store
          *
          * @return array|boolean
@@ -67205,7 +67297,7 @@ namespace Elementor\Modules\Favorites {
          *
          * @param string $type
          *
-         * @return Favorites_Type
+         * @return \Elementor\Modules\Favorites\Favorites_Type
          */
         public function type_instance($type)
         {
@@ -67827,7 +67919,7 @@ namespace Elementor\Modules\GlobalClasses\Usage {
         /**
          * Merge usage data from another instance with the same class ID.
          *
-         * @param Css_Class_Usage $other The other usage object to merge in.
+         * @param \Elementor\Modules\GlobalClasses\Usage\Css_Class_Usage $other The other usage object to merge in.
          *
          * @throws \InvalidArgumentException If the class IDs do not match.
          */
@@ -67867,7 +67959,7 @@ namespace Elementor\Modules\GlobalClasses\Usage {
         /**
          * Constructor.
          *
-         * @param ElementorDocument $document The Elementor document object.
+         * @param \Elementor\Core\Base\Document $document The Elementor document object.
          */
         public function __construct(\Elementor\Core\Base\Document $document)
         {
@@ -68133,7 +68225,7 @@ namespace Elementor\Modules\History {
          * @access public
          * @static
          * @param array    $return_data
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          *
          * @return array
          */
@@ -68509,7 +68601,7 @@ namespace Elementor\Modules\KitElementsDefaults\Utils {
     {
         const SPECIAL_SETTINGS = ['__dynamic__', '__globals__'];
         /**
-         * @param Elements_Manager $elements_manager
+         * @param \Elementor\Elements_Manager $elements_manager
          * @param array            $widget_types
          */
         public function __construct(\Elementor\Elements_Manager $elements_manager, array $widget_types = [])
@@ -68553,7 +68645,7 @@ namespace Elementor\Modules\KitElementsDefaults\Utils {
         {
         }
         /**
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          *
          * @return $this
          */
@@ -68561,7 +68653,7 @@ namespace Elementor\Modules\KitElementsDefaults\Utils {
         {
         }
         /**
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          *
          * @return $this
          */
@@ -68995,8 +69087,8 @@ namespace Elementor\Modules\Library {
         {
         }
         /**
-         * @param       $vendor
-         * @param       $resource_name
+         * @param $vendor
+         * @param $resource_name
          * @param array $value
          *
          * @return $this
@@ -69545,7 +69637,7 @@ namespace Elementor\Modules\PageTemplates {
          * @since 2.0.0
          * @access public
          *
-         * @param Document $document The document instance.
+         * @param \Elementor\Core\Base\Document $document The document instance.
          */
         public function action_register_template_control($document)
         {
@@ -69558,7 +69650,7 @@ namespace Elementor\Modules\PageTemplates {
          * @since 2.0.0
          * @access public
          *
-         * @param Document $document   The document instance.
+         * @param \Elementor\Core\Base\Document $document   The document instance.
          * @param string   $control_id Optional. The control ID. Default is `template`.
          */
         public function register_template_control($document, $control_id = 'template')
@@ -70070,7 +70162,7 @@ namespace Elementor\Modules\SafeMode {
         {
         }
         /**
-         * @param Tools $tools_page
+         * @param \Elementor\Tools $tools_page
          */
         public function add_admin_button($tools_page)
         {
@@ -70638,7 +70730,7 @@ namespace Elementor\Modules\System_Info {
          *
          * @param array $properties Report properties.
          *
-         * @return \WP_Error|false|Base Base instance if the report was created,
+         * @return \WP_Error|false|\Elementor\Modules\System_Info\Reporters\Base Base instance if the report was created,
          *                                       False or WP_Error otherwise.
          * @since 2.9.0
          * @access public
@@ -71760,7 +71852,7 @@ namespace Elementor\Modules\Usage {
          *
          * Called on elementor/document/before_save, remove document from global & set saving flag.
          *
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          * @param array    $data new settings to save.
          */
         public function before_document_save($document, $data)
@@ -71771,7 +71863,7 @@ namespace Elementor\Modules\Usage {
          *
          * Called on elementor/document/after_save, adds document to global & clear saving flag.
          *
-         * @param Document $document
+         * @param \Elementor\Core\Base\Document $document
          */
         public function after_document_save($document)
         {
@@ -72090,28 +72182,28 @@ namespace Elementor\Modules\Variables\Storage {
         {
         }
         /**
-         * @throws FatalError If variable update fails or validation errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\FatalError If variable update fails or validation errors occur.
          */
         public function create(array $variable)
         {
         }
         /**
-         * @throws RecordNotFound If variable deletion fails or database errors occur.
-         * @throws FatalError If variable deletion fails or database errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\RecordNotFound If variable deletion fails or database errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\FatalError If variable deletion fails or database errors occur.
          */
         public function update(string $id, array $variable)
         {
         }
         /**
-         * @throws RecordNotFound If bulk operation fails or validation errors occur.
-         * @throws FatalError If bulk operation fails or validation errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\RecordNotFound If bulk operation fails or validation errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\FatalError If bulk operation fails or validation errors occur.
          */
         public function delete(string $id)
         {
         }
         /**
-         * @throws RecordNotFound If export operation fails or data serialization errors occur.
-         * @throws FatalError If export operation fails or data serialization errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\RecordNotFound If export operation fails or data serialization errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\FatalError If export operation fails or data serialization errors occur.
          */
         public function restore(string $id, $overrides = [])
         {
@@ -72119,8 +72211,8 @@ namespace Elementor\Modules\Variables\Storage {
         /**
          * Process multiple operations atomically
          *
-         * @throws BatchOperationFailed If batch operation fails or validation errors occur.
-         * @throws FatalError If batch operation fails or validation errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\BatchOperationFailed If batch operation fails or validation errors occur.
+         * @throws \Elementor\Modules\Variables\Storage\Exceptions\FatalError If batch operation fails or validation errors occur.
          */
         public function process_atomic_batch(array $operations, int $expected_watermark): array
         {
@@ -72416,7 +72508,7 @@ namespace Elementor\Modules\WpCli {
         {
         }
         /**
-         * @param Logger $logger
+         * @param \Elementor\Core\Logger\Manager $logger
          * @access public
          */
         public function register_cli_logger($logger)
