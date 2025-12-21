@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '3.33.4');
+		define('ELEMENTOR_VERSION', '3.33.6');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -27,7 +27,7 @@ namespace {
 
 	// Elementor Pro constants
 	if (!defined('ELEMENTOR_PRO_VERSION')) {
-		define('ELEMENTOR_PRO_VERSION', '3.33.1');
+		define('ELEMENTOR_PRO_VERSION', '3.33.2');
 	}
 	if (!defined('ELEMENTOR_PRO__FILE__')) {
 		define('ELEMENTOR_PRO__FILE__', __FILE__);

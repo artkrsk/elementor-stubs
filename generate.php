@@ -478,6 +478,12 @@ function resolveClassName( string $className, string $currentNamespace, array $u
 		return $useMap[ $currentNamespace ][ $className ];
 	}
 
+	// Partial namespace path (contains \ but doesn't start with \)
+	// Treat as relative from root namespace
+	if ( str_contains( $className, '\\' ) ) {
+		return '\\' . $className;
+	}
+
 	// If not found in use map and starts with uppercase, assume it's in current namespace
 	if ( ctype_upper( $className[0] ) ) {
 		return '\\' . $currentNamespace . '\\' . $className;
