@@ -4,14 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       elementor_version:
-        description: 'Elementor version (e.g., "3.33.4" or "latest")'
+        description: 'Elementor version: "latest" (stable), "3.33.6" (specific), or "dev" (GitHub main)'
         required: true
         default: 'latest'
         type: string
       elementor_pro_version:
-        description: 'Elementor Pro version (e.g., "3.33.4" or "latest")'
+        description: 'Elementor Pro version (requires repo access): "latest", "3.33.6", or "skip"'
         required: true
-        default: 'latest'
+        default: 'skip'
         type: string
 
 jobs:
@@ -24,19 +24,42 @@ jobs:
         with:
           fetch-depth: 0  # Need full history for tags
 
-      - name: Checkout Elementor Free
+      # Elementor Free: WordPress.org (stable) or GitHub (dev)
+      - name: Download Elementor Free (stable)
+        if: inputs.elementor_version != 'dev'
+        run: |
+          if [ "${{ inputs.elementor_version }}" = "latest" ]; then
+            URL="https://downloads.wordpress.org/plugin/elementor.zip"
+            echo "Downloading latest stable from WordPress.org..."
+          else
+            URL="https://downloads.wordpress.org/plugin/elementor.${{ inputs.elementor_version }}.zip"
+            echo "Downloading v${{ inputs.elementor_version }} from WordPress.org..."
+          fi
+
+          curl -L "$URL" -o elementor.zip
+          unzip -q elementor.zip -d .
+          mv elementor elementor-source
+          echo "✓ Elementor Free downloaded"
+
+      - name: Checkout Elementor Free (dev)
+        if: inputs.elementor_version == 'dev'
         uses: actions/checkout@v4
         with:
           repository: elementor/elementor
-          ref: ${{ inputs.elementor_version == 'latest' && 'main' || format('v{0}', inputs.elementor_version) }}
+          ref: main
           path: elementor-source
 
+      # Elementor Pro: GitHub private repo (optional)
       - name: Checkout Elementor Pro
+        if: inputs.elementor_pro_version != 'skip'
+        continue-on-error: true
+        id: checkout-pro
         uses: actions/checkout@v4
         with:
           repository: proelements/proelements
           ref: ${{ inputs.elementor_pro_version == 'latest' && 'master' || format('v{0}', inputs.elementor_pro_version) }}
           path: elementor-pro-source
+          token: ${{ secrets.PRO_ELEMENTS_TOKEN }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -50,7 +73,7 @@ jobs:
       - name: Generate stubs
         env:
           ELEMENTOR_PATH: ./elementor-source
-          ELEMENTOR_PRO_PATH: ./elementor-pro-source
+          ELEMENTOR_PRO_PATH: ${{ steps.checkout-pro.outcome == 'success' && './elementor-pro-source' || '' }}
         run: composer generate
 
       - name: Extract Elementor version
