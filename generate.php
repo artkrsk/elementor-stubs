@@ -462,8 +462,19 @@ function resolveTypeString( string $typeString, string $currentNamespace, array 
  * @return string                  Fully-qualified class name or original if not resolvable
  */
 function resolveClassName( string $className, string $currentNamespace, array $useMap ): string {
-	// Already fully-qualified (starts with \)
+	// Handle incomplete Elementor namespace paths (e.g., \Base\Manager, \Core\Kits\Manager)
+	// These start with \ but are missing the Elementor\ prefix
 	if ( isset( $className[0] ) && '\\' === $className[0] ) {
+		// List of known Elementor/ElementorPro sub-namespaces that might appear incomplete
+		$elementorSubNamespaces = array( 'App\\', 'Base\\', 'Core\\', 'Data\\', 'Includes\\', 'License\\', 'Modules\\', 'TemplateLibrary\\' );
+
+		foreach ( $elementorSubNamespaces as $subNs ) {
+			if ( str_starts_with( substr( $className, 1 ), $subNs ) ) {
+				return '\\Elementor\\' . substr( $className, 1 );
+			}
+		}
+
+		// Already fully-qualified with proper namespace
 		return $className;
 	}
 
@@ -479,8 +490,13 @@ function resolveClassName( string $className, string $currentNamespace, array $u
 	}
 
 	// Partial namespace path (contains \ but doesn't start with \)
-	// Treat as relative from root namespace
 	if ( str_contains( $className, '\\' ) ) {
+		// If we're in an Elementor namespace, treat as relative to current namespace
+		if ( str_starts_with( $currentNamespace, 'Elementor' ) ) {
+			return '\\' . $currentNamespace . '\\' . $className;
+		}
+
+		// Otherwise treat as global namespace
 		return '\\' . $className;
 	}
 
