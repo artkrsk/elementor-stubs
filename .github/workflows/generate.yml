@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout elementor-stubs
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Need full history for tags
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Checkout Elementor Free (dev)
         if: inputs.elementor_version == 'dev'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: elementor/elementor
           ref: main
@@ -56,7 +56,7 @@ jobs:
       - name: Checkout Elementor Pro
         if: inputs.elementor_pro_version != 'skip'
         id: checkout-pro
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: proelements/proelements
           ref: ${{ inputs.elementor_pro_version == 'latest' && 'master' || format('v{0}', inputs.elementor_pro_version) }}
