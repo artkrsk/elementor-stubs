@@ -143,7 +143,7 @@ jobs:
         run: |
           gh release create "${{ steps.commit.outputs.tag }}" \
             --title "Elementor ${{ steps.version.outputs.version }} Stubs" \
-            --notes "PHPStan stubs for Elementor ${{ steps.version.outputs.version }} and Elementor Pro" \
+            --generate-notes \
             --verify-tag
 
       - name: No changes summary
