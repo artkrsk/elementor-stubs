@@ -1,0 +1,122 @@
+# git-cliff configuration for elementor-stubs
+# Configured to match the manual CHANGELOG style
+
+[changelog]
+# Changelog header
+header = """
+# Changelog
+"""
+
+# Template for changelog body - preprocessors handle formatting
+body = """
+
+{%- if version %}
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+
+{% for commit in commits -%}
+{%- set message = commit.message | split(pat="\n") | first | trim -%}
+{%- if commit.breaking -%}
+- **BREAKING:** {{ message }}
+{%- else -%}
+- {{ message }}
+{%- endif %}
+{% endfor %}
+{%- else %}
+## [Unreleased]
+
+{% for commit in commits -%}
+{%- set message = commit.message | split(pat="\n") | first | trim -%}
+{%- if commit.breaking -%}
+- **BREAKING:** {{ message }}
+{%- else -%}
+- {{ message }}
+{%- endif %}
+{% endfor %}
+{%- endif %}
+"""
+
+# Template for changelog footer (version links)
+footer = """
+
+{% for release in releases -%}
+    {% if release.version and release.previous.version -%}
+[{{ release.version | trim_start_matches(pat="v") }}]: \
+https://github.com/artkrsk/elementor-stubs/compare/{{ release.previous.version }}...{{ release.version }}
+    {% endif -%}
+{% endfor %}
+"""
+
+[git]
+# Don't parse conventional commits - we handle it with preprocessors
+conventional_commits = false
+# Filter out non-conventional commits
+filter_unconventional = false
+# Transform commit messages to match CHANGELOG style (order matters!)
+commit_preprocessors = [
+    # Most specific patterns first to avoid conflicts
+
+    # Breaking changes: type!: X → **BREAKING:** X
+    { pattern = 'chore!: require ', replace = "**BREAKING:** require " },
+    { pattern = 'chore!:', replace = "**BREAKING:**" },
+    { pattern = 'feat!:', replace = "**BREAKING:** added:" },
+    { pattern = 'fix!:', replace = "**BREAKING:** fixed:" },
+
+    # chore(stubs): update for Elementor X → changed: updated stubs for Elementor X
+    { pattern = 'chore\(stubs\): update for Elementor', replace = "changed: updated stubs for Elementor" },
+    { pattern = 'chore\(stubs\):', replace = "changed:" },
+
+    # feat: X → added: X (remove redundant "add" after)
+    { pattern = 'feat: add ', replace = "added: " },
+    { pattern = 'feat:', replace = "added:" },
+
+    # fix: X → fixed: X (but watch for "improve" and "add" in message)
+    { pattern = 'fix: improve ', replace = "improved: " },
+    { pattern = 'fix: add ', replace = "added: " },
+    { pattern = 'fix\(ci\):', replace = "fixed:" },
+    { pattern = 'fix:', replace = "fixed:" },
+
+    # docs: X → improved: X (remove redundant "enhance/add" after)
+    { pattern = 'docs: enhance ', replace = "improved: " },
+    { pattern = 'docs: add ', replace = "improved: " },
+    { pattern = 'docs:', replace = "improved:" },
+
+    # chore: add X → added: X (handle double "add" and "add add")
+    { pattern = 'chore: add add ', replace = "added: " },
+    { pattern = 'chore: add automated', replace = "added: automated" },
+    { pattern = 'chore: add ', replace = "added: " },
+
+    # chore: improve/enhance X → improved: X
+    { pattern = 'chore: improve ', replace = "improved: " },
+    { pattern = 'chore: enhance ', replace = "improved: " },
+    { pattern = 'chore: export', replace = "improved: export" },
+
+    # chore: ensure → fixed: ensure
+    { pattern = 'chore: ensure ', replace = "fixed: ensure " },
+
+    # chore: X (anything else) → remove "chore: " prefix
+    { pattern = 'chore: ', replace = "" },
+]
+# Skip commits based on patterns
+commit_parsers = [
+    # Skip merge commits
+    { message = "^Merge", skip = true },
+    # Skip PR-related commits
+    { message = "^Merge pull request", skip = true },
+    # Skip dependency updates from bots
+    { message = ".*dependabot.*", skip = true },
+    { message = ".*deps.*bump.*", skip = true },
+    # Skip release commits
+    { message = "^chore\\(release\\):", skip = true },
+    # Keep everything else
+    { message = ".*" },
+]
+# Protect breaking changes detection
+protect_breaking_commits = true
+# Sort commits newest first
+sort_commits = "newest"
+# Only include commits in tags matching this pattern
+tag_pattern = "v[0-9]*"
+# Skip tags matching pattern
+skip_tags = ""
+# Ignore tags matching pattern
+ignore_tags = ""

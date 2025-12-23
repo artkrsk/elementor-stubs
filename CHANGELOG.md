@@ -2,20 +2,16 @@
 
 ## [3.34.0.2] - 2025-12-23
 
-- improved: README for better SEO and discoverability
-- added: Features and Requirements sections to README
-- improved: composer.json keywords for better package discovery
-- added: GitHub Sponsor button via FUNDING.yml
-- added: Dependabot configuration for automated dependency updates
-- added: CHANGELOG to track version history
+- added: project infrastructure (v3.34.0.2)
+- improved: README for SEO and discoverability
 
 ## [3.34.0.1] - 2025-12-23
 
+- fixed: ensure composer.lock is compatible with PHP 8.0
 - **BREAKING:** require PHP 8.0 or higher
-- fixed: composer.lock compatibility with PHP 8.0
-- added: automated version checking workflow (biweekly checks for new Elementor releases)
-- added: status badges to README
-- improved: export-ignore configuration for cleaner package distribution
+- improved: status badges to README
+- improved: export-ignore configuration
+- added: automated version checking workflow
 
 ## [3.34.0] - 2025-12-23
 
@@ -23,28 +19,23 @@
 
 ## [3.33.6.2] - 2025-12-22
 
-- fixed: PHPDoc class name resolution for Elementor namespaces
-- improved: handling of partial namespace paths in type annotations
+- improved: PHPDoc class name resolution for Elementor namespaces
 
 ## [3.33.6.1] - 2025-12-21
 
-- added: resolve unqualified class names in PHPDoc annotations using source file `use` statements
-- improved: PHPDoc type resolution for better static analysis accuracy
-- fixed: Tab_Base parent property now correctly references `\Elementor\Core\Kits\Documents\Kit`
-- fixed: CI workflow permissions for PR comments
+- changed: updated stubs for Elementor 3.33.6
+- fixed: address PR review feedback
+- added: resolve unqualified class names in PHPDoc annotations
+- fixed: grant write permission for PR comments in Claude review workflow
 
 ## [3.33.6] - 2025-12-21
 
-- added: initial release of Elementor stubs
-- added: complete type definitions for Elementor Free and Elementor Pro
-- added: self-contained constants for all Elementor paths and versions
-- added: automated stub generation from Elementor source
-- added: PHPUnit and PHPStan test coverage
-- added: GitHub Actions CI/CD pipeline
+- changed: updated stubs for Elementor 3.33.6
+- Initial commit
 
 [3.34.0.2]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.1...v3.34.0.2
 [3.34.0.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0...v3.34.0.1
 [3.34.0]: https://github.com/artkrsk/elementor-stubs/compare/v3.33.6.2...v3.34.0
 [3.33.6.2]: https://github.com/artkrsk/elementor-stubs/compare/v3.33.6.1...v3.33.6.2
 [3.33.6.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.33.6...v3.33.6.1
-[3.33.6]: https://github.com/artkrsk/elementor-stubs/releases/tag/v3.33.6
+

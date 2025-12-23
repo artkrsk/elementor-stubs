@@ -1,0 +1,34 @@
+# GitHub Auto-Generated Release Notes Configuration
+# See: https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - dependabot
+  categories:
+    - title: Elementor Updates
+      labels:
+        - stubs
+        - elementor
+    - title: Improvements
+      labels:
+        - enhancement
+        - improvement
+    - title: Bug Fixes
+      labels:
+        - bug
+        - fix
+    - title: Infrastructure
+      labels:
+        - dependencies
+        - ci
+        - chore
+    - title: Documentation
+      labels:
+        - documentation
+        - docs
+    - title: Other Changes
+      labels:
+        - "*"
