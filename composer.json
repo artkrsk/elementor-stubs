@@ -25,13 +25,13 @@
   ],
   "require": {
     "php": ">=8.0",
-    "ergebnis/composer-normalize": "^2.48",
     "php-stubs/woocommerce-stubs": "^10.4",
     "php-stubs/wordpress-stubs": "^6.9",
     "php-stubs/wp-cli-stubs": "^2.12"
   },
   "require-dev": {
     "captainhook/captainhook": "^5.27",
+    "ergebnis/composer-normalize": "^2.48",
     "php-stubs/generator": "^0.8",
     "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^9.5",
