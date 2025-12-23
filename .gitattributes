@@ -1,10 +1,28 @@
-/.editorconfig export-ignore
-/.env.example export-ignore
-/.gitattributes export-ignore
-/.github export-ignore
-/.gitignore export-ignore
-/captainhook.json export-ignore
-/generate.php export-ignore
-/phpcs.xml.dist export-ignore
-/phpunit.xml.dist export-ignore
-/tests export-ignore
+# Development configuration
+.gitignore export-ignore
+.gitattributes export-ignore
+.editorconfig export-ignore
+.env export-ignore
+.env.example export-ignore
+.actrc export-ignore
+
+# Development directories
+.claude export-ignore
+.github export-ignore
+vendor export-ignore
+tests export-ignore
+
+# Build and generation scripts
+generate.php export-ignore
+
+# PHP development tools config
+phpcs.xml.dist export-ignore
+phpunit.xml.dist export-ignore
+phpstan.neon export-ignore
+captainhook.json export-ignore
+
+# PHP runtime artifacts
+.phpunit.result.cache export-ignore
+
+# Documentation
+/CLAUDE.md export-ignore
