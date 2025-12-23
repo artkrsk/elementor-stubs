@@ -58,6 +58,7 @@
     "post-update-cmd": [
       "vendor/bin/captainhook install -f -s"
     ],
+    "changelog": "git-cliff --output CHANGELOG.md",
     "generate": "php generate.php",
     "normalize": "composer-normalize",
     "test": [

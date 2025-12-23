@@ -20,6 +20,36 @@ composer test:cs:fix     # Auto-fix coding style issues
 
 # Generate stubs (requires ELEMENTOR_PATH env var)
 composer generate
+
+# Regenerate CHANGELOG from git history (requires git-cliff installed)
+composer changelog
+```
+
+## CHANGELOG Management
+
+The CHANGELOG is automatically generated using [git-cliff](https://git-cliff.org).
+
+**Requirements:**
+- git-cliff must be installed: `brew install git-cliff` (macOS) or see [installation docs](https://git-cliff.org/docs/installation)
+- Configuration: `cliff.toml`
+
+**Manual Regeneration:**
+```bash
+composer changelog  # Regenerates entire CHANGELOG from git history
+```
+
+**Automated:**
+- The `generate.yml` workflow automatically updates CHANGELOG when generating new stubs
+- GitHub releases use auto-generated notes (configured in `.github/release.yml`)
+
+**Commit Message Format:**
+Follow conventional commits for automatic CHANGELOG categorization:
+- `feat:` → `added:` in changelog
+- `fix:` → `fixed:` in changelog
+- `docs:` → `improved:` in changelog
+- `chore:` → removed or contextual prefix
+- `chore(stubs):` → `changed:` in changelog
+- Add `!` after type for breaking changes (e.g., `feat!:`, `chore!:`)
 ```
 
 ## Generating Stubs
@@ -41,9 +71,10 @@ Set these via `.env` file (copy from `.env.example`) or export directly.
   - Appends class aliases for deprecated class locations
 
 ### GitHub Workflows
-- `generate.yml` - Manual workflow to generate stubs from specific Elementor version
+- `generate.yml` - Manual workflow to generate stubs from specific Elementor version (includes CHANGELOG update)
+- `check-updates.yml` - Biweekly check for new Elementor releases (auto-triggers generate.yml)
 - `integrate.yml` - CI tests on push/PR (PHP 8.0-8.4)
-- `release.yml` - Creates GitHub release when tag is pushed
+- `release.yml` - Creates GitHub release with auto-generated notes when tag is pushed
 
 ### Testing
 - PHPStan runs at max level against the stubs file
