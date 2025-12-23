@@ -21,7 +21,7 @@
     }
   ],
   "require": {
-    "php": ">=7.2",
+    "php": ">=8.0",
     "ergebnis/composer-normalize": "^2.48",
     "php-stubs/woocommerce-stubs": "^10.4",
     "php-stubs/wordpress-stubs": "^6.9",
@@ -43,9 +43,6 @@
       "ergebnis/composer-normalize": true
     },
     "optimize-autoloader": true,
-    "platform": {
-      "php": "8.0"
-    },
     "sort-packages": true
   },
   "scripts": {
