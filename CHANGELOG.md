@@ -38,4 +38,5 @@
 [3.34.0]: https://github.com/artkrsk/elementor-stubs/compare/v3.33.6.2...v3.34.0
 [3.33.6.2]: https://github.com/artkrsk/elementor-stubs/compare/v3.33.6.1...v3.33.6.2
 [3.33.6.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.33.6...v3.33.6.1
+[3.33.6]: https://github.com/artkrsk/elementor-stubs/releases/tag/v3.33.6
 
