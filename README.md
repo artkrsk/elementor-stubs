@@ -1,5 +1,13 @@
 # Elementor Stubs
 
+[![Test](https://github.com/artkrsk/elementor-stubs/actions/workflows/integrate.yml/badge.svg)](https://github.com/artkrsk/elementor-stubs/actions/workflows/integrate.yml)
+[![Latest Release](https://img.shields.io/github/v/release/artkrsk/elementor-stubs)](https://github.com/artkrsk/elementor-stubs/releases/latest)
+[![Packagist Version](https://img.shields.io/packagist/v/arts/elementor-stubs)](https://packagist.org/packages/arts/elementor-stubs)
+[![PHP Version](https://img.shields.io/packagist/dependency-v/arts/elementor-stubs/php)](https://packagist.org/packages/arts/elementor-stubs)
+[![Downloads](https://img.shields.io/packagist/dt/arts/elementor-stubs)](https://packagist.org/packages/arts/elementor-stubs)
+[![License](https://img.shields.io/packagist/l/arts/elementor-stubs)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?logo=buy-me-a-coffee)](https://buymeacoffee.com/artemsemkin)
+
 Comprehensive PHPStan stubs for Elementor and Elementor Pro WordPress page builder.
 
 Auto-generated, self-contained, plug & play.
