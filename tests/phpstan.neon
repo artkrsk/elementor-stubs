@@ -7,3 +7,10 @@ parameters:
         - ../vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
         - ../vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - ../elementor-stubs.php
+    ignoreErrors:
+        # Tests verify class existence/inheritance - PHPStan knows these are true
+        # because stubs are loaded, but tests validate runtime behavior
+        - identifier: method.alreadyNarrowedType
+          path: StubSyntaxTest.php
+        - identifier: function.alreadyNarrowedType
+          path: StubSyntaxTest.php

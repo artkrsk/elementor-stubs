@@ -68,7 +68,7 @@
     ],
     "test:cs": "phpcs",
     "test:cs:fix": "phpcbf",
-    "test:phpstan": "phpstan analyze -c tests/phpstan.neon",
+    "test:phpstan": "phpstan analyze -c tests/phpstan.neon --memory-limit=2G",
     "test:phpunit": "phpunit"
   }
 }
