@@ -78,7 +78,7 @@ jobs:
         run: composer generate
 
       - name: Update CHANGELOG
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: --verbose
