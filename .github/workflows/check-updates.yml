@@ -6,7 +6,8 @@ on:
   workflow_dispatch:  # Allow manual triggering for testing
 
 permissions:
-  contents: write  # Needed to trigger generate.yml workflow
+  contents: write  # Needed for checkout with full history
+  actions: write   # Needed to trigger generate.yml workflow
 
 jobs:
   check-version:
