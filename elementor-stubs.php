@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '3.34.0');
+		define('ELEMENTOR_VERSION', '3.34.1');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -27,7 +27,7 @@ namespace {
 
 	// Elementor Pro constants
 	if (!defined('ELEMENTOR_PRO_VERSION')) {
-		define('ELEMENTOR_PRO_VERSION', '3.33.2');
+		define('ELEMENTOR_PRO_VERSION', '3.34.0');
 	}
 	if (!defined('ELEMENTOR_PRO__FILE__')) {
 		define('ELEMENTOR_PRO__FILE__', __FILE__);
@@ -4933,7 +4933,7 @@ namespace ElementorPro\Core\Database {
          *
          * @param \wpdb|null $connection - The Mysql connection instance to use.
          */
-        public function __construct(\wpdb $connection = null)
+        public function __construct(?\wpdb $connection = null)
         {
         }
         /**
@@ -5012,7 +5012,7 @@ namespace ElementorPro\Core\Database {
          *
          * @return $this
          */
-        public function when($condition, callable $true_callback, callable $false_callback = null)
+        public function when($condition, callable $true_callback, ?callable $false_callback = null)
         {
         }
         /**
@@ -5711,7 +5711,7 @@ namespace ElementorPro\Core\Database {
          * @param string $model_classname - Model to use inside the builder.
          * @param \wpdb|null $connection - MySQL connection.
          */
-        public function __construct($model_classname, \wpdb $connection = null)
+        public function __construct($model_classname, ?\wpdb $connection = null)
         {
         }
         /**
@@ -7870,6 +7870,24 @@ namespace ElementorPro\License\Data {
     }
 }
 namespace ElementorPro\License\Data\Endpoints {
+    class Get_License_Status extends \ElementorPro\Core\Data\Endpoints\Base implements \ElementorPro\Core\Data\Interfaces\Endpoint
+    {
+        public function get_name(): string
+        {
+        }
+        public function get_route(): string
+        {
+        }
+        protected function register()
+        {
+        }
+        public function get_status($request)
+        {
+        }
+        public function permission_callback($request)
+        {
+        }
+    }
     class Get_Tier_Features extends \ElementorPro\Core\Data\Endpoints\Base implements \ElementorPro\Core\Data\Interfaces\Endpoint
     {
         public function get_name(): string
@@ -9285,6 +9303,429 @@ namespace ElementorPro\Modules\AssetsManager {
         }
     }
 }
+namespace ElementorPro\Modules\AtomicWidgets {
+    class Module extends \ElementorPro\Base\Module_Base
+    {
+        public function get_name()
+        {
+        }
+        public function __construct()
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\PropTypes\Contracts {
+    interface Prop_Type extends \JsonSerializable
+    {
+        public static function get_key(): string;
+        public function get_type(): string;
+        public function get_default();
+        public function validate($value): bool;
+        public function sanitize($value);
+        public function get_meta(): array;
+        public function get_meta_item(string $key, $default_value = null);
+        public function get_settings(): array;
+        public function get_setting(string $key, $default_value = null);
+        public function set_dependencies(?array $dependencies): self;
+        public function get_dependencies(): ?array;
+        public function get_initial_value();
+    }
+    interface Transformable_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+    {
+        public static function get_key(): string;
+        public static function generate($value, $disable = false): array;
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\PropTypes\Concerns {
+    trait Has_Default
+    {
+        protected $default = null;
+        /**
+         * @param $value
+         *
+         * @return $this
+         */
+        public function default($value)
+        {
+        }
+        public function get_default()
+        {
+        }
+        abstract public static function generate($value, $disable = false): array;
+    }
+    trait Has_Generate
+    {
+        public static function generate($value, $disable = false): array
+        {
+        }
+        abstract public static function get_key(): string;
+    }
+    trait Has_Meta
+    {
+        protected array $meta = [];
+        /**
+         * @param $key
+         * @param $value
+         *
+         * @return $this
+         */
+        public function meta($key, $value = null)
+        {
+        }
+        public function get_meta(): array
+        {
+        }
+        public function description(string $description): self
+        {
+        }
+        public function get_meta_item($key, $default_value = null)
+        {
+        }
+    }
+    trait Has_Required_Setting
+    {
+        protected function is_required(): bool
+        {
+        }
+        public function required()
+        {
+        }
+        public function optional()
+        {
+        }
+        public function set_required(bool $required)
+        {
+        }
+        abstract public function get_setting(string $key, $default_value = null);
+        abstract public function setting($key, $value);
+    }
+    trait Has_Settings
+    {
+        protected array $settings = [];
+        /**
+         * @param $key
+         * @param $value
+         *
+         * @return $this
+         */
+        public function setting($key, $value)
+        {
+        }
+        public function get_settings(): array
+        {
+        }
+        public function get_setting(string $key, $default_value = null)
+        {
+        }
+    }
+    trait Has_Transformable_Validation
+    {
+        protected function is_transformable($value): bool
+        {
+        }
+        abstract public static function get_key(): string;
+    }
+    trait Has_Initial_Value
+    {
+        protected $initial_value = null;
+        /**
+         * @param $value
+         *
+         * @return $this
+         */
+        public function initial_value($value): self
+        {
+        }
+        public function get_initial_value(): ?array
+        {
+        }
+        abstract public static function generate($value, $disable = false): array;
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
+    abstract class Array_Prop_Type implements \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Transformable_Prop_Type
+    {
+        // Backward compatibility, do not change to "const". Keep name in uppercase.
+        // phpcs:ignore
+        static $KIND = 'array';
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Default;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Generate;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Meta;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Required_Setting;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Settings;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Transformable_Validation;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Initial_Value;
+        protected \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $item_type;
+        public function __construct()
+        {
+        }
+        /**
+         * @return static
+         */
+        public static function make()
+        {
+        }
+        public function get_type(): string
+        {
+        }
+        /**
+         * @param \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $item_type
+         *
+         * @return $this
+         */
+        public function set_item_type(\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $item_type)
+        {
+        }
+        public function get_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function validate($value): bool
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        public function sanitize($value)
+        {
+        }
+        public function sanitize_value($value)
+        {
+        }
+        public function jsonSerialize(): array
+        {
+        }
+        abstract protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type;
+        public function set_dependencies(?array $dependencies): self
+        {
+        }
+        public function get_dependencies(): ?array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicWidgets\PropTypes\Display_Conditions {
+    class Condition_Group_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+    class Display_Conditions_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
+    abstract class Object_Prop_Type implements \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Transformable_Prop_Type
+    {
+        // Backward compatibility, do not change to "const". Keep name in uppercase.
+        // phpcs:ignore
+        static $KIND = 'object';
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Default;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Generate;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Meta;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Required_Setting;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Settings;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Transformable_Validation;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Initial_Value;
+        /**
+         * @var array<\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>
+         */
+        protected array $shape;
+        protected ?array $dependencies = null;
+        public function __construct()
+        {
+        }
+        public function get_type(): string
+        {
+        }
+        public function get_default()
+        {
+        }
+        /**
+         * @return static
+         */
+        public static function make()
+        {
+        }
+        /**
+         * @param array $shape
+         *
+         * @return $this
+         */
+        public function set_shape(array $shape)
+        {
+        }
+        public function get_shape(): array
+        {
+        }
+        public function get_shape_field($key): ?\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function validate($value): bool
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        public function sanitize($value)
+        {
+        }
+        public function sanitize_value($value)
+        {
+        }
+        public function jsonSerialize(): array
+        {
+        }
+        /**
+         * @return array<\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>
+         */
+        abstract protected function define_shape(): array;
+        public function set_dependencies(?array $dependencies): self
+        {
+        }
+        public function get_dependencies(): ?array
+        {
+        }
+        public function set_shape_meta(string $shape_key, array $meta): self
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicWidgets\PropTypes\Display_Conditions {
+    class Page_Title_Condition_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
+    class Time_Of_Day_Condition_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\PropsResolver {
+    abstract class Transformer_Base
+    {
+        abstract public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context);
+    }
+}
+namespace ElementorPro\Modules\AtomicWidgets\Transformers {
+    class Condition_Group extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($conditions, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
+        {
+        }
+    }
+    class Display_Conditions extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
+        {
+        }
+        public static function extract_from_settings($settings)
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Base {
+    abstract class Atomic_Control_Base implements \JsonSerializable
+    {
+        abstract public function get_type(): string;
+        abstract public function get_props(): array;
+        public static function bind_to(string $prop_name)
+        {
+        }
+        protected function __construct(string $prop_name)
+        {
+        }
+        public function get_bind()
+        {
+        }
+        public function set_label(string $label): self
+        {
+        }
+        public function set_description(string $description): self
+        {
+        }
+        public function set_meta($meta): self
+        {
+        }
+        public function jsonSerialize(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Controls\Types {
+    class Repeatable_Control extends \Elementor\Modules\AtomicWidgets\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function set_child_control_type($control_type): self
+        {
+        }
+        public function set_child_control_props($control_props): self
+        {
+        }
+        public function hide_duplicate(): self
+        {
+        }
+        public function hide_toggle(): self
+        {
+        }
+        public function set_initialValues($initial_values): self
+        {
+        }
+        public function set_patternLabel($pattern_label): self
+        {
+        }
+        public function set_repeaterLabel(string $label): self
+        {
+        }
+        public function set_placeholder(string $placeholder): self
+        {
+        }
+        public function set_prop_key(string $prop_key): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\Attributes\Controls {
+    class Repeatable_Attributes_Control extends \Elementor\Modules\AtomicWidgets\Controls\Types\Repeatable_Control
+    {
+        public function set_addItemTooltipProps(array $props): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\Attributes {
     class Module extends \ElementorPro\Base\Module_Base
     {
@@ -9292,6 +9733,14 @@ namespace ElementorPro\Modules\Attributes {
         {
         }
         public function __construct()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\Attributes\PropsResolver\Transformers\Settings {
+    class Pro_Attributes_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
         {
         }
     }
@@ -12439,6 +12888,18 @@ namespace ElementorPro\Modules\DisplayConditions\Conditions {
     }
 }
 namespace ElementorPro\Modules\DisplayConditions {
+    class Display_Conditions_Control extends \Elementor\Modules\AtomicWidgets\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function set_disabled(bool $disabled): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
     class Module extends \ElementorPro\Base\Module_Base
     {
         const LICENSE_FEATURE_NAME = 'display-conditions';
@@ -24671,7 +25132,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
          *
          * @param \wpdb|null $connection
          */
-        public function __construct(\wpdb $connection = null)
+        public function __construct(?\wpdb $connection = null)
         {
         }
         /**
@@ -24697,7 +25158,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
          *
          * @return $this
          */
-        public function with_replies(callable $callback = null)
+        public function with_replies(?callable $callback = null)
         {
         }
         /**
@@ -31124,6 +31585,20 @@ namespace ElementorPro\Modules\Tiers {
         }
     }
 }
+namespace ElementorPro\Modules\Transitions {
+    class Module extends \ElementorPro\Base\Module_Base
+    {
+        public function get_name()
+        {
+        }
+        public function __construct()
+        {
+        }
+        public function extend_allowed_properties(array $core_properties): array
+        {
+        }
+    }
+}
 namespace Elementor\Modules\System_Info\Reporters {
     /**
      * Elementor base reporter.
@@ -31421,132 +31896,6 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes\Contracts {
          * @return array<string> Array of compatible prop type keys
          */
         public function get_compatible_type_keys(): array;
-    }
-    interface Prop_Type extends \JsonSerializable
-    {
-        public static function get_key(): string;
-        public function get_type(): string;
-        public function get_default();
-        public function validate($value): bool;
-        public function sanitize($value);
-        public function get_meta(): array;
-        public function get_meta_item(string $key, $default_value = null);
-        public function get_settings(): array;
-        public function get_setting(string $key, $default_value = null);
-        public function set_dependencies(?array $dependencies): self;
-        public function get_dependencies(): ?array;
-        public function get_initial_value();
-    }
-    interface Transformable_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
-    {
-        public static function get_key(): string;
-        public static function generate($value, $disable = false): array;
-    }
-}
-namespace Elementor\Modules\AtomicWidgets\PropTypes\Concerns {
-    trait Has_Default
-    {
-        protected $default = null;
-        /**
-         * @param $value
-         *
-         * @return $this
-         */
-        public function default($value)
-        {
-        }
-        public function get_default()
-        {
-        }
-        abstract public static function generate($value, $disable = false): array;
-    }
-    trait Has_Generate
-    {
-        public static function generate($value, $disable = false): array
-        {
-        }
-        abstract public static function get_key(): string;
-    }
-    trait Has_Meta
-    {
-        protected array $meta = [];
-        /**
-         * @param $key
-         * @param $value
-         *
-         * @return $this
-         */
-        public function meta($key, $value = null)
-        {
-        }
-        public function get_meta(): array
-        {
-        }
-        public function description(string $description): self
-        {
-        }
-        public function get_meta_item($key, $default_value = null)
-        {
-        }
-    }
-    trait Has_Required_Setting
-    {
-        protected function is_required(): bool
-        {
-        }
-        public function required()
-        {
-        }
-        public function optional()
-        {
-        }
-        public function set_required(bool $required)
-        {
-        }
-        abstract public function get_setting(string $key, $default_value = null);
-        abstract public function setting($key, $value);
-    }
-    trait Has_Settings
-    {
-        protected array $settings = [];
-        /**
-         * @param $key
-         * @param $value
-         *
-         * @return $this
-         */
-        public function setting($key, $value)
-        {
-        }
-        public function get_settings(): array
-        {
-        }
-        public function get_setting(string $key, $default_value = null)
-        {
-        }
-    }
-    trait Has_Transformable_Validation
-    {
-        protected function is_transformable($value): bool
-        {
-        }
-        abstract public static function get_key(): string;
-    }
-    trait Has_Initial_Value
-    {
-        protected $initial_value = null;
-        /**
-         * @param $value
-         *
-         * @return $this
-         */
-        public function initial_value($value): self
-        {
-        }
-        public function get_initial_value(): ?array
-        {
-        }
-        abstract public static function generate($value, $disable = false): array;
     }
 }
 namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
@@ -32176,6 +32525,36 @@ namespace ElementorPro\Modules\Woocommerce\Documents {
         }
     }
 }
+namespace ElementorPro\Modules\Woocommerce\ImportExportCustomization {
+    class Woocommerce_Settings_Revert extends \Elementor\App\Modules\ImportExportCustomization\Runners\Revert\Revert_Runner_Base
+    {
+        public static function get_name(): string
+        {
+        }
+        public function should_revert(array $data): bool
+        {
+        }
+        public function revert(array $data)
+        {
+        }
+    }
+    class Woocommerce_Settings extends \Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base
+    {
+        const KEYS_TO_IMPORT = ['woocommerce_cart_page_id', 'woocommerce_checkout_page_id', 'woocommerce_myaccount_page_id', 'woocommerce_terms_page_id', 'elementor_woocommerce_purchase_summary_page_id', 'woocommerce_shop_page_id'];
+        public static function get_name(): string
+        {
+        }
+        public function should_import(array $data)
+        {
+        }
+        public function import(array $data, array $imported_data)
+        {
+        }
+        public function get_import_session_metadata(): array
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\Woocommerce {
     class Module extends \ElementorPro\Base\Module_Base
     {
@@ -32596,6 +32975,12 @@ namespace ElementorPro\Modules\Woocommerce {
          * @return bool
          */
         public static function is_preview()
+        {
+        }
+        public function register_import_runner(\Elementor\App\Modules\ImportExportCustomization\Processes\Import $import)
+        {
+        }
+        public function register_revert_runner(\Elementor\App\Modules\ImportExportCustomization\Processes\Revert $revert)
         {
         }
         public function __construct()
@@ -35130,15 +35515,6 @@ namespace ElementorPro\Core\Updater {
          * @return void
          */
         public function set_defaults()
-        {
-        }
-        /**
-         * Callback fn for the http_request_timeout filter
-         *
-         * @since 1.0
-         * @return int timeout value
-         */
-        public function http_request_timeout()
         {
         }
         /**
@@ -63206,32 +63582,6 @@ namespace Elementor\Modules\AtomicOptIn {
     }
 }
 namespace Elementor\Modules\AtomicWidgets\Base {
-    abstract class Atomic_Control_Base implements \JsonSerializable
-    {
-        abstract public function get_type(): string;
-        abstract public function get_props(): array;
-        public static function bind_to(string $prop_name)
-        {
-        }
-        protected function __construct(string $prop_name)
-        {
-        }
-        public function get_bind()
-        {
-        }
-        public function set_label(string $label): self
-        {
-        }
-        public function set_description(string $description): self
-        {
-        }
-        public function set_meta($meta): self
-        {
-        }
-        public function jsonSerialize(): array
-        {
-        }
-    }
     abstract class Element_Control_Base implements \JsonSerializable
     {
         abstract public function get_type(): string;
@@ -63479,42 +63829,6 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
     }
-    class Repeatable_Control extends \Elementor\Modules\AtomicWidgets\Base\Atomic_Control_Base
-    {
-        public function get_type(): string
-        {
-        }
-        public function set_child_control_type($control_type): self
-        {
-        }
-        public function set_child_control_props($control_props): self
-        {
-        }
-        public function hide_duplicate(): self
-        {
-        }
-        public function hide_toggle(): self
-        {
-        }
-        public function set_initialValues($initial_values): self
-        {
-        }
-        public function set_patternLabel($pattern_label): self
-        {
-        }
-        public function set_repeaterLabel(string $label): self
-        {
-        }
-        public function set_placeholder(string $placeholder): self
-        {
-        }
-        public function set_prop_key(string $prop_key): self
-        {
-        }
-        public function get_props(): array
-        {
-        }
-    }
     class Size_Control extends \Elementor\Modules\AtomicWidgets\Base\Atomic_Control_Base
     {
         public function get_type(): string
@@ -63748,14 +64062,6 @@ namespace Elementor\Modules\AtomicWidgets\DynamicTags {
         {
         }
     }
-}
-namespace Elementor\Modules\AtomicWidgets\PropsResolver {
-    abstract class Transformer_Base
-    {
-        abstract public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context);
-    }
-}
-namespace Elementor\Modules\AtomicWidgets\DynamicTags {
     class Dynamic_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
     {
         public function __construct(\Elementor\Core\DynamicTags\Manager $dynamic_tags_manager, \Elementor\Modules\AtomicWidgets\DynamicTags\Dynamic_Tags_Schemas $dynamic_tags_schemas, \Elementor\Modules\AtomicWidgets\PropsResolver\Render_Props_Resolver $props_resolver)
@@ -64965,67 +65271,6 @@ namespace Elementor\Modules\AtomicWidgets\PropDependencies {
         }
     }
 }
-namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
-    abstract class Array_Prop_Type implements \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Transformable_Prop_Type
-    {
-        // Backward compatibility, do not change to "const". Keep name in uppercase.
-        // phpcs:ignore
-        static $KIND = 'array';
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Default;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Generate;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Meta;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Required_Setting;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Settings;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Transformable_Validation;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Initial_Value;
-        protected \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $item_type;
-        public function __construct()
-        {
-        }
-        /**
-         * @return static
-         */
-        public static function make()
-        {
-        }
-        public function get_type(): string
-        {
-        }
-        /**
-         * @param \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $item_type
-         *
-         * @return $this
-         */
-        public function set_item_type(\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $item_type)
-        {
-        }
-        public function get_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
-        {
-        }
-        public function validate($value): bool
-        {
-        }
-        protected function validate_value($value): bool
-        {
-        }
-        public function sanitize($value)
-        {
-        }
-        public function sanitize_value($value)
-        {
-        }
-        public function jsonSerialize(): array
-        {
-        }
-        abstract protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type;
-        public function set_dependencies(?array $dependencies): self
-        {
-        }
-        public function get_dependencies(): ?array
-        {
-        }
-    }
-}
 namespace Elementor\Modules\AtomicWidgets\PropTypes {
     class Attributes_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
     {
@@ -65036,85 +65281,6 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
     }
-}
-namespace Elementor\Modules\AtomicWidgets\PropTypes\Base {
-    abstract class Object_Prop_Type implements \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Transformable_Prop_Type
-    {
-        // Backward compatibility, do not change to "const". Keep name in uppercase.
-        // phpcs:ignore
-        static $KIND = 'object';
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Default;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Generate;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Meta;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Required_Setting;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Settings;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Transformable_Validation;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Initial_Value;
-        /**
-         * @var array<\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>
-         */
-        protected array $shape;
-        protected ?array $dependencies = null;
-        public function __construct()
-        {
-        }
-        public function get_type(): string
-        {
-        }
-        public function get_default()
-        {
-        }
-        /**
-         * @return static
-         */
-        public static function make()
-        {
-        }
-        /**
-         * @param array $shape
-         *
-         * @return $this
-         */
-        public function set_shape(array $shape)
-        {
-        }
-        public function get_shape(): array
-        {
-        }
-        public function get_shape_field($key): ?\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
-        {
-        }
-        public function validate($value): bool
-        {
-        }
-        protected function validate_value($value): bool
-        {
-        }
-        public function sanitize($value)
-        {
-        }
-        public function sanitize_value($value)
-        {
-        }
-        public function jsonSerialize(): array
-        {
-        }
-        /**
-         * @return array<\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>
-         */
-        abstract protected function define_shape(): array;
-        public function set_dependencies(?array $dependencies): self
-        {
-        }
-        public function get_dependencies(): ?array
-        {
-        }
-        public function set_shape_meta(string $shape_key, array $meta): self
-        {
-        }
-    }
-}
-namespace Elementor\Modules\AtomicWidgets\PropTypes {
     class Background_Color_Overlay_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
     {
         public static function get_key(): string
