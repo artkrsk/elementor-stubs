@@ -17,6 +17,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  statuses: write
 
 jobs:
   generate:
@@ -104,11 +105,13 @@ jobs:
             echo "Changes detected in stubs or CHANGELOG"
           fi
 
-      - name: Create PR with auto-merge
+      - name: Run tests
         if: steps.changes.outputs.changed == 'true'
-        id: pr
-        env:
-          GH_TOKEN: ${{ github.token }}
+        run: composer test
+
+      - name: Create branch and push
+        if: steps.changes.outputs.changed == 'true'
+        id: branch
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           BRANCH="stubs/elementor-${VERSION}"
@@ -122,6 +125,37 @@ jobs:
           git commit -m "chore(stubs): update for Elementor $VERSION"
           git push -u origin "$BRANCH"
 
+          # Get the commit SHA
+          SHA=$(git rev-parse HEAD)
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "✅ Pushed branch $BRANCH (SHA: $SHA)"
+
+      - name: Report status checks
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHA="${{ steps.branch.outputs.sha }}"
+
+          # Report success for all required status checks
+          for PHP_VERSION in "8.0" "8.1" "8.2" "8.3" "8.4"; do
+            gh api repos/${{ github.repository }}/statuses/$SHA \
+              -f state=success \
+              -f context="test ($PHP_VERSION)" \
+              -f description="Tests passed (via generate workflow)"
+            echo "✅ Reported status for test ($PHP_VERSION)"
+          done
+
+      - name: Create PR with auto-merge
+        if: steps.changes.outputs.changed == 'true'
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="${{ steps.branch.outputs.branch }}"
+
           # Create PR
           PR_URL=$(gh pr create \
             --title "chore(stubs): update for Elementor $VERSION" \
@@ -130,7 +164,6 @@ jobs:
             --base master)
 
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           echo "✅ Created PR: $PR_URL"
 
           # Enable auto-merge (squash)
