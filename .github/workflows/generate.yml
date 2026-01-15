@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   generate:
@@ -103,22 +104,76 @@ jobs:
             echo "Changes detected in stubs or CHANGELOG"
           fi
 
-      - name: Commit and tag
+      - name: Create PR with auto-merge
         if: steps.changes.outputs.changed == 'true'
-        id: commit
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="stubs/elementor-${VERSION}"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # Create branch and commit
+          git checkout -b "$BRANCH"
           git add elementor-stubs.php CHANGELOG.md
           git commit -m "chore(stubs): update for Elementor $VERSION"
+          git push -u origin "$BRANCH"
+
+          # Create PR
+          PR_URL=$(gh pr create \
+            --title "chore(stubs): update for Elementor $VERSION" \
+            --body "Automated stub generation for Elementor $VERSION" \
+            --head "$BRANCH" \
+            --base master)
+
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "✅ Created PR: $PR_URL"
+
+          # Enable auto-merge (squash)
+          gh pr merge "$PR_URL" --auto --squash --delete-branch
+          echo "✅ Auto-merge enabled"
+
+      - name: Wait for PR merge and create release
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          PR_URL="${{ steps.pr.outputs.pr_url }}"
+
+          echo "Waiting for PR to be merged..."
+
+          # Wait up to 10 minutes for PR to merge
+          for i in {1..60}; do
+            STATE=$(gh pr view "$PR_URL" --json state --jq '.state')
+            if [ "$STATE" = "MERGED" ]; then
+              echo "✅ PR merged!"
+              break
+            elif [ "$STATE" = "CLOSED" ]; then
+              echo "❌ PR was closed without merging"
+              exit 1
+            fi
+            echo "Waiting... ($i/60) - State: $STATE"
+            sleep 10
+          done
+
+          if [ "$STATE" != "MERGED" ]; then
+            echo "❌ Timeout waiting for PR to merge"
+            exit 1
+          fi
+
+          # Fetch latest to get merge commit
+          git fetch origin master
+          git checkout master
+          git pull origin master
 
           # Determine tag version
           BASE_TAG="v$VERSION"
           if git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
-            # Base tag exists, find next patch version
             PATCH=1
             while git rev-parse "${BASE_TAG}.${PATCH}" >/dev/null 2>&1; do
               PATCH=$((PATCH + 1))
@@ -130,21 +185,17 @@ jobs:
             echo "Creating tag: $TAG"
           fi
 
+          # Create and push tag
           git tag "$TAG" -m "Stubs for Elementor $VERSION"
-          git push origin master --tags
+          git push origin "$TAG"
+          echo "✅ Created tag: $TAG"
 
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Successfully pushed commit and tag $TAG"
-
-      - name: Create GitHub Release
-        if: steps.changes.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "${{ steps.commit.outputs.tag }}" \
-            --title "Elementor ${{ steps.version.outputs.version }} Stubs" \
+          # Create release
+          gh release create "$TAG" \
+            --title "Elementor $VERSION Stubs" \
             --generate-notes \
             --verify-tag
+          echo "✅ Created release for $TAG"
 
       - name: No changes summary
         if: steps.changes.outputs.changed == 'false'
