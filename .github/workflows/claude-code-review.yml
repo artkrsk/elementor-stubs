@@ -12,8 +12,10 @@ on:
 
 jobs:
   claude-review:
-    # Only run for repo owner's PRs
-    if: github.event.pull_request.user.login == github.repository_owner
+    # Only run for repo owner's PRs, skip automated PRs from github-actions[bot]
+    if: |
+      github.event.pull_request.user.login == github.repository_owner &&
+      github.event.pull_request.user.login != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
