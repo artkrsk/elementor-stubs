@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+- fixed: use PR with auto-merge for stub generation (#15)
+- fixed: add actions:write permission to check-updates workflow (#14)
+- Add Contributor Covenant Code of Conduct (#13)
+
+## [3.34.0.4] - 2025-12-24
+
+- feat(tests): expand unit test coverage for stub generation (#10)
+
+## [3.34.0.3] - 2025-12-23
+
+- Enhance security policy with scope and reporting details (#9)
+- fix(deps): move composer-normalize to require-dev (#8)
+- Automate CHANGELOG with git-cliff (#7)
+
 ## [3.34.0.2] - 2025-12-23
 
 - added: project infrastructure (v3.34.0.2)
@@ -33,6 +49,8 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[3.34.0.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.3...v3.34.0.4
+[3.34.0.3]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.2...v3.34.0.3
 [3.34.0.2]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.1...v3.34.0.2
 [3.34.0.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0...v3.34.0.1
 [3.34.0]: https://github.com/artkrsk/elementor-stubs/compare/v3.33.6.2...v3.34.0
