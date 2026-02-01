@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '3.34.1');
+		define('ELEMENTOR_VERSION', '3.34.4');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -7613,6 +7613,9 @@ namespace Elementor\Core\Utils {
         {
         }
         public static function is_plugin_connected($option_prefix): bool
+        {
+        }
+        public static function is_plugin_connected_to_one_subscription(): bool
         {
         }
         public static function get_ally_action_data(): array
@@ -35621,40 +35624,53 @@ namespace ElementorPro\Core\Updater {
         }
     }
 }
-namespace Elementor\Modules\EditorOne\Classes\Menu {
+namespace Elementor\Core\Admin\EditorOneMenu\Interfaces {
     interface Menu_Item_Interface
     {
-        public function get_capability();
-        public function get_label();
-        public function get_parent_slug();
-        public function is_visible();
-        public function get_position();
-        public function get_slug();
-        public function get_group_id();
+        public function get_capability(): string;
+        public function get_label(): string;
+        public function get_parent_slug(): string;
+        public function is_visible(): bool;
+        public function get_position(): int;
+        public function get_slug(): string;
+        public function get_group_id(): string;
+    }
+    interface Menu_Item_With_Custom_Url_Interface
+    {
+        public function get_menu_url(): string;
     }
 }
 namespace Elementor\App\AdminMenuItems {
-    class Editor_One_Theme_Builder_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Theme_Builder_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page, \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_With_Custom_Url_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_group_id()
+        public function get_menu_url(): string
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function get_page_title(): string
+        {
+        }
+        public function render(): void
         {
         }
     }
@@ -37675,27 +37691,27 @@ namespace Elementor\App\Modules\ImportExport {
     }
 }
 namespace Elementor\App\Modules\KitLibrary\AdminMenuItems {
-    class Editor_One_Website_Templates_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Website_Templates_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
     }
@@ -38424,6 +38440,23 @@ namespace Elementor\Core\Admin {
         public function admin_action_new_post()
         {
         }
+        public function admin_action_site_settings_redirect()
+        {
+        }
+        /**
+         * Admin action edit website.
+         *
+         * Redirects to the homepage edit URL if it exists and is built with Elementor,
+         * otherwise redirects to create a new page.
+         *
+         * Fired by `admin_action_elementor_edit_website` action.
+         *
+         * @since 3.x.x
+         * @access public
+         */
+        public function admin_action_edit_website_redirect()
+        {
+        }
         /**
          * @since 2.3.0
          * @access public
@@ -38505,6 +38538,231 @@ namespace Elementor\Core\Admin {
         {
         }
     }
+}
+namespace Elementor\Core\Admin\EditorOneMenu {
+    class Elementor_One_Menu_Manager
+    {
+        public function __construct()
+        {
+        }
+        public function check_if_pro_module_is_enabled(): void
+        {
+        }
+        public function register_elementor_home_submenus(): void
+        {
+        }
+        public function register_pro_submenus(): void
+        {
+        }
+        public function remove_all_submenus_for_edit_posts_users(): void
+        {
+        }
+        public function render_editor_page(): void
+        {
+        }
+        public function override_elementor_page_for_edit_posts_users(): void
+        {
+        }
+        public function enqueue_home_screen_on_editor_page(): void
+        {
+        }
+        public function fix_theme_builder_submenu_url($menu)
+        {
+        }
+        public function hide_legacy_templates_menu(): void
+        {
+        }
+        public function hide_old_elementor_menu(): void
+        {
+        }
+        public function register_flyout_items_as_hidden_submenus(): void
+        {
+        }
+        public function hide_flyout_items_from_wp_menu(): void
+        {
+        }
+        public function intercept_legacy_submenus(): void
+        {
+        }
+        public function enqueue_admin_menu_assets(): void
+        {
+        }
+    }
+}
+namespace Elementor\Core\Admin\EditorOneMenu\Interfaces {
+    interface Menu_Item_Third_Level_Interface extends \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
+    {
+        public function get_icon(): string;
+        public function has_children(): bool;
+    }
+}
+namespace Elementor\Core\Admin\EditorOneMenu\Menu {
+    abstract class Abstract_Level4_Menu_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
+    {
+        public function get_capability(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        abstract public function get_label(): string;
+        abstract public function get_position(): int;
+        abstract public function get_slug(): string;
+        abstract public function get_group_id(): string;
+    }
+    abstract class Abstract_Menu_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
+    {
+        public function get_capability(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function has_children(): bool
+        {
+        }
+        abstract public function get_label(): string;
+        abstract public function get_position(): int;
+        abstract public function get_slug(): string;
+        abstract public function get_icon(): string;
+    }
+    class Editor_One_Custom_Elements_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
+    {
+        public function get_capability(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_position(): int
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function has_children(): bool
+        {
+        }
+    }
+    class Legacy_Submenu_Item_Not_Mapped implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
+    {
+        public function __construct(array $submenu_data, ?string $parent_slug = null, ?int $position = 100)
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_capability(): string
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_page_title(): string
+        {
+        }
+        public function get_position(): int
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+    }
+    class Legacy_Submenu_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
+    {
+        public function __construct(array $submenu_data, ?string $parent_slug = null, ?int $position = 100)
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_capability(): string
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_page_title(): string
+        {
+        }
+        public function get_position(): int
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function has_children(): bool
+        {
+        }
+    }
+    class Third_Party_Pages_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
+    {
+        public function get_capability(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_position(): int
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function has_children(): bool
+        {
+        }
+    }
+}
+namespace Elementor\Core\Admin {
     class Feedback extends \Elementor\Core\Base\Module
     {
         /**
@@ -39951,27 +40209,27 @@ namespace Elementor\Core\Common\Modules\Ajax {
     }
 }
 namespace Elementor\Core\Common\Modules\Connect\AdminMenuItems {
-    class Editor_One_Connect_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    class Editor_One_Connect_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function get_page_title()
@@ -45099,35 +45357,28 @@ namespace Elementor\Core\Responsive {
         }
     }
 }
-namespace Elementor\Modules\EditorOne\Classes\Menu {
-    interface Menu_Item_Third_Level_Interface extends \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
-    {
-        public function get_icon(): string;
-        public function has_children(): bool;
-    }
-}
 namespace Elementor\Core\RoleManager {
-    class Editor_One_Role_Manager_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    class Editor_One_Role_Manager_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
@@ -54140,7 +54391,7 @@ namespace Elementor {
         const NEEDS_UPDATE_OPTION = 'icon_manager_needs_update';
         const FONT_ICON_SVG_CLASS_NAME = 'e-font-icon-svg';
         const LOAD_FA4_SHIM_OPTION_KEY = 'elementor_load_fa4_shim';
-        const ELEMENTOR_ICONS_VERSION = '5.45.0';
+        const ELEMENTOR_ICONS_VERSION = '5.46.0';
         /**
          * @param array  $icon
          * @param array  $attributes
@@ -55550,6 +55801,9 @@ namespace Elementor {
         protected function upgrade()
         {
         }
+        public function update_installing_string($translation, $text, $domain)
+        {
+        }
         /**
          * Run.
          *
@@ -55591,27 +55845,27 @@ namespace Elementor\Includes\Settings\AdminMenuItems {
         {
         }
     }
-    class Editor_One_Home_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
+    class Editor_One_Home_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
@@ -55624,27 +55878,27 @@ namespace Elementor\Includes\Settings\AdminMenuItems {
         {
         }
     }
-    class Editor_One_Settings_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    class Editor_One_Settings_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
@@ -55660,27 +55914,27 @@ namespace Elementor\Includes\Settings\AdminMenuItems {
         {
         }
     }
-    class Editor_One_Tools_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    class Editor_One_Tools_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
@@ -55834,6 +56088,8 @@ namespace Elementor {
          */
         const TAB_PERFORMANCE = 'performance';
         const ADMIN_MENU_PRIORITY = 10;
+        const MENU_CAPABILITY_MANAGE_OPTIONS = 'manage_options';
+        const MENU_CAPABILITY_EDIT_POSTS = 'edit_posts';
         public \Elementor\Modules\Home\Module $home_module;
         /**
          * Register admin menu.
@@ -56039,6 +56295,9 @@ namespace Elementor {
          * @access public
          */
         public function __construct()
+        {
+        }
+        public function get_warning_span(string $text): string
         {
         }
         /**
@@ -56925,54 +57184,57 @@ namespace Elementor\Includes\TemplateLibrary\Sources\AdminMenuItems {
         {
         }
     }
-    class Editor_One_Saved_Templates_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Saved_Templates_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface, \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_With_Custom_Url_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_group_id()
+        public function get_menu_url(): string
+        {
+        }
+        public function get_group_id(): string
         {
         }
     }
-    class Editor_One_Templates_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
+    class Editor_One_Templates_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function has_children(): bool
@@ -64072,6 +64334,14 @@ namespace Elementor\Modules\AtomicWidgets\DynamicTags {
         }
     }
 }
+namespace Elementor\Modules\AtomicWidgets\DynamicTags\ImportExport {
+    class Dynamic_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context): ?array
+        {
+        }
+    }
+}
 namespace Elementor\Modules\AtomicWidgets\Elements {
     /**
      * @mixin Has_Atomic_Base
@@ -68033,15 +68303,25 @@ namespace Elementor\Modules\EditorOne\Classes {
         {
         }
     }
+    class Editor_One_Pointer
+    {
+        const CURRENT_POINTER_SLUG = 'e-editor-one-notice-pointer';
+        public function __construct()
+        {
+        }
+        public function admin_print_script()
+        {
+        }
+    }
     class Legacy_Submenu_Interceptor
     {
         public function __construct(\Elementor\Modules\EditorOne\Classes\Menu_Data_Provider $menu_data_provider, \Elementor\Modules\EditorOne\Classes\Slug_Normalizer $slug_normalizer)
         {
         }
-        public function intercept_all(): void
+        public function intercept_all(bool $is_pro_module_enabled): void
         {
         }
-        public function intercept_elementor_menu_items(array $submenu_items): array
+        public function intercept_elementor_menu_items(array $submenu_items, bool $is_pro_module_enabled): array
         {
         }
         public function intercept_templates_menu_items(array $submenu_items): array
@@ -68054,13 +68334,18 @@ namespace Elementor\Modules\EditorOne\Classes {
     class Menu_Config
     {
         const ELEMENTOR_MENU_SLUG = 'elementor';
+        const ELEMENTOR_HOME_MENU_SLUG = 'elementor-home';
         const EDITOR_MENU_SLUG = 'elementor-editor';
         const TEMPLATES_GROUP_ID = 'elementor-editor-templates';
         const SETTINGS_GROUP_ID = 'elementor-editor-settings';
         const EDITOR_GROUP_ID = 'elementor-editor-items';
         const CUSTOM_ELEMENTS_GROUP_ID = 'elementor-editor-custom-elements';
         const SYSTEM_GROUP_ID = 'elementor-editor-system';
+        const THIRD_PARTY_GROUP_ID = 'elementor-editor-third-party';
         const LEGACY_TEMPLATES_SLUG = 'edit.php?post_type=elementor_library';
+        const CAPABILITY_EDIT_POSTS = 'edit_posts';
+        const CAPABILITY_MANAGE_OPTIONS = 'manage_options';
+        const MENU_POSITION = 58.5;
         public static function get_excluded_level4_slugs(): array
         {
         }
@@ -68068,6 +68353,9 @@ namespace Elementor\Modules\EditorOne\Classes {
         {
         }
         public static function get_legacy_slug_mapping(): array
+        {
+        }
+        public static function is_elementor_home_menu_available(): bool
         {
         }
         public static function get_legacy_pro_mapping(): array
@@ -68079,25 +68367,30 @@ namespace Elementor\Modules\EditorOne\Classes {
         public static function get_custom_code_url(): string
         {
         }
+        public static function get_elementor_home_url(): string
+        {
+        }
         public static function get_elementor_post_types(): array
         {
         }
     }
     class Menu_Data_Provider
     {
+        public const THIRD_LEVEL_EDITOR_FLYOUT = 'editor_flyout';
+        public const THIRD_LEVEL_FLYOUT_MENU = 'flyout_menu';
         public static function instance(): self
         {
         }
         public function get_slug_normalizer(): \Elementor\Modules\EditorOne\Classes\Slug_Normalizer
         {
         }
-        public function register_menu(\Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface $item): void
+        public function register_menu(\Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface $item): void
         {
         }
-        public function register_level3_item(\Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface $item): void
+        public function register_level3_item(\Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface $item): void
         {
         }
-        public function register_level4_item(\Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface $item): void
+        public function register_level4_item(\Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface $item): void
         {
         }
         public function get_level3_items(): array
@@ -68109,7 +68402,7 @@ namespace Elementor\Modules\EditorOne\Classes {
         public function is_item_already_registered(string $item_slug): bool
         {
         }
-        public function get_editor_flyout_data(): array
+        public function get_third_level_data(string $variant): array
         {
         }
         public function get_level4_flyout_data(): array
@@ -68124,148 +68417,22 @@ namespace Elementor\Modules\EditorOne\Classes {
         public function is_elementor_editor_page(): bool
         {
         }
+        public function is_editor_one_post_edit_screen(): bool
+        {
+        }
+        public function is_editor_one_admin_page(): bool
+        {
+        }
         public static function get_elementor_post_types(): array
         {
         }
-    }
-}
-namespace Elementor\Modules\EditorOne\Classes\Menu\Items {
-    abstract class Abstract_Level4_Menu_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
-    {
-        public function get_capability()
+        public function is_item_accessible(\Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface $item): bool
         {
         }
-        public function get_parent_slug()
-        {
-        }
-        public function is_visible()
-        {
-        }
-        abstract public function get_label();
-        abstract public function get_position();
-        abstract public function get_slug();
-        abstract public function get_group_id();
-    }
-    abstract class Abstract_Menu_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
-    {
-        public function get_capability()
-        {
-        }
-        public function get_parent_slug()
-        {
-        }
-        public function is_visible()
-        {
-        }
-        public function get_group_id()
-        {
-        }
-        public function has_children(): bool
-        {
-        }
-        abstract public function get_label();
-        abstract public function get_position();
-        abstract public function get_slug();
-        abstract public function get_icon(): string;
-    }
-    class Editor_One_Custom_Elements_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
-    {
-        public function get_capability()
-        {
-        }
-        public function get_parent_slug()
-        {
-        }
-        public function is_visible()
-        {
-        }
-        public function get_label()
-        {
-        }
-        public function get_position()
-        {
-        }
-        public function get_slug()
-        {
-        }
-        public function get_icon(): string
-        {
-        }
-        public function get_group_id()
-        {
-        }
-        public function has_children(): bool
+        public static function get_current_user_capabilities(): array
         {
         }
     }
-    class Legacy_Submenu_Item_Not_Mapped implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
-    {
-        public function __construct(array $submenu_data, ?string $parent_slug = null, ?int $position = 100)
-        {
-        }
-        public function get_label(): string
-        {
-        }
-        public function get_capability(): string
-        {
-        }
-        public function get_slug(): string
-        {
-        }
-        public function get_parent_slug(): string
-        {
-        }
-        public function is_visible(): bool
-        {
-        }
-        public function get_page_title(): string
-        {
-        }
-        public function get_position(): int
-        {
-        }
-        public function get_group_id(): string
-        {
-        }
-        public function get_icon(): string
-        {
-        }
-        public function has_children(): bool
-        {
-        }
-    }
-    class Legacy_Submenu_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
-    {
-        public function __construct(array $submenu_data, ?string $parent_slug = null, ?int $position = 100)
-        {
-        }
-        public function get_label(): string
-        {
-        }
-        public function get_capability(): string
-        {
-        }
-        public function get_slug(): string
-        {
-        }
-        public function get_parent_slug(): string
-        {
-        }
-        public function is_visible(): bool
-        {
-        }
-        public function get_page_title(): string
-        {
-        }
-        public function get_position(): int
-        {
-        }
-        public function get_group_id(): string
-        {
-        }
-    }
-}
-namespace Elementor\Modules\EditorOne\Classes {
     class Slug_Normalizer
     {
         public function normalize(string $slug): string
@@ -68289,48 +68456,6 @@ namespace Elementor\Modules\EditorOne\Classes {
     }
 }
 namespace Elementor\Modules\EditorOne\Components {
-    class Elementor_One_Menu_Manager
-    {
-        public function __construct()
-        {
-        }
-        public function check_if_pro_module_is_enabled(): void
-        {
-        }
-        public function register_unified_submenus(): void
-        {
-        }
-        public function reorder_elementor_submenu(): void
-        {
-        }
-        public function reposition_elementor_menu(): void
-        {
-        }
-        public function render_editor_page(): void
-        {
-        }
-        public function enqueue_home_screen_on_editor_page(): void
-        {
-        }
-        public function fix_theme_builder_submenu_url($menu)
-        {
-        }
-        public function hide_legacy_templates_menu(): void
-        {
-        }
-        public function register_flyout_items_as_hidden_submenus(): void
-        {
-        }
-        public function hide_flyout_items_from_wp_menu(): void
-        {
-        }
-        public function intercept_legacy_submenus(): void
-        {
-        }
-        public function enqueue_admin_menu_assets(): void
-        {
-        }
-    }
     class Sidebar_Navigation_Handler
     {
         public function __construct()
@@ -68346,6 +68471,18 @@ namespace Elementor\Modules\EditorOne\Components {
         {
         }
     }
+    class Top_Bar_Handler
+    {
+        public function __construct()
+        {
+        }
+        public function enqueue_assets(): void
+        {
+        }
+        public function render_top_bar_container(): void
+        {
+        }
+    }
 }
 namespace Elementor\Modules\EditorOne {
     class Module extends \Elementor\Core\Base\Module
@@ -68353,6 +68490,9 @@ namespace Elementor\Modules\EditorOne {
         const EXPERIMENT_NAME = 'e_editor_one';
         const CUSTOM_REACT_APP_PAGES = ['elementor-element-manager'];
         public function get_name(): string
+        {
+        }
+        public static function is_active(): bool
         {
         }
         public static function get_experimental_data(): array
@@ -68408,27 +68548,27 @@ namespace Elementor\Modules\ElementManager {
     }
 }
 namespace Elementor\Modules\ElementManager\AdminMenuItems {
-    class Editor_One_Elements_Manager_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    class Editor_One_Elements_Manager_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function get_page_title()
@@ -68797,27 +68937,27 @@ namespace Elementor\Modules\Favorites\Types {
     }
 }
 namespace Elementor\Modules\FloatingButtons\AdminMenuItems {
-    class Editor_One_Floating_Elements_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Floating_Elements_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
     }
@@ -69760,6 +69900,9 @@ namespace Elementor\Modules\Home {
 namespace Elementor\Modules\Home\Transformations\Base {
     abstract class Transformations_Abstract
     {
+        protected const USER_TIER_FREE = 'free';
+        protected const USER_TIER_PRO = 'pro';
+        protected const USER_TIER_AGENCY = 'agency';
         protected const USER_TIER_ONE = 'one';
         protected \Elementor\Core\Isolation\Wordpress_Adapter_Interface $wordpress_adapter;
         protected \Elementor\Core\Isolation\Plugin_Status_Adapter_Interface $plugin_status_adapter;
@@ -70186,6 +70329,39 @@ namespace Elementor\Modules\KitElementsDefaults\Utils {
     }
 }
 namespace Elementor\Modules\LandingPages\AdminMenuItems {
+    class Editor_One_Landing_Pages_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    {
+        public function __construct(\Elementor\Modules\LandingPages\Module $module)
+        {
+        }
+        public function get_capability(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_position(): int
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function get_page_title(): string
+        {
+        }
+        public function render()
+        {
+        }
+    }
     class Landing_Pages_Menu_Item implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item
     {
         public function is_visible()
@@ -70302,6 +70478,9 @@ namespace Elementor\Modules\LandingPages {
          * @return bool Whether the post was built with Elementor.
          */
         public function is_elementor_landing_page($post)
+        {
+        }
+        public function get_menu_args()
         {
         }
         /**
@@ -71280,36 +71459,36 @@ namespace Elementor\Modules\ProInstall {
         {
         }
     }
-    class Editor_One_Connect_Account_Menu_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Connect_Account_Menu_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
     {
         public function __construct(\Elementor\Modules\ProInstall\Connect $connect, array $script_config)
         {
         }
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_page_title()
+        public function get_page_title(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function has_children(): bool
@@ -71374,16 +71553,16 @@ namespace Elementor\Modules\ProInstall {
 namespace Elementor\Modules\Promotions\AdminMenuItems {
     abstract class Base_Promotion_Item implements \Elementor\Modules\Promotions\AdminMenuItems\Interfaces\Promotion_Menu_Item
     {
-        public function get_name()
+        public function get_name(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_capability()
+        public function get_capability(): string
         {
         }
         public function get_cta_text()
@@ -71405,13 +71584,13 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
         abstract protected function get_cta_url(): string;
         abstract protected function get_content_lines(): array;
         abstract protected function get_video_url(): string;
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_capability()
+        public function get_capability(): string
         {
         }
         protected function get_cta_text()
@@ -71504,87 +71683,87 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
         {
         }
     }
-    class Editor_One_Custom_Code_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Custom_Code_Promotion_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Custom_Code_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Custom_Code_Promotion_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
     {
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
     }
-    class Editor_One_Custom_Elements_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
+    class Editor_One_Custom_Elements_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function has_children(): bool
         {
         }
     }
-    class Editor_One_Fonts_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Custom_Fonts_Promotion_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Fonts_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Custom_Fonts_Promotion_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
     {
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
     }
-    class Editor_One_Icons_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Custom_Icons_Promotion_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Icons_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Custom_Icons_Promotion_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
     {
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
     }
@@ -71593,13 +71772,13 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
         public function __construct()
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_name()
+        public function get_name(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
         public function get_page_title()
@@ -71618,21 +71797,21 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
         {
         }
     }
-    class Editor_One_Popups_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Popups_Promotion_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface
+    class Editor_One_Popups_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Popups_Promotion_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
     {
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
     }
@@ -71663,21 +71842,21 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
         {
         }
     }
-    class Editor_One_Submissions_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Form_Submissions_Promotion_Item implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
+    class Editor_One_Submissions_Menu extends \Elementor\Modules\Promotions\AdminMenuItems\Form_Submissions_Promotion_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
     {
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function get_icon(): string
@@ -72263,27 +72442,27 @@ namespace Elementor\Modules\Styleguide {
     }
 }
 namespace Elementor\Modules\System_Info\AdminMenuItems {
-    class Editor_One_System_Info_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    class Editor_One_System_Info_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function get_page_title()
@@ -72293,30 +72472,30 @@ namespace Elementor\Modules\System_Info\AdminMenuItems {
         {
         }
     }
-    class Editor_One_System_Menu implements \Elementor\Modules\EditorOne\Classes\Menu\Menu_Item_Third_Level_Interface
+    class Editor_One_System_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface
     {
-        public function get_capability()
+        public function get_capability(): string
         {
         }
-        public function get_parent_slug()
+        public function get_parent_slug(): string
         {
         }
-        public function is_visible()
+        public function is_visible(): bool
         {
         }
-        public function get_label()
+        public function get_label(): string
         {
         }
-        public function get_position()
+        public function get_position(): int
         {
         }
-        public function get_slug()
+        public function get_slug(): string
         {
         }
         public function get_icon(): string
         {
         }
-        public function get_group_id()
+        public function get_group_id(): string
         {
         }
         public function has_children(): bool
