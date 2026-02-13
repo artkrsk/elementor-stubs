@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- fixed: downgrade woocommerce-stubs to 10.4.2
+- changed: updated stubs for Elementor 3.34.4 (#22)
+
+## [3.34.4] - 2026-01-30
+
 - added: .vscode to gitignore
 
 ## [3.34.1] - 2026-01-15
@@ -55,6 +60,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[3.34.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.1...v3.34.4
 [3.34.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.4...v3.34.1
 [3.34.0.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.3...v3.34.0.4
 [3.34.0.3]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.2...v3.34.0.3
