@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d7b4f4139d985d57567c2119b434d449",
+    "content-hash": "6afe188643e6c3b43679d9e03dc45074",
     "packages": [
         {
             "name": "php-stubs/wordpress-stubs",
@@ -106,16 +106,16 @@
     "packages-dev": [
         {
             "name": "captainhook/captainhook",
-            "version": "5.28.2",
+            "version": "5.28.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/captainhook-git/captainhook.git",
-                "reference": "2adbc8fea26823ecf52578998de5daf57846872f"
+                "reference": "2a7316bf4ba4c3b11b3544c063788622d3520ee1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/captainhook-git/captainhook/zipball/2adbc8fea26823ecf52578998de5daf57846872f",
-                "reference": "2adbc8fea26823ecf52578998de5daf57846872f",
+                "url": "https://api.github.com/repos/captainhook-git/captainhook/zipball/2a7316bf4ba4c3b11b3544c063788622d3520ee1",
+                "reference": "2a7316bf4ba4c3b11b3544c063788622d3520ee1",
                 "shasum": ""
             },
             "require": {
@@ -178,7 +178,7 @@
             ],
             "support": {
                 "issues": "https://github.com/captainhook-git/captainhook/issues",
-                "source": "https://github.com/captainhook-git/captainhook/tree/5.28.2"
+                "source": "https://github.com/captainhook-git/captainhook/tree/5.28.5"
             },
             "funding": [
                 {
@@ -186,7 +186,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-15T14:36:43+00:00"
+            "time": "2026-02-28T08:59:22+00:00"
         },
         {
             "name": "captainhook/secrets",
@@ -1436,16 +1436,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v10.5.1",
+            "version": "v10.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "cbe8c2121958488b24df3c986e9c7a028aea3591"
+                "reference": "4b01d69e3bd0e22e125973e3049b1cd7249a86f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/cbe8c2121958488b24df3c986e9c7a028aea3591",
-                "reference": "cbe8c2121958488b24df3c986e9c7a028aea3591",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/4b01d69e3bd0e22e125973e3049b1cd7249a86f3",
+                "reference": "4b01d69e3bd0e22e125973e3049b1cd7249a86f3",
                 "shasum": ""
             },
             "require": {
@@ -1474,9 +1474,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.5.1"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.5.2"
             },
-            "time": "2026-02-11T09:34:21+00:00"
+            "time": "2026-02-16T20:45:34+00:00"
         },
         {
             "name": "phpcsstandards/phpcsextra",
@@ -1730,11 +1730,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.39",
+            "version": "2.1.40",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/c6f73a2af4cbcd99c931d0fb8f08548cc0fa8224",
-                "reference": "c6f73a2af4cbcd99c931d0fb8f08548cc0fa8224",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9b2c7aeb83a75d8680ea5e7c9b7fca88052b766b",
+                "reference": "9b2c7aeb83a75d8680ea5e7c9b7fca88052b766b",
                 "shasum": ""
             },
             "require": {
@@ -1779,7 +1779,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-11T14:48:56+00:00"
+            "time": "2026-02-23T15:04:35+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -4768,5 +4768,5 @@
     "platform-overrides": {
         "php": "8.0.0"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
