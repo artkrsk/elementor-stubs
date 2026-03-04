@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   generate:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout elementor-stubs
@@ -64,12 +64,6 @@ jobs:
           ref: ${{ inputs.elementor_pro_version == 'latest' && 'master' || format('v{0}', inputs.elementor_pro_version) }}
           path: elementor-pro-source
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.0'
-          coverage: none
-
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
@@ -79,13 +73,24 @@ jobs:
           ELEMENTOR_PRO_PATH: ${{ inputs.elementor_pro_version != 'skip' && './elementor-pro-source' || '' }}
         run: composer generate
 
+      - name: Install git-cliff
+        run: |
+          if ! command -v git-cliff &> /dev/null; then
+            ARCH=$(uname -m)
+            # Get latest release download URL for this architecture
+            DOWNLOAD_URL=$(curl -s https://api.github.com/repos/orhun/git-cliff/releases/latest | \
+              grep "browser_download_url.*${ARCH}.*linux-gnu.*tar.gz\"" | head -1 | cut -d '"' -f 4)
+            if [ -n "$DOWNLOAD_URL" ]; then
+              curl -sSfL "$DOWNLOAD_URL" | tar xz
+              sudo mv git-cliff-*/git-cliff /usr/local/bin/
+              rm -rf git-cliff-*/
+            else
+              pip3 install git-cliff
+            fi
+          fi
+
       - name: Update CHANGELOG
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-          args: --verbose
-        env:
-          OUTPUT: CHANGELOG.md
+        run: git-cliff --config cliff.toml --verbose --output CHANGELOG.md
 
       - name: Extract Elementor version
         id: version
@@ -138,14 +143,11 @@ jobs:
         run: |
           SHA="${{ steps.branch.outputs.sha }}"
 
-          # Report success for all required status checks
-          for PHP_VERSION in "8.0" "8.1" "8.2" "8.3" "8.4"; do
-            gh api repos/${{ github.repository }}/statuses/$SHA \
-              -f state=success \
-              -f context="test ($PHP_VERSION)" \
-              -f description="Tests passed (via generate workflow)"
-            echo "✅ Reported status for test ($PHP_VERSION)"
-          done
+          # Report success for required status check
+          gh api repos/${{ github.repository }}/statuses/$SHA \
+            -f state=success \
+            -f context="test" \
+            -f description="Tests passed (via generate workflow)"
 
       - name: Create PR with auto-merge
         if: steps.changes.outputs.changed == 'true'
