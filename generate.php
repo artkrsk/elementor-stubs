@@ -577,11 +577,18 @@ function fixMissingParentStubs( string $content ): string {
 				$methods_code = '';
 
 				foreach ( $method_refs as $ref ) {
-					$method_name = trim( preg_replace( '/.*::/', '', $ref ) );
+					// Parse "Interface\FQCN::method_name" from the error.
+					$ref_parts       = explode( '::', trim( $ref ), 2 );
+					$method_name     = $ref_parts[1] ?? $ref_parts[0];
+					$interface_short = basename( str_replace( '\\', '/', trim( $ref_parts[0] ?? '', '\\' ) ) );
 
-					// Look up the full method signature from the interface definition.
-					if ( preg_match( '/public function ' . preg_quote( $method_name, '/' ) . '\([^)]*\)(?:\s*:\s*\??\w+)?/', $content, $sig_match ) ) {
-						$methods_code .= "\t\t{$sig_match[0]} {}\n";
+					// Look up method signature within the specific interface block.
+					$iface_pattern = '/interface\s+' . preg_quote( $interface_short, '/' )
+						. '\s*\{[^}]*?(public function ' . preg_quote( $method_name, '/' )
+						. '\([^)]*\)(?:\s*:\s*\??\w+)?)\s*;/s';
+
+					if ( preg_match( $iface_pattern, $content, $sig_match ) ) {
+						$methods_code .= "\t\t{$sig_match[1]} {}\n";
 					} else {
 						$methods_code .= "\t\tpublic function {$method_name}() {}\n";
 					}
