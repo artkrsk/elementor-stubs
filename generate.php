@@ -134,6 +134,10 @@ $content = addSelfContainedConstants( $content, $version, $proVersion );
 // 5. Add class aliases
 $content .= "\n" . getClassAliases();
 
+// 5.5. Remove classes whose parent stubs are missing (e.g. commercial-only classes
+// absent from GPL mirrors). Runs iteratively until no more broken chains remain.
+$content = removeOrphanedClasses( $content );
+
 // 6. Write final output
 file_put_contents( __DIR__ . '/elementor-stubs.php', $content );
 
@@ -507,6 +511,80 @@ function resolveClassName( string $className, string $currentNamespace, array $u
 
 	// Return as-is if we can't resolve it
 	return $className;
+}
+
+/**
+ * Remove class/interface/trait definitions whose parent class or interface is not defined
+ * in the stubs. This handles commercial-only classes absent from GPL source mirrors.
+ * Runs in a loop because removing one class may expose another orphaned child.
+ */
+function removeOrphanedClasses( string $content ): string {
+	$max_passes = 10;
+
+	for ( $pass = 0; $pass < $max_passes; $pass++ ) {
+		$tmp = tempnam( sys_get_temp_dir(), 'elementor_stubs_' );
+		file_put_contents( $tmp, $content );
+
+		$stubs_preload = array(
+			__DIR__ . '/vendor/php-stubs/wordpress-stubs/wordpress-stubs.php',
+			__DIR__ . '/vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php',
+			__DIR__ . '/vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php',
+		);
+
+		$requires = '';
+		foreach ( $stubs_preload as $stub ) {
+			if ( file_exists( $stub ) ) {
+				$requires .= sprintf( 'require_once %s; ', var_export( $stub, true ) );
+			}
+		}
+		$check_script = $requires . sprintf( 'require_once %s;', var_export( $tmp, true ) );
+
+		// Suppress deprecation notices; only fatal "class not found" errors matter.
+		exec( 'php -d error_reporting=E_ERROR -r ' . escapeshellarg( $check_script ) . ' 2>&1', $output_lines, $exit_code );
+		unlink( $tmp );
+
+		if ( 0 === $exit_code ) {
+			break;
+		}
+
+		$output          = implode( "\n", $output_lines );
+		$missing_classes = array();
+		preg_match_all( '/Class "([^"]+)" not found/', $output, $matches );
+
+		if ( empty( $matches[1] ) ) {
+			break; // Different kind of error, stop.
+		}
+
+		$missing_classes = array_unique( $matches[1] );
+		$removed         = false;
+
+		foreach ( $missing_classes as $fqcn ) {
+			$short_name = basename( str_replace( '\\', '/', $fqcn ) );
+
+			// Match the full class/interface/trait block that extends/implements this missing class.
+			// We target only the definition blocks whose parent is missing, not the missing class itself.
+			$pattern = '/\/\*\*[\s\S]*?\*\/\s+' .
+				'(?:abstract\s+|final\s+)?(?:class|interface|trait)\s+\w+[\s\S]*?' .
+				'(?:extends|implements)[\s\S]*?' . preg_quote( $short_name, '/' ) .
+				'[\s\S]*?\{[\s\S]*?^\}/m';
+
+			$new_content = preg_replace( $pattern, '', $content );
+
+			if ( $new_content !== $content ) {
+				$content = $new_content;
+				$removed = true;
+				echo color( "  → Removed orphaned stub referencing missing: {$fqcn}\n", 'yellow' );
+			}
+		}
+
+		if ( ! $removed ) {
+			break; // Nothing was removed, avoid infinite loop.
+		}
+
+		$content = preg_replace( '/\n{3,}/', "\n\n", $content );
+	}
+
+	return $content;
 }
 
 function getClassAliases(): string {
