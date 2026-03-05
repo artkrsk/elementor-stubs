@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+- fixed: look up method signatures from the correct interface block
+- fixed: handle abstract method errors in missing parent stub generation
+- fixed: auto-add empty stubs for missing parent classes instead of removing children
+- fixed: auto-remove orphaned stubs whose parent class is missing from source
+
+## [3.35.6] - 2026-03-05
+
+- changed: updated stubs for Elementor 3.35.6 (#30)
 - fixed: disable git hooks in CI to prevent captainhook failures on self-hosted runner
 - fixed: move woocommerce-stubs from require-dev to require
 - update gitattributes and composer dependencies
@@ -68,6 +76,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[3.35.6]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.4...v3.35.6
 [3.35.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.4...v3.35.4
 [3.34.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.1...v3.34.4
 [3.34.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.4...v3.34.1
