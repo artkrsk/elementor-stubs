@@ -514,9 +514,11 @@ function resolveClassName( string $className, string $currentNamespace, array $u
 }
 
 /**
- * Add empty stubs for parent classes that are missing from the generated stubs.
- * This handles commercial-only classes absent from GPL source mirrors (e.g. proelements).
- * Validates by loading the stubs in a subprocess and parsing "Class not found" errors.
+ * Add stubs for parent classes missing from the generated output.
+ * Handles commercial-only classes absent from GPL source mirrors (e.g. proelements).
+ * Validates by loading stubs in a subprocess, then fixes two types of fatal errors:
+ *   1. "Class not found" → adds an empty stub class
+ *   2. "abstract methods" → adds missing method implementations to the stub
  */
 function fixMissingParentStubs( string $content ): string {
 	$max_passes = 10;
@@ -539,7 +541,7 @@ function fixMissingParentStubs( string $content ): string {
 		}
 		$check_script = $requires . sprintf( 'require_once %s;', var_export( $tmp, true ) );
 
-		// Suppress deprecation notices; only fatal "class not found" errors matter.
+		$output_lines = array();
 		exec( 'php -d error_reporting=E_ERROR -r ' . escapeshellarg( $check_script ) . ' 2>&1', $output_lines, $exit_code );
 		unlink( $tmp );
 
@@ -547,27 +549,55 @@ function fixMissingParentStubs( string $content ): string {
 			break;
 		}
 
-		$output = implode( "\n", $output_lines );
-		preg_match_all( '/Class "([^"]+)" not found/', $output, $matches );
+		$output  = implode( "\n", $output_lines );
+		$changed = false;
 
-		if ( empty( $matches[1] ) ) {
-			break; // Different kind of error, stop.
+		// 1. Handle "Class not found" → add empty parent stub.
+		if ( preg_match_all( '/Class "([^"]+)" not found/', $output, $matches ) && ! empty( $matches[1] ) ) {
+			foreach ( array_unique( $matches[1] ) as $fqcn ) {
+				$parts      = explode( '\\', ltrim( $fqcn, '\\' ) );
+				$class_name = array_pop( $parts );
+				$namespace  = implode( '\\', $parts );
+
+				$content .= "\nnamespace {$namespace} {\n\tclass {$class_name} {}\n}\n";
+				$changed  = true;
+				echo color( "  → Added empty stub for missing parent: {$fqcn}\n", 'yellow' );
+			}
 		}
 
-		$added = false;
+		// 2. Handle "abstract methods" → add missing methods to the empty parent stub.
+		if ( preg_match( '/Class (\S+) contains \d+ abstract method.*?\(([^)]+)\)/', $output, $abstract_match ) ) {
+			$concrete_class = $abstract_match[1];
+			$method_refs    = array_map( 'trim', explode( ',', $abstract_match[2] ) );
 
-		foreach ( array_unique( $matches[1] ) as $fqcn ) {
-			$parts      = explode( '\\', ltrim( $fqcn, '\\' ) );
-			$class_name = array_pop( $parts );
-			$namespace  = implode( '\\', $parts );
+			// Find the parent class name from the child's extends clause.
+			$short_concrete = basename( str_replace( '\\', '/', $concrete_class ) );
+			if ( preg_match( '/class\s+' . preg_quote( $short_concrete, '/' ) . '\s+extends\s+([\w\\\\]+)/', $content, $parent_match ) ) {
+				$parent_short = basename( str_replace( '\\', '/', trim( $parent_match[1], '\\' ) ) );
+				$methods_code = '';
 
-			// Add a minimal empty stub so PHP can resolve the class during loading.
-			$content .= "\nnamespace {$namespace} {\n\tclass {$class_name} {}\n}\n";
-			$added    = true;
-			echo color( "  → Added empty stub for missing parent: {$fqcn}\n", 'yellow' );
+				foreach ( $method_refs as $ref ) {
+					$method_name = trim( preg_replace( '/.*::/', '', $ref ) );
+
+					// Look up the full method signature from the interface definition.
+					if ( preg_match( '/public function ' . preg_quote( $method_name, '/' ) . '\([^)]*\)(?:\s*:\s*\??\w+)?/', $content, $sig_match ) ) {
+						$methods_code .= "\t\t{$sig_match[0]} {}\n";
+					} else {
+						$methods_code .= "\t\tpublic function {$method_name}() {}\n";
+					}
+				}
+
+				$content = str_replace(
+					"class {$parent_short} {}",
+					"class {$parent_short} {\n{$methods_code}\t}",
+					$content
+				);
+				$changed = true;
+				echo color( "  → Added missing methods to stub: {$parent_short}\n", 'yellow' );
+			}
 		}
 
-		if ( ! $added ) {
+		if ( ! $changed ) {
 			break;
 		}
 	}
