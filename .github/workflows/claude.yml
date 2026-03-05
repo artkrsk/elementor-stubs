@@ -26,6 +26,9 @@ jobs:
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
+      - name: Disable git hooks
+        run: git config --global core.hooksPath /dev/null
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:

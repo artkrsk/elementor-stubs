@@ -24,6 +24,9 @@ jobs:
       id-token: write
 
     steps:
+      - name: Disable git hooks
+        run: git config --global core.hooksPath /dev/null
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:

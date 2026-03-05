@@ -24,6 +24,9 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: Disable git hooks
+        run: git config --global core.hooksPath /dev/null
+
       - name: Checkout elementor-stubs
         uses: actions/checkout@v6
         with:
