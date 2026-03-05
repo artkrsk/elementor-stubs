@@ -134,9 +134,9 @@ $content = addSelfContainedConstants( $content, $version, $proVersion );
 // 5. Add class aliases
 $content .= "\n" . getClassAliases();
 
-// 5.5. Remove classes whose parent stubs are missing (e.g. commercial-only classes
-// absent from GPL mirrors). Runs iteratively until no more broken chains remain.
-$content = removeOrphanedClasses( $content );
+// 5.5. Add empty stubs for parent classes missing from source (e.g. commercial-only
+// classes absent from GPL mirrors). Runs iteratively until the stubs file loads cleanly.
+$content = fixMissingParentStubs( $content );
 
 // 6. Write final output
 file_put_contents( __DIR__ . '/elementor-stubs.php', $content );
@@ -514,11 +514,11 @@ function resolveClassName( string $className, string $currentNamespace, array $u
 }
 
 /**
- * Remove class/interface/trait definitions whose parent class or interface is not defined
- * in the stubs. This handles commercial-only classes absent from GPL source mirrors.
- * Runs in a loop because removing one class may expose another orphaned child.
+ * Add empty stubs for parent classes that are missing from the generated stubs.
+ * This handles commercial-only classes absent from GPL source mirrors (e.g. proelements).
+ * Validates by loading the stubs in a subprocess and parsing "Class not found" errors.
  */
-function removeOrphanedClasses( string $content ): string {
+function fixMissingParentStubs( string $content ): string {
 	$max_passes = 10;
 
 	for ( $pass = 0; $pass < $max_passes; $pass++ ) {
@@ -547,41 +547,29 @@ function removeOrphanedClasses( string $content ): string {
 			break;
 		}
 
-		$output          = implode( "\n", $output_lines );
-		$missing_classes = array();
+		$output = implode( "\n", $output_lines );
 		preg_match_all( '/Class "([^"]+)" not found/', $output, $matches );
 
 		if ( empty( $matches[1] ) ) {
 			break; // Different kind of error, stop.
 		}
 
-		$missing_classes = array_unique( $matches[1] );
-		$removed         = false;
+		$added = false;
 
-		foreach ( $missing_classes as $fqcn ) {
-			$short_name = basename( str_replace( '\\', '/', $fqcn ) );
+		foreach ( array_unique( $matches[1] ) as $fqcn ) {
+			$parts      = explode( '\\', ltrim( $fqcn, '\\' ) );
+			$class_name = array_pop( $parts );
+			$namespace  = implode( '\\', $parts );
 
-			// Match the full class/interface/trait block that extends/implements this missing class.
-			// We target only the definition blocks whose parent is missing, not the missing class itself.
-			$pattern = '/\/\*\*[\s\S]*?\*\/\s+' .
-				'(?:abstract\s+|final\s+)?(?:class|interface|trait)\s+\w+[\s\S]*?' .
-				'(?:extends|implements)[\s\S]*?' . preg_quote( $short_name, '/' ) .
-				'[\s\S]*?\{[\s\S]*?^\}/m';
-
-			$new_content = preg_replace( $pattern, '', $content );
-
-			if ( $new_content !== $content ) {
-				$content = $new_content;
-				$removed = true;
-				echo color( "  → Removed orphaned stub referencing missing: {$fqcn}\n", 'yellow' );
-			}
+			// Add a minimal empty stub so PHP can resolve the class during loading.
+			$content .= "\nnamespace {$namespace} {\n\tclass {$class_name} {}\n}\n";
+			$added    = true;
+			echo color( "  → Added empty stub for missing parent: {$fqcn}\n", 'yellow' );
 		}
 
-		if ( ! $removed ) {
-			break; // Nothing was removed, avoid infinite loop.
+		if ( ! $added ) {
+			break;
 		}
-
-		$content = preg_replace( '/\n{3,}/', "\n\n", $content );
 	}
 
 	return $content;
