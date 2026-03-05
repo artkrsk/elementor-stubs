@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+- fixed: disable git hooks in CI to prevent captainhook failures on self-hosted runner
+- fixed: move woocommerce-stubs from require-dev to require
+- update gitattributes and composer dependencies
+- migrate all workflows to self-hosted runner
+
+## [3.35.4] - 2026-02-13
+
+- changed: updated stubs for Elementor 3.35.4 (#27)
 - fixed: downgrade woocommerce-stubs to 10.4.2
 - changed: updated stubs for Elementor 3.34.4 (#22)
 
@@ -60,6 +68,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[3.35.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.4...v3.35.4
 [3.34.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.1...v3.34.4
 [3.34.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.4...v3.34.1
 [3.34.0.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.0.3...v3.34.0.4
