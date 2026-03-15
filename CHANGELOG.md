@@ -1,7 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [3.35.6.1] - 2026-03-05
 
+- changed: updated stubs for Elementor 3.35.6 (#31)
 - fixed: look up method signatures from the correct interface block
 - fixed: handle abstract method errors in missing parent stub generation
 - fixed: auto-add empty stubs for missing parent classes instead of removing children
@@ -76,6 +77,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[3.35.6.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.6...v3.35.6.1
 [3.35.6]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.4...v3.35.6
 [3.35.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.4...v3.35.4
 [3.34.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.1...v3.34.4
