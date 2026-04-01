@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.35.7] - 2026-03-15
+
+- changed: updated stubs for Elementor 3.35.7 (#32)
+
 ## [3.35.6.1] - 2026-03-05
 
 - changed: updated stubs for Elementor 3.35.6 (#31)
@@ -77,6 +81,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[3.35.7]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.6.1...v3.35.7
 [3.35.6.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.6...v3.35.6.1
 [3.35.6]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.4...v3.35.6
 [3.35.4]: https://github.com/artkrsk/elementor-stubs/compare/v3.34.4...v3.35.4
