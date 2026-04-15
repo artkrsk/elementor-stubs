@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.0.0');
+		define('ELEMENTOR_VERSION', '4.0.2');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -4730,7 +4730,7 @@ namespace ElementorPro\Core\Database {
         /**
          * Get all migrations inside a Collection.
          *
-         * @return \Elementor\Core\Utils\Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         protected function get_collected_migrations()
         {
@@ -5417,7 +5417,7 @@ namespace ElementorPro\Core\Database {
          *
          * @param string $column - The column to pluck.
          *
-         * @return \Elementor\Core\Utils\Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         public function pluck($column)
         {
@@ -5435,7 +5435,7 @@ namespace ElementorPro\Core\Database {
         /**
          * Get the query result.
          *
-         * @return \Elementor\Core\Utils\Collection
+         * @return \ElementorPro\Core\Utils\Collection
          */
         public function get()
         {
@@ -11927,6 +11927,9 @@ namespace Elementor\Core\Base {
         {
         }
         public function handle_revisions_changed($post_has_changed, $last_revision, $post)
+        {
+        }
+        public function get_elementor_version()
         {
         }
     }
@@ -65889,6 +65892,7 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Self_Hosted_Video {
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Svg {
     class Atomic_Svg extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
         const BASE_STYLE_KEY = 'base';
         const DEFAULT_SVG = 'images/default-svg.svg';
         const DEFAULT_SVG_PATH = ELEMENTOR_ASSETS_PATH . self::DEFAULT_SVG;
@@ -65918,7 +65922,7 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Svg {
         protected function define_base_styles(): array
         {
         }
-        protected function render()
+        protected function get_templates(): array
         {
         }
     }
@@ -67304,6 +67308,9 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         protected function define_shape(): array
         {
         }
+        public function sanitize_value($value)
+        {
+        }
     }
     class Layout_Direction_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
     {
@@ -67424,6 +67431,21 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
         protected function define_shape(): array
+        {
+        }
+    }
+    class Svg_Src_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+        public function default_url(string $url): self
+        {
+        }
+        protected function validate_value($value): bool
         {
         }
     }
@@ -67828,6 +67850,12 @@ namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers\Export {
         {
         }
     }
+    class Svg_Src_Export_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context): ?array
+        {
+        }
+    }
 }
 namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers {
     class Image_Src_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
@@ -67856,6 +67884,12 @@ namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers {
 }
 namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers\Import {
     class Image_Src_Import_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
+        {
+        }
+    }
+    class Svg_Src_Import_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
     {
         public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
         {
@@ -68058,6 +68092,13 @@ namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers\Styles {
     }
 }
 namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers {
+    class Svg_Src_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        const SVG_INLINE_STYLES = 'width: 100%; height: 100%; overflow: unset;';
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
+        {
+        }
+    }
     class Video_Src_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
     {
         public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
@@ -69501,6 +69542,9 @@ namespace Elementor\Modules\Components\Documents {
         public static function make(array $overridable_prop): self
         {
         }
+        public function to_associative_array(): array
+        {
+        }
     }
     class Component_Overridable_Props
     {
@@ -69508,6 +69552,9 @@ namespace Elementor\Modules\Components\Documents {
         public array $props;
         public array $groups;
         public static function make(array $overridable_props_meta): self
+        {
+        }
+        public function to_associative_array(): array
         {
         }
     }
@@ -69559,6 +69606,9 @@ namespace Elementor\Modules\Components\Documents {
         {
         }
         public function print_elements_without_cache(array $elements_data)
+        {
+        }
+        public function align_overridable_props_with_elements()
         {
         }
     }
@@ -69730,6 +69780,9 @@ namespace Elementor\Modules\Components\PropTypes {
         {
         }
         public static function make(): self
+        {
+        }
+        public function resolve_override_value_prop_type(string $override_key, int $component_id): ?\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
         {
         }
         public function validate_override(string $override_key, ?array $override_value, array $schema_source): bool
@@ -71190,7 +71243,10 @@ namespace Elementor\Modules\GlobalClasses {
         const META_KEY_PREVIEW = '_elementor_global_classes_preview';
         const CONTEXT_FRONTEND = 'frontend';
         const CONTEXT_PREVIEW = 'preview';
-        public static function make(): \Elementor\Modules\GlobalClasses\Global_Classes_Repository
+        public function __construct(?\Elementor\Core\Kits\Documents\Kit $kit = null)
+        {
+        }
+        public static function make(?\Elementor\Core\Kits\Documents\Kit $kit = null): \Elementor\Modules\GlobalClasses\Global_Classes_Repository
         {
         }
         public function context(string $context): self
