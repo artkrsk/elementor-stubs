@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.0.2] - 2026-04-15
+
+- changed: updated stubs for Elementor 4.0.2 (#40)
+
 ## [4.0.0] - 2026-04-01
 
 - changed: updated stubs for Elementor 4.0.0 (#36)
@@ -85,6 +89,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[4.0.2]: https://github.com/artkrsk/elementor-stubs/compare/v4.0.0...v4.0.2
 [4.0.0]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.7...v4.0.0
 [3.35.7]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.6.1...v3.35.7
 [3.35.6.1]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.6...v3.35.6.1
