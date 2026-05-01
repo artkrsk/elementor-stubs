@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.0.2');
+		define('ELEMENTOR_VERSION', '4.0.5');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -9542,7 +9542,10 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         protected function define_render_context(): array
         {
         }
-        protected function get_link_attributes($link_settings, $add_key_to_result = false)
+        protected function get_link_attributes($link_settings)
+        {
+        }
+        private function get_link_attributes_string($link_settings)
         {
         }
     }
@@ -66800,6 +66803,9 @@ namespace Elementor\Modules\AtomicWidgets\PropTypeMigrations {
         public static function clear_all(): void
         {
         }
+        public static function get_version_fingerprint(): string
+        {
+        }
     }
     class Migrations_Loader
     {
@@ -70082,6 +70088,7 @@ namespace Elementor\Modules\DesignSystemSync\Classes {
         const API_NAMESPACE = 'elementor/v1';
         const API_BASE = 'design-system-sync';
         const HTTP_CREATED = 201;
+        const HTTP_NO_CONTENT = 204;
         const HTTP_INTERNAL_SERVER_ERROR = 500;
         public function register_hooks()
         {
@@ -70128,7 +70135,7 @@ namespace Elementor\Modules\DesignSystemSync\Classes {
         public function __construct()
         {
         }
-        public function generate(): array
+        public function generate(): ?array
         {
         }
         public function enqueue(): void
@@ -70225,21 +70232,10 @@ namespace Elementor\Modules\EditorAppBar {
     {
         const PACKAGES = ['editor-app-bar'];
         const STYLES = ['editor-v2-app-bar-overrides'];
-        const POPUP_DISMISSED_OPTION = '_elementor_structure_popup_dismissed';
-        const STRUCTURE_POPUP_TARGET_VERSION = '3.32.0';
         public function get_name()
         {
         }
         public function __construct()
-        {
-        }
-        public function register_ajax_actions($ajax)
-        {
-        }
-        public function ajax_dismiss_structure_popup($data)
-        {
-        }
-        public function maybe_enqueue_structure_popup(): void
         {
         }
     }
@@ -71234,6 +71230,9 @@ namespace Elementor\Modules\GlobalClasses {
         {
         }
         public static function check_for_duplicate_labels(array $existing_labels, array $items, array $new_items_ids)
+        {
+        }
+        public static function sanitize_order(array $items, array $order): array
         {
         }
     }
@@ -74228,7 +74227,6 @@ namespace Elementor\Modules\Promotions\Widgets {
     {
         public const ALLY_SCANNER_RUN = 'ea11y_dashboard_widget_scanner_run';
         public const ALLY_NONCE_KEY = 'ea11y_dashboard_widget_nonce';
-        public const ALLY_PUBLIC_URL = 'https://wordpress.org/plugins/pojo-accessibility/';
         /**
          * Check is widget already submitted
          *
@@ -74262,6 +74260,15 @@ namespace Elementor\Modules\Promotions\Widgets {
         {
         }
         public static function init(): void
+        {
+        }
+    }
+    class Atomic_Form_Widget_Promotion
+    {
+        public function register(): void
+        {
+        }
+        public function add_promotion_data(array $settings): array
         {
         }
     }
