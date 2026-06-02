@@ -274,8 +274,9 @@ class StubSyntaxTest extends TestCase {
 		/** @var string $version */
 		$version = ELEMENTOR_PRO_VERSION;
 
+		// ProElements releases can carry a 4-segment version (e.g. 4.0.4.2), so allow an optional 4th part.
 		$this->assertMatchesRegularExpression(
-			'/^\d+\.\d+\.\d+$/',
+			'/^\d+\.\d+\.\d+(\.\d+)?$/',
 			$version,
 			'ELEMENTOR_PRO_VERSION should be in semantic version format'
 		);
