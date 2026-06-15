@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.1.1');
+		define('ELEMENTOR_VERSION', '4.1.3');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -27,7 +27,7 @@ namespace {
 
 	// Elementor Pro constants
 	if (!defined('ELEMENTOR_PRO_VERSION')) {
-		define('ELEMENTOR_PRO_VERSION', '4.0.4.2');
+		define('ELEMENTOR_PRO_VERSION', '4.1.0');
 	}
 	if (!defined('ELEMENTOR_PRO__FILE__')) {
 		define('ELEMENTOR_PRO__FILE__', __FILE__);
@@ -4787,7 +4787,7 @@ namespace ElementorPro\Core\Database {
         /**
          * @param \wpdb|null $wpdb_instance
          */
-        public function __construct(\wpdb $wpdb_instance = null)
+        public function __construct(?\wpdb $wpdb_instance = null)
         {
         }
         /**
@@ -5612,7 +5612,7 @@ namespace ElementorPro\Core\Database {
          *
          * @return void
          */
-        public function __construct($type, \wpdb $connection = null)
+        public function __construct($type, ?\wpdb $connection = null)
         {
         }
         /**
@@ -5692,7 +5692,7 @@ namespace ElementorPro\Core\Database {
          *
          * @return \ElementorPro\Core\Database\Query_Builder
          */
-        public static function query(\wpdb $connection = null)
+        public static function query(?\wpdb $connection = null)
         {
         }
         /**
@@ -5798,8 +5798,8 @@ namespace ElementorPro\Core\Database {
 namespace ElementorPro\Core\Editor {
     class Editor extends \Elementor\Core\Base\App
     {
-        const APP_BAR_DEPS_V2 = ['editor-site-navigation-extended', 'editor-documents-extended'];
-        const EDITOR_V4_PACKAGES = ['license-api', 'editor-controls-extended', 'editor-editing-panel-extended', 'editor-components-extended'];
+        const APP_BAR_DEPS_V2 = ['editor-site-navigation-extended', 'editor-documents-extended', 'license-api'];
+        const EDITOR_V4_PACKAGES = ['editor-controls-extended', 'editor-editing-panel-extended', 'editor-components-extended', 'core-adapter-utils', 'editor-templates-extended'];
         /**
          * Get app name.
          *
@@ -9494,6 +9494,18 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
         {
         }
     }
+    class Action_Log_Presenter
+    {
+        public function __construct(string $name, string $label)
+        {
+        }
+        public function get_name()
+        {
+        }
+        public function get_label()
+        {
+        }
+    }
     class Action_Runner
     {
         /**
@@ -9635,9 +9647,6 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
         {
         }
         public function execute(array $form_data, array $widget_settings, array $context): array
-        {
-        }
-        protected function validate_settings(array $widget_settings)
         {
         }
     }
@@ -9894,6 +9903,7 @@ namespace ElementorPro\Modules\AtomicForm\Checkbox {
     class Checkbox extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        protected $animation_duration = 200;
         public static $widget_description = 'Display a checkbox input with required, readonly, and attributes.';
         public static function get_element_type(): string
         {
@@ -9949,6 +9959,294 @@ namespace ElementorPro\Modules\AtomicForm\Classes {
         {
         }
         public function is_spam(bool $is_spam, array $form_fields, array $widget_settings, int $post_id = 0): bool
+        {
+        }
+    }
+    interface Shortcode_Resolver
+    {
+        public function resolve(string $message): string;
+    }
+    class All_Fields_Shortcode_Resolver implements \ElementorPro\Modules\AtomicForm\Classes\Shortcode_Resolver
+    {
+        public const SHORTCODE = '[all-fields]';
+        public function __construct(array $form_data, bool $is_html, array $field_metadata)
+        {
+        }
+        public function resolve(string $message): string
+        {
+        }
+    }
+    class Composite_Shortcode_Resolver implements \ElementorPro\Modules\AtomicForm\Classes\Shortcode_Resolver
+    {
+        public function __construct(array $form_data, bool $is_html, array $field_metadata, array $cssid_map)
+        {
+        }
+        public function resolve(string $message): string
+        {
+        }
+    }
+    class Cssid_Shortcode_Resolver implements \ElementorPro\Modules\AtomicForm\Classes\Shortcode_Resolver
+    {
+        public function __construct(array $form_data, bool $is_html, array $cssid_map)
+        {
+        }
+        public function resolve(string $message): string
+        {
+        }
+    }
+    class Field_Id_Shortcode_Resolver implements \ElementorPro\Modules\AtomicForm\Classes\Shortcode_Resolver
+    {
+        public function __construct(array $form_data)
+        {
+        }
+        public function resolve(string $message): string
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm\Date_Picker {
+    class Date_Picker extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        public static $widget_description = 'Display a date picker input with required, min, max, and attributes.';
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm {
+    class Default_Id_Provider
+    {
+        public static function get_default_id(string $prefix): string
+        {
+        }
+        public static function get_default_id_prop(string $prefix): \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm\File_Upload {
+    class Field_Settings_Collector
+    {
+        public const FILE_UPLOAD_WIDGET_TYPE = 'e-form-file-upload';
+        /**
+         * @return array<string, array> element_id => file upload field settings.
+         */
+        public function collect(array $form_element): array
+        {
+        }
+    }
+    class File_Storage
+    {
+        public function store(\ElementorPro\Modules\AtomicForm\File_Upload\Form_File $file): array
+        {
+        }
+        public function delete(array $paths): void
+        {
+        }
+    }
+    class File_Upload_Handler
+    {
+        public const MODE_LINK = 'link';
+        public const MODE_ATTACH = 'attach';
+        public const MODE_BOTH = 'both';
+        public function __construct()
+        {
+        }
+        /**
+         * Validate, store, and produce form-data overrides for all file-upload widgets in a form.
+         *
+         * @param array $form_element The resolved form widget
+         * @param array $form_fields  The POSTed form_fields metadata
+         */
+        public function process(array $form_element, array $form_fields): \ElementorPro\Modules\AtomicForm\File_Upload\File_Upload_Result
+        {
+        }
+    }
+    final class File_Upload_Result
+    {
+        /**
+         * @param array<string, mixed> $form_data_overrides Keyed by element_id.
+         * @param array<string, array<int, string>> $files Keyed by cssid.
+         * @param array<string, array> $file_field_settings Keyed by cssid.
+         */
+        public static function success(array $form_data_overrides, array $files, array $file_field_settings): self
+        {
+        }
+        public static function error(string $message): self
+        {
+        }
+        /**
+         * Empty success — used when the form has no file-upload widgets at all.
+         */
+        public static function noop(): self
+        {
+        }
+        public function is_success(): bool
+        {
+        }
+        public function get_error(): string
+        {
+        }
+        public function get_form_data_overrides(): array
+        {
+        }
+        public function get_files(): array
+        {
+        }
+        public function get_file_field_settings(): array
+        {
+        }
+    }
+    class File_Upload extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        public const DEFAULT_MAX_FILE_SIZE_MB = 5;
+        public const DEFAULT_FILE_TYPES = 'jpg, png, pdf, zip';
+        public static $widget_description = 'Display a file upload input with configurable allowed types, size limit, multiple-file support, and required flag.';
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+    }
+    class Form_File_Collector
+    {
+        public function collect(array $index_to_element_id): array
+        {
+        }
+    }
+    class Form_File
+    {
+        public string $name;
+        public string $type;
+        public string $tmp_name;
+        public int $error;
+        public int $size;
+        public function __construct(string $name, string $type, string $tmp_name, int $error, int $size)
+        {
+        }
+        public function to_wp_handle_upload_array(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm\File_Upload\Validators {
+    interface Validator
+    {
+        public function validate(array $files): ?string;
+    }
+    final class Composite_Validator implements \ElementorPro\Modules\AtomicForm\File_Upload\Validators\Validator
+    {
+        public function __construct(array $settings)
+        {
+        }
+        public function validate(array $files): ?string
+        {
+        }
+    }
+    class Extension_Validator implements \ElementorPro\Modules\AtomicForm\File_Upload\Validators\Validator
+    {
+        /**
+         * Executable / script extensions rejected unconditionally — overrides any user allow-list.
+         * Ported from V3 Forms `Upload::get_blacklist_file_ext()`.
+         */
+        public const BLACKLIST = ['php', 'php2', 'php3', 'php4', 'php5', 'php6', 'php7', 'phps', 'pht', 'phtm', 'phtml', 'phar', 'hphp', 'phpt', 'shtml', 'asp', 'aspx', 'jsp', 'cgi', 'pl', 'py', 'rb', 'sh', 'bash', 'csh', 'cmd', 'bat', 'ps1', 'ps2', 'exe', 'com', 'jar', 'lnk', 'tmp', 'htm', 'html', 'js', 'htaccess', 'htpasswd', 'svg', 'svgz', 'swf', 'hta'];
+        public function __construct(string $allowed_raw)
+        {
+        }
+        /**
+         * @param \ElementorPro\Modules\AtomicForm\File_Upload\Form_File[] $files
+         */
+        public function validate(array $files): ?string
+        {
+        }
+    }
+    class Max_Count_Validator implements \ElementorPro\Modules\AtomicForm\File_Upload\Validators\Validator
+    {
+        public function __construct(int $max)
+        {
+        }
+        public function validate(array $files): ?string
+        {
+        }
+    }
+    class Required_Validator implements \ElementorPro\Modules\AtomicForm\File_Upload\Validators\Validator
+    {
+        public function __construct(bool $required)
+        {
+        }
+        public function validate(array $files): ?string
+        {
+        }
+    }
+    class Size_Validator implements \ElementorPro\Modules\AtomicForm\File_Upload\Validators\Validator
+    {
+        public function __construct(int $max_mb)
+        {
+        }
+        /**
+         * @param \ElementorPro\Modules\AtomicForm\File_Upload\Form_File[] $files
+         */
+        public function validate(array $files): ?string
         {
         }
     }
@@ -10050,6 +10348,90 @@ namespace ElementorPro\Modules\AtomicForm {
         }
     }
 }
+namespace ElementorPro\Modules\AtomicForm\Radio_Button {
+    class Radio_Button extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        protected $animation_duration = 200;
+        public static $widget_description = 'Display a radio button input with required, and attributes.';
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+        protected function define_atomic_pseudo_states(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm\Select {
+    class Select extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        public static $widget_description = 'Display a select with options';
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\AtomicForm\Submit_Button {
     class Submit_Button extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
@@ -10132,6 +10514,46 @@ namespace ElementorPro\Modules\AtomicForm\Textarea {
         {
         }
         public static function get_inline_styles(): string
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm\Time_Picker {
+    class Time_Picker extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        public static $widget_description = 'Display a time picker input with required, min, max, and attributes.';
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
         {
         }
     }
@@ -10441,6 +10863,16 @@ namespace ElementorPro\Modules\AtomicWidgets {
     class Settings_Resolver
     {
         public static function resolve(array $settings): array
+        {
+        }
+    }
+    class Template_Styles
+    {
+        const CACHE_ROOT_KEY = 'template-styles-related-posts';
+        public function __construct()
+        {
+        }
+        public function register_hooks()
         {
         }
     }
@@ -11288,6 +11720,346 @@ namespace ElementorPro\Modules\CodeHighlight\Widgets {
         {
         }
         protected function content_template()
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Base {
+    abstract class Atomic_Element_Base extends \Elementor\Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Atomic_Base;
+        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Meta;
+        protected $version = '0.0';
+        protected $styles = [];
+        protected $interactions = [];
+        protected $editor_settings = [];
+        protected $origin_id = null;
+        public static $widget_description = null;
+        public function __construct($data = [], $args = null)
+        {
+        }
+        abstract protected function define_atomic_controls(): array;
+        protected function define_atomic_style_states(): array
+        {
+        }
+        protected function define_atomic_pseudo_states(): array
+        {
+        }
+        public function get_global_scripts()
+        {
+        }
+        protected function get_initial_config()
+        {
+        }
+        protected function should_show_in_panel()
+        {
+        }
+        protected function define_panel_categories(): array
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+        protected function define_default_html_tag()
+        {
+        }
+        protected function define_initial_attributes()
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        protected function get_interaction_id()
+        {
+        }
+        protected function add_render_attributes()
+        {
+        }
+        /**
+         * Get Element keywords.
+         *
+         * Retrieve the element keywords.
+         *
+         * @since 3.29
+         * @access public
+         *
+         * @return array Element keywords.
+         */
+        public function get_keywords()
+        {
+        }
+        /**
+         * @return array<string, Prop_Type>
+         */
+        abstract protected static function define_props_schema(): array;
+        /**
+         * Get the HTML tag for rendering.
+         *
+         * @return string
+         */
+        protected function get_html_tag(): string
+        {
+        }
+        /**
+         * Print safe HTML tag for the element based on the element settings.
+         *
+         * @return void
+         */
+        protected function print_html_tag()
+        {
+        }
+        /**
+         * Print custom attributes if they exist.
+         *
+         * @return void
+         */
+        protected function print_custom_attributes()
+        {
+        }
+        /**
+         * Get default child type for container elements.
+         *
+         * @param array $element_data
+         * @return mixed
+         */
+        protected function _get_default_child_type(array $element_data)
+        {
+        }
+        /**
+         * Default before render for container elements.
+         *
+         * @return void
+         */
+        public function before_render()
+        {
+        }
+        /**
+         * Default after render for container elements.
+         *
+         * @return void
+         */
+        public function after_render()
+        {
+        }
+        /**
+         * Default content template - can be overridden by elements that need custom templates.
+         *
+         * @return void
+         */
+        protected function content_template()
+        {
+        }
+        public static function generate()
+        {
+        }
+    }
+    /**
+     * Trait for nested elements that render using Twig templates.
+     * Provides Twig-based rendering with children support for nested elements.
+     *
+     * @mixin Has_Atomic_Base
+     * @mixin Atomic_Element_Base
+     */
+    trait Has_Element_Template
+    {
+        private static function get_macros_template_key(): string
+        {
+        }
+        protected function transform_link_for_render(array $parsed): array
+        {
+        }
+        public function get_initial_config()
+        {
+        }
+        protected function get_shared_templates(): array
+        {
+        }
+        protected function get_templates_contents()
+        {
+        }
+        protected function render()
+        {
+        }
+        protected function render_children_to_html(): string
+        {
+        }
+        protected function get_children_placeholder(): string
+        {
+        }
+        protected function build_base_template_context(): array
+        {
+        }
+        public function before_render()
+        {
+        }
+        public function after_render()
+        {
+        }
+        public function print_content()
+        {
+        }
+        protected function get_main_template(): string
+        {
+        }
+        abstract protected function get_templates(): array;
+        protected function build_template_context(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Item {
+    class Collection_Loop_Item extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        const ELEMENT_TYPE = 'e-collection-loop-item';
+        public static $widget_description = 'Repeating item template for a Collection Loop. Renders once per item in the collection.';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        public function should_show_in_panel()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Traits {
+    trait Has_Loop_Iteration
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template {
+            render_children_to_html as protected render_default_children_to_html;
+        }
+        protected function get_loop_context_key(): string
+        {
+        }
+        protected function render_children_to_html(): string
+        {
+        }
+        protected function render_children_for_loop(): string
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Layout {
+    class Collection_Loop_Layout extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \ElementorPro\Modules\CollectionLoop\Traits\Has_Loop_Iteration;
+        const ELEMENT_TYPE = 'e-collection-loop-layout';
+        const BASE_STYLE_KEY = 'base';
+        const DEFAULT_GRID_GAP_PX = 20;
+        const DEFAULT_GRID_TEMPLATE_COLUMNS = 'repeat(3, 1fr)';
+        public static $widget_description = 'Layout container for the Collection Loop. Hosts the repeating item.';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        public function should_show_in_panel()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop {
+    class Collection_Loop extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        const ELEMENT_TYPE = 'e-collection-loop';
+        const SOURCE_POST = 'post';
+        const SOURCE_PAGE = 'page';
+        const DEFAULT_POSTS_PER_PAGE = 3;
+        const MIN_POSTS_PER_PAGE = 1;
+        const MAX_POSTS_PER_PAGE = 100;
+        const TEMPLATE_CHILD_INDEX = 0;
+        public static $widget_description = 'Repeats a content template for each item in a collection (posts, terms, etc.).';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_render_context(): array
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop {
+    class Module extends \ElementorPro\Base\Module_Base
+    {
+        const MODULE_NAME = 'e-collection-loop';
+        const EXPERIMENT_NAME = 'e_pro_collection_loop';
+        const PACKAGE_HANDLE = 'editor-collection-loop';
+        public function get_name()
+        {
+        }
+        public static function get_experimental_data(): array
+        {
+        }
+        public function __construct()
         {
         }
     }
@@ -25674,7 +26446,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @return \ElementorPro\Core\Database\Query_Builder
          */
-        public static function query(\wpdb $connection = null)
+        public static function query(?\wpdb $connection = null)
         {
         }
         /**
@@ -25740,7 +26512,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
-        public static function query(\wpdb $connection = null)
+        public static function query(?\wpdb $connection = null)
         {
         }
         /**
@@ -25931,7 +26703,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @return \ElementorPro\Modules\Notes\Database\Query\Note_Query_Builder
          */
-        public static function query(\wpdb $connection = null)
+        public static function query(?\wpdb $connection = null)
         {
         }
         /**
@@ -26128,7 +26900,7 @@ namespace ElementorPro\Modules\Notes\Database\Models {
          *
          * @return \ElementorPro\Modules\Notes\Database\Query\User_Query_Builder()
          */
-        public static function query(\wpdb $connection = null)
+        public static function query(?\wpdb $connection = null)
         {
         }
         /**
@@ -26379,7 +27151,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
          *
          * @param \wpdb|null $connection
          */
-        public function __construct(\wpdb $connection = null)
+        public function __construct(?\wpdb $connection = null)
         {
         }
         /**
@@ -29958,6 +30730,9 @@ namespace ElementorPro\Modules\Social {
 namespace ElementorPro\Modules\Social\Widgets {
     class Facebook_Button extends \ElementorPro\Base\Base_Widget
     {
+        public function show_in_panel(): bool
+        {
+        }
         public function get_name()
         {
         }
@@ -30001,6 +30776,9 @@ namespace ElementorPro\Modules\Social\Widgets {
     }
     class Facebook_Comments extends \ElementorPro\Base\Base_Widget
     {
+        public function show_in_panel(): bool
+        {
+        }
         public function get_name()
         {
         }
@@ -42235,6 +43013,7 @@ namespace Elementor\Core\Common\Modules\EventsManager {
     class Module extends \Elementor\Core\Base\Module
     {
         const EXPERIMENT_NAME = 'editor_events';
+        const DEFAULT_SESSION_RECORDING_PERCENT = 0;
         const REMOTE_MIXPANEL_CONFIG_URL = 'https://assets.elementor.com/mixpanel/v1/mixpanel.json';
         public function get_name()
         {
@@ -44005,7 +44784,7 @@ namespace Elementor\Core\Editor\Loader\V2 {
         /**
          * Packages that should only be registered, unless some other asset depends on them.
          */
-        const LIBS = ['editor-responsive', 'editor-ui', 'editor-v1-adapters', self::ENV_PACKAGE, 'http-client', 'icons', 'locations', 'menus', 'query', 'schema', 'store', 'session', 'twing', 'ui', 'utils', 'wp-media', 'editor-current-user', 'editor-elements-panel-notice', 'elementor-mcp-common'];
+        const LIBS = ['editor-modal-shell', 'editor-responsive', 'editor-ui', 'editor-v1-adapters', self::ENV_PACKAGE, 'http-client', 'icons', 'locations', 'menus', 'query', 'schema', 'store', 'session', 'twing', 'ui', 'utils', 'wp-media', 'editor-current-user', 'editor-elements-panel-notice', 'elementor-mcp-common'];
         const EXTENSIONS = ['events', 'editor-documents', 'editor-notifications', 'editor-panels', 'editor-elements-panel', 'unlock-v4-promo', 'editor-mcp', 'elementor-v3-mcp', 'elementor-kit-mcp'];
         /**
          * Additional dependencies for packages that rely on global variables, rather than
@@ -53630,6 +54409,9 @@ namespace Elementor\Includes {
         const ASSETS_DATA_KEY = 'ASSETS_DATA_KEY';
         const ASSETS_DATA_EXPIRATION = 'ASSETS_DATA_EXPIRATION';
         const DEFAULT_EXPIRATION_TIME = '+1 hour';
+        const PRODUCTION_URL = 'https://assets.elementor.com';
+        const STAGING_URL = 'https://assets.stg.elementor.red';
+        const DEV_URL = 'https://assets.dev.builder.elementor.red';
         public function __construct(array $config)
         {
         }
@@ -53643,6 +54425,12 @@ namespace Elementor\Includes {
         {
         }
         public static function is_valid_data($data): bool
+        {
+        }
+        public static function is_allowed_url($url): bool
+        {
+        }
+        public static function do_safe_get_request($url)
         {
         }
     }
@@ -66164,189 +66952,6 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Divider {
         }
     }
 }
-namespace Elementor\Modules\AtomicWidgets\Elements\Base {
-    abstract class Atomic_Element_Base extends \Elementor\Element_Base
-    {
-        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Atomic_Base;
-        use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Meta;
-        protected $version = '0.0';
-        protected $styles = [];
-        protected $interactions = [];
-        protected $editor_settings = [];
-        protected $origin_id = null;
-        public static $widget_description = null;
-        public function __construct($data = [], $args = null)
-        {
-        }
-        abstract protected function define_atomic_controls(): array;
-        protected function define_atomic_style_states(): array
-        {
-        }
-        protected function define_atomic_pseudo_states(): array
-        {
-        }
-        public function get_global_scripts()
-        {
-        }
-        protected function get_initial_config()
-        {
-        }
-        protected function should_show_in_panel()
-        {
-        }
-        protected function define_panel_categories(): array
-        {
-        }
-        protected function define_default_children()
-        {
-        }
-        protected function define_default_html_tag()
-        {
-        }
-        protected function define_initial_attributes()
-        {
-        }
-        protected function define_allowed_child_types()
-        {
-        }
-        protected function get_interaction_id()
-        {
-        }
-        protected function add_render_attributes()
-        {
-        }
-        /**
-         * Get Element keywords.
-         *
-         * Retrieve the element keywords.
-         *
-         * @since 3.29
-         * @access public
-         *
-         * @return array Element keywords.
-         */
-        public function get_keywords()
-        {
-        }
-        /**
-         * @return array<string, Prop_Type>
-         */
-        abstract protected static function define_props_schema(): array;
-        /**
-         * Get the HTML tag for rendering.
-         *
-         * @return string
-         */
-        protected function get_html_tag(): string
-        {
-        }
-        /**
-         * Print safe HTML tag for the element based on the element settings.
-         *
-         * @return void
-         */
-        protected function print_html_tag()
-        {
-        }
-        /**
-         * Print custom attributes if they exist.
-         *
-         * @return void
-         */
-        protected function print_custom_attributes()
-        {
-        }
-        /**
-         * Get default child type for container elements.
-         *
-         * @param array $element_data
-         * @return mixed
-         */
-        protected function _get_default_child_type(array $element_data)
-        {
-        }
-        /**
-         * Default before render for container elements.
-         *
-         * @return void
-         */
-        public function before_render()
-        {
-        }
-        /**
-         * Default after render for container elements.
-         *
-         * @return void
-         */
-        public function after_render()
-        {
-        }
-        /**
-         * Default content template - can be overridden by elements that need custom templates.
-         *
-         * @return void
-         */
-        protected function content_template()
-        {
-        }
-        public static function generate()
-        {
-        }
-    }
-    /**
-     * Trait for nested elements that render using Twig templates.
-     * Provides Twig-based rendering with children support for nested elements.
-     *
-     * @mixin Has_Atomic_Base
-     * @mixin Atomic_Element_Base
-     */
-    trait Has_Element_Template
-    {
-        private static function get_macros_template_key(): string
-        {
-        }
-        protected function transform_link_for_render(array $parsed): array
-        {
-        }
-        public function get_initial_config()
-        {
-        }
-        protected function get_shared_templates(): array
-        {
-        }
-        protected function get_templates_contents()
-        {
-        }
-        protected function render()
-        {
-        }
-        protected function render_children_to_html(): string
-        {
-        }
-        protected function get_children_placeholder(): string
-        {
-        }
-        protected function build_base_template_context(): array
-        {
-        }
-        public function before_render()
-        {
-        }
-        public function after_render()
-        {
-        }
-        public function print_content()
-        {
-        }
-        protected function get_main_template(): string
-        {
-        }
-        abstract protected function get_templates(): array;
-        protected function build_template_context(): array
-        {
-        }
-    }
-}
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
     class Atomic_Form_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
     {
@@ -70063,9 +70668,6 @@ namespace Elementor\Modules\CloudLibrary {
         public function __construct()
         {
         }
-        public function get_proxy_data($url)
-        {
-        }
         public function localize_settings($settings)
         {
         }
@@ -70078,9 +70680,6 @@ namespace Elementor\Modules\CloudLibrary {
         {
         }
         public function print_content()
-        {
-        }
-        protected function is_screenshot_proxy_mode(array $query_params)
         {
         }
     }
@@ -71228,16 +71827,6 @@ namespace Elementor\Modules\EditorOne\Classes {
         {
         }
     }
-    class Editor_One_Pointer
-    {
-        const CURRENT_POINTER_SLUG = 'e-editor-one-notice-pointer';
-        public function __construct()
-        {
-        }
-        public function admin_print_script()
-        {
-        }
-    }
     class Legacy_Submenu_Interceptor
     {
         public function __construct(\Elementor\Modules\EditorOne\Classes\Menu_Data_Provider $menu_data_provider, \Elementor\Modules\EditorOne\Classes\Slug_Normalizer $slug_normalizer)
@@ -72351,7 +72940,10 @@ namespace Elementor\Modules\GlobalClasses {
     class Global_Classes_Order
     {
         use \Elementor\Modules\GlobalClasses\Concerns\Has_Kit_Dependency;
+        use \Elementor\Modules\GlobalClasses\Concerns\Has_Preview_Context;
         const META_KEY = '_elementor_global_classes_order';
+        const META_KEY_PREVIEW = '_elementor_global_classes_order_preview';
+        protected array $context_keys = ['order' => ['frontend' => self::META_KEY, 'preview' => self::META_KEY_PREVIEW]];
         public static function make(\Elementor\Core\Kits\Documents\Kit $kit): self
         {
         }
@@ -75616,6 +76208,55 @@ namespace Elementor\Modules\Promotions\Controls {
     }
 }
 namespace Elementor\Modules\Promotions {
+    class Conversion_Banner
+    {
+        const DEFAULT_SELECTOR = '.wrap h1, .wrap h2';
+        const SCRIPT_HANDLE = 'e-conversion-banner';
+        const STYLE_HANDLE = 'e-conversion-banner';
+        const NONCE_ACTION = 'e_conversion_banner_nonce';
+        const OBJECT_NAME = 'eConversionBanner';
+        const DISMISS_KEY = 'conversion_banner_go_pro';
+        const AJAX_ACTION = 'elementor_dismiss_conversion_banner';
+        const CONTAINER_ID = 'e-conversion-banner';
+        const BIRTHDAY_PROMOTION_URL = 'https://go.elementor.com/go-pro-wp-admin-upgrad-notice/';
+        const HELLO_THEME_CONFIG_FILTER = 'hello-plus-theme/rest/admin-config';
+        const THEME_SLUGS = ['hello-elementor', 'hello-biz', 'hello-commerce'];
+        const GO_PRO_TITLE_PREFIX = 'Go Pro';
+        public function __construct()
+        {
+        }
+        public function maybe_register_banner_hooks(): void
+        {
+        }
+        public function render_banner_container(): void
+        {
+        }
+        public function suppress_hello_theme_banner($config)
+        {
+        }
+        public function ajax_dismiss_banner(): void
+        {
+        }
+        public static function should_display_banner(): bool
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Promotions\Data {
+    class Birthday_Promotion_Actions
+    {
+        const CTA_VISITED_KEY = '_elementor_10th_bday_cta_visited';
+        const SET_CTA_VISITED_AJAX_ACTION = 'birthday_easter_egg_set_cta_visited';
+        const VISITED_PARAM = 'visited';
+        public function register_ajax_actions(): void
+        {
+        }
+        public function has_visited_cta(): bool
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Promotions {
     class Module extends \Elementor\Core\Base\Module
     {
         const ADMIN_MENU_PRIORITY = 100;
@@ -75635,6 +76276,9 @@ namespace Elementor\Modules\Promotions {
          * @return string
          */
         public static function get_ally_external_scanner_url(): string
+        {
+        }
+        public function override_one_menu_upgrade_label_during_sale($menu)
         {
         }
         public function enqueue_react_data(): void
@@ -75658,9 +76302,9 @@ namespace Elementor\Modules\Promotions\Pointers {
     class Birthday
     {
         const PROMOTION_URL = 'https://go.elementor.com/go-pro-wordpress-notice-birthday/';
-        const ELEMENTOR_POINTER_ID = 'toplevel_page_elementor';
-        const SEEN_TODAY_KEY = '_elementor-2025-birthday';
-        const DISMISS_ACTION_KEY = 'birthday_pointer_2025';
+        const ELEMENTOR_POINTER_ID = 'toplevel_page_elementor-home';
+        const SEEN_TODAY_KEY = '_elementor-2026-birthday';
+        const DISMISS_ACTION_KEY = 'birthday_pointer_2026';
         public function __construct()
         {
         }
@@ -75770,6 +76414,19 @@ namespace Elementor\Modules\Promotions\Widgets {
         {
         }
         public function add_promotion_data(array $settings): array
+        {
+        }
+    }
+    class Birthday_Easter_Egg_Promotion
+    {
+        const WIDGET_NAME = 'e-birthday-easter-egg';
+        const PACKAGE_NAME = 'birthday-easter-egg-modal';
+        const SCRIPT_HANDLE = 'elementor-v2-birthday-easter-egg-modal';
+        const LOTTIE_DATA_TRANSIENT_KEY = '_elementor_10th_bday_lottie_data';
+        public function __construct($force_request_assets = false)
+        {
+        }
+        public function register(): void
         {
         }
     }
