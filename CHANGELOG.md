@@ -1,7 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [4.1.1] - 2026-06-02
 
+- changed: updated stubs for Elementor 4.1.1 (#49)
 - fixed: allow 4-segment ProElements version in stub version test
 
 ## [4.0.5] - 2026-05-01
@@ -97,6 +98,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[4.1.1]: https://github.com/artkrsk/elementor-stubs/compare/v4.0.5...v4.1.1
 [4.0.5]: https://github.com/artkrsk/elementor-stubs/compare/v4.0.2...v4.0.5
 [4.0.2]: https://github.com/artkrsk/elementor-stubs/compare/v4.0.0...v4.0.2
 [4.0.0]: https://github.com/artkrsk/elementor-stubs/compare/v3.35.7...v4.0.0
