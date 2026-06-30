@@ -1,0 +1,21 @@
+name: Dependabot auto-merge
+
+on: pull_request
+
+# Dependabot-triggered runs get a read-only token by default; this elevates it
+# so the job can enable auto-merge on the PR.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: self-hosted
+
+    steps:
+      - name: Enable auto-merge
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr merge "$PR_URL" --auto --squash --delete-branch
