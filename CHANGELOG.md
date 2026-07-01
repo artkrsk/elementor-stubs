@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+- chore(ci): auto-merge Dependabot PRs when tests pass (#55)
+
+## [4.1.3] - 2026-06-15
+
+- changed: updated stubs for Elementor 4.1.3 (#51)
+
 ## [4.1.1] - 2026-06-02
 
 - changed: updated stubs for Elementor 4.1.1 (#49)
@@ -98,6 +106,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[4.1.3]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.1...v4.1.3
 [4.1.1]: https://github.com/artkrsk/elementor-stubs/compare/v4.0.5...v4.1.1
 [4.0.5]: https://github.com/artkrsk/elementor-stubs/compare/v4.0.2...v4.0.5
 [4.0.2]: https://github.com/artkrsk/elementor-stubs/compare/v4.0.0...v4.0.2
