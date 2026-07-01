@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.1.3');
+		define('ELEMENTOR_VERSION', '4.1.4');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -8397,7 +8397,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes {
          * Add a font type to the font manager
          *
          * @param string            $font_type
-         * @param \ElementorPro\Modules\AssetsManager\AssetTypes\Classes\Font_Base $instance
+         * @param \ElementorPro\Modules\AssetsManager\Classes\Font_Base $instance
          */
         public function add_font_type($font_type, $instance)
         {
@@ -8984,7 +8984,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes {
          * Add a font type to the font manager
          *
          * @param string            $icon_type
-         * @param \ElementorPro\Modules\AssetsManager\AssetTypes\Classes\Assets_Base $instance
+         * @param \ElementorPro\Modules\AssetsManager\Classes\Assets_Base $instance
          */
         public function add_icon_type($icon_type, $instance)
         {
@@ -9682,14 +9682,14 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         {
         }
         /**
-         * @return array<string, Style_Definition>
+         * @return array<string, \Elementor\Modules\AtomicWidgets\Styles\Style_Definition>
          */
         protected function define_base_styles(): array
         {
         }
     }
     /**
-     * @mixin Element_Base
+     * @mixin \Elementor\Element_Base
      */
     trait Has_Atomic_Base
     {
@@ -11504,8 +11504,8 @@ namespace Elementor\Modules\Checklist\Steps {
          * Step_Base constructor.
          *
          * @param \Elementor\Modules\Checklist\Module             $module
-         * @param ?Wordpress_Adapter_Interface $wordpress_adapter
-         * @param ?Elementor_Adapter_Interface $elementor_adapter
+         * @param \Elementor\Modules\Checklist\Steps\?\Elementor\Core\Isolation\Wordpress_Adapter_Interface $wordpress_adapter
+         * @param \Elementor\Modules\Checklist\Steps\?\Elementor\Core\Isolation\Elementor_Adapter_Interface $elementor_adapter
          * @return void
          */
         public function __construct(\Elementor\Modules\Checklist\Module $module, ?\Elementor\Core\Isolation\Wordpress_Adapter_Interface $wordpress_adapter = null, ?\Elementor\Core\Isolation\Elementor_Adapter_Interface $elementor_adapter = null, $promotion_data = null)
@@ -11789,7 +11789,7 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         {
         }
         /**
-         * @return array<string, Prop_Type>
+         * @return array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>
          */
         abstract protected static function define_props_schema(): array;
         /**
@@ -19241,8 +19241,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * validate uploaded file field
          *
          * @param array                $field
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          */
         public function validation($field, \ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -19251,8 +19251,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * process file and move it to uploads directory
          *
          * @param array                $field
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          */
         public function process_field($field, \ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -19262,8 +19262,8 @@ namespace ElementorPro\Modules\Forms\Fields {
          * value => file url
          * raw_value => file path
          *
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Form_Record  $record
-         * @param \ElementorPro\Modules\Forms\Fields\Classes\Ajax_Handler $ajax_handler
+         * @param \ElementorPro\Modules\Forms\Classes\Form_Record  $record
+         * @param \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler
          */
         public function set_file_fields_values(\ElementorPro\Modules\Forms\Classes\Form_Record $record, \ElementorPro\Modules\Forms\Classes\Ajax_Handler $ajax_handler)
         {
@@ -26958,8 +26958,8 @@ namespace ElementorPro\Modules\Notes\Database {
 }
 namespace ElementorPro\Modules\Notes\Database\Query {
     /**
-     * @method Note|null first()
-     * @method Note|null find( $id, $field = 'id' )
+     * @method \ElementorPro\Modules\Notes\Database\Models\Note|null first()
+     * @method \ElementorPro\Modules\Notes\Database\Models\Note|null find( $id, $field = 'id' )
      */
     class Note_Query_Builder extends \ElementorPro\Core\Database\Model_Query_Builder
     {
@@ -27142,7 +27142,7 @@ namespace ElementorPro\Modules\Notes\Database\Query {
         }
     }
     /**
-     * @method User|null find( $id, $field = 'id' )
+     * @method \ElementorPro\Modules\Notes\Database\Models\User|null find( $id, $field = 'id' )
      */
     class User_Query_Builder extends \ElementorPro\Core\Database\Model_Query_Builder
     {
@@ -35021,7 +35021,7 @@ namespace ElementorPro\Modules\Woocommerce\Settings {
 namespace ElementorPro\Modules\Woocommerce\Skins {
     /**
      * Class Skin_Classic
-     * @property Products $parent
+     * @property \ElementorPro\Modules\Woocommerce\Widgets\Products $parent
      */
     class Skin_Classic extends \Elementor\Skin_Base
     {
@@ -39851,7 +39851,7 @@ namespace Elementor\App\Modules\KitLibrary\Data\Kits {
 }
 namespace Elementor\App\Modules\KitLibrary\Data\Kits\Endpoints {
     /**
-     * @property Controller $controller
+     * @property \Elementor\App\Modules\KitLibrary\Data\Kits\Controller $controller
      */
     class Download_Link extends \Elementor\Data\V2\Base\Endpoint
     {
@@ -39869,7 +39869,7 @@ namespace Elementor\App\Modules\KitLibrary\Data\Kits\Endpoints {
         }
     }
     /**
-     * @property Controller $controller
+     * @property \Elementor\App\Modules\KitLibrary\Data\Kits\Controller $controller
      */
     class Favorites extends \Elementor\Data\V2\Base\Endpoint
     {
@@ -49725,6 +49725,10 @@ namespace Elementor\Core\Utils {
 namespace Elementor\Core\Utils\Promotions {
     class Filtered_Promotions_Manager
     {
+        const EDITOR_PANEL_STICKY_FILTER = 'elementor/editor/panel/get_pro_details-sticky';
+        public static function get_editor_panel_sticky_promotion(): array
+        {
+        }
         /**
          * @param array  $promotion_data
          * @param string $filter_name
@@ -56892,7 +56896,7 @@ namespace Elementor {
         const NEEDS_UPDATE_OPTION = 'icon_manager_needs_update';
         const FONT_ICON_SVG_CLASS_NAME = 'e-font-icon-svg';
         const LOAD_FA4_SHIM_OPTION_KEY = 'elementor_load_fa4_shim';
-        const ELEMENTOR_ICONS_VERSION = '5.49.0';
+        const ELEMENTOR_ICONS_VERSION = '5.50.0';
         /**
          * @param array  $icon
          * @param array  $attributes
@@ -66096,7 +66100,7 @@ namespace Elementor\Modules\Announcements\Classes {
          *
          * @param $trigger
          *
-         * @return \Elementor\Modules\Announcements\Classes\IsFlexContainerInactive|false
+         * @return \Elementor\Modules\Announcements\Triggers\IsFlexContainerInactive|false
          */
         public static function get_trigger_object($trigger)
         {
@@ -66833,7 +66837,7 @@ namespace Elementor\Modules\AtomicWidgets\DynamicTags {
          *       label: string,
          *       group: string,
          *       atomic_controls: array,
-         *       props_schema: array<string, Transformable_Prop_Type>
+         *       props_schema: array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Transformable_Prop_Type>
          *  }
          */
         public function get_tag(string $name): ?array
@@ -67933,6 +67937,57 @@ namespace Elementor\Modules\AtomicWidgets\ImportExport\Modifiers {
     }
 }
 namespace Elementor\Modules\AtomicWidgets\Library {
+    /**
+     * Elementor Atomic Form library document.
+     *
+     * Elementor atomic form library document handler class is responsible for
+     * handling a document of an atomic form type.
+     *
+     * @since 3.29.0
+     */
+    class Atomic_Form extends \Elementor\Modules\Library\Documents\Library_Document
+    {
+        public static function get_properties()
+        {
+        }
+        /**
+         * Get document name.
+         *
+         * Retrieve the document name.
+         *
+         * @since 2.0.0
+         * @access public
+         *
+         * @return string Document name.
+         */
+        public function get_name()
+        {
+        }
+        /**
+         * Get document title.
+         *
+         * Retrieve the document title.
+         *
+         * @since 2.0.0
+         * @access public
+         * @static
+         *
+         * @return string Document title.
+         */
+        public static function get_title()
+        {
+        }
+        /**
+         * Get Type
+         *
+         * Return the atomic form document type.
+         *
+         * @return string
+         */
+        public static function get_type()
+        {
+        }
+    }
     class Atomic_Widgets_Library
     {
         public function register_hooks()
@@ -68190,7 +68245,7 @@ namespace Elementor\Modules\AtomicWidgets\PropDependencies {
         {
         }
         /**
-         * @param array<string, Prop_Type> $props_schema
+         * @param array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type> $props_schema
          * @return array<string, array<string>> Returns source prop path => array of dependent prop paths
          */
         public static function get_source_to_dependents(array $props_schema): array
@@ -69142,7 +69197,7 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         use \Elementor\Modules\AtomicWidgets\PropTypes\Concerns\Has_Required_Setting;
         protected $default = null;
         protected $initial_value = null;
-        /** @var Array<string, Transformable_Prop_Type> */
+        /** @var Array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Transformable_Prop_Type> */
         protected array $prop_types = [];
         public static function get_key(): string
         {
@@ -70144,8 +70199,8 @@ namespace Elementor\Modules\Checklist {
         const SHOULD_OPEN_IN_EDITOR = 'should_open_in_editor';
         const IS_POPUP_MINIMIZED_KEY = 'is_popup_minimized';
         /**
-         * @param ?Wordpress_Adapter_Interface $wordpress_adapter
-         * @param ?Elementor_Adapter_Interface $elementor_adapter
+         * @param \Elementor\Modules\Checklist\?\Elementor\Core\Isolation\Wordpress_Adapter_Interface $wordpress_adapter
+         * @param \Elementor\Modules\Checklist\?\Elementor\Core\Isolation\Elementor_Adapter_Interface $elementor_adapter
          *
          * @return void
          */
@@ -70511,7 +70566,7 @@ namespace Elementor\Modules\CloudKitLibrary\Data {
 }
 namespace Elementor\Modules\CloudKitLibrary\Data\Endpoints {
     /**
-     * @property Controller $controller
+     * @property \Elementor\Modules\CloudKitLibrary\Data\Controller $controller
      */
     class Eligibility extends \Elementor\Data\V2\Base\Endpoint
     {
@@ -70526,7 +70581,7 @@ namespace Elementor\Modules\CloudKitLibrary\Data\Endpoints {
         }
     }
     /**
-     * @property Controller $controller
+     * @property \Elementor\Modules\CloudKitLibrary\Data\Controller $controller
      */
     class Quota extends \Elementor\Data\V2\Base\Endpoint
     {
@@ -76287,6 +76342,9 @@ namespace Elementor\Modules\Promotions {
         public function enqueue_editor_v4_alphachip(): void
         {
         }
+        public function add_editing_panel_sticky_promotion(array $settings): array
+        {
+        }
         public function add_v4_promotions_data(array $settings): array
         {
         }
@@ -79361,6 +79419,7 @@ namespace Elementor\Modules\WpRest\Base {
         abstract protected static function get_allowed_param_keys(): array;
         abstract protected static function get_keys_to_encode(): array;
         abstract protected function get_endpoint_registration_args(): array;
+        abstract protected function permission_check(\WP_REST_Request $request): bool;
         public function register($endpoint, bool $override_existing_endpoints = false): void
         {
         }
@@ -79377,6 +79436,12 @@ namespace Elementor\Modules\WpRest\Base {
          * @return array The sanitized array of strings.
          */
         public static function sanitize_string_array($input)
+        {
+        }
+        protected function validate_access_permission(\WP_REST_Request $request): bool
+        {
+        }
+        protected function filter_keys_conversion_map(array $requested_map, array $allowed_map): array
         {
         }
         /**
@@ -79445,6 +79510,8 @@ namespace Elementor\Modules\WpRest\Classes {
         const ENDPOINT = 'post';
         const SEARCH_FILTER_ACCEPTED_ARGS = 2;
         const DEFAULT_FORBIDDEN_POST_TYPES = ['e-floating-buttons', 'e-landing-page', 'elementor_library', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset'];
+        const SEARCH_IN_CONTENT_KEY = 'search_in_content';
+        const ALLOWED_KEYS_CONVERSION_MAP = ['ID' => 'id', 'post_title' => 'label', 'post_type' => 'groupLabel'];
         /**
          * @param string    $search_term The original search query.
          * @param \WP_Query $wp_query The WP_Query instance.
@@ -79458,6 +79525,9 @@ namespace Elementor\Modules\WpRest\Classes {
          * @return \WP_REST_Response
          */
         protected function get(\WP_REST_Request $request)
+        {
+        }
+        protected function permission_check(\WP_REST_Request $request): bool
         {
         }
         protected function get_endpoint_registration_args(): array
@@ -79490,6 +79560,9 @@ namespace Elementor\Modules\WpRest\Classes {
         protected function get(\WP_REST_Request $request)
         {
         }
+        protected function permission_check(\WP_REST_Request $request): bool
+        {
+        }
         /**
          * @return array
          */
@@ -79511,6 +79584,9 @@ namespace Elementor\Modules\WpRest\Classes {
     {
         const ENDPOINT = 'user';
         protected function get(\WP_REST_Request $request)
+        {
+        }
+        protected function permission_check(\WP_REST_Request $request): bool
         {
         }
         protected function get_endpoint_registration_args(): array
