@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.1.4');
+		define('ELEMENTOR_VERSION', '4.1.5');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -61734,6 +61734,9 @@ namespace Elementor {
         public static function has_pro()
         {
         }
+        public static function is_license_active(): bool
+        {
+        }
         public static function is_pro_installed_and_not_active(): bool
         {
         }
@@ -66956,10 +66959,19 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Divider {
         }
     }
 }
+namespace Elementor\Modules\AtomicWidgets\Elements\Promotions {
+    trait Preserves_Children_Subtree
+    {
+        protected function _get_default_child_type(array $element_data)
+        {
+        }
+    }
+}
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
     class Atomic_Form_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        use \Elementor\Modules\AtomicWidgets\Elements\Promotions\Preserves_Children_Subtree;
         const BASE_STYLE_KEY = 'base';
         public function __construct($data = [], $args = null)
         {
@@ -67030,6 +67042,9 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
         {
         }
         public function get_icon()
+        {
+        }
+        public static function get_base_props_schema(): array
         {
         }
         protected static function define_props_schema(): array
@@ -67827,6 +67842,36 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Loader {
          * @return void
          */
         public function register_scripts()
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Promotions {
+    class Preserved_Element extends \Elementor\Element_Base
+    {
+        public function get_name()
+        {
+        }
+        protected function _get_default_child_type(array $element_data)
+        {
+        }
+        public function get_controls($control_id = null)
+        {
+        }
+        public function get_data_for_save()
+        {
+        }
+        public function get_raw_data($with_html_content = false)
+        {
+        }
+    }
+    class Pro_Promotion_Data_Preservation
+    {
+        const EMAIL_ACTION_COUNT = 2;
+        public function register_hooks(): void
+        {
+        }
+        public function preserve($data, $document)
         {
         }
     }
@@ -76296,22 +76341,6 @@ namespace Elementor\Modules\Promotions {
         {
         }
     }
-}
-namespace Elementor\Modules\Promotions\Data {
-    class Birthday_Promotion_Actions
-    {
-        const CTA_VISITED_KEY = '_elementor_10th_bday_cta_visited';
-        const SET_CTA_VISITED_AJAX_ACTION = 'birthday_easter_egg_set_cta_visited';
-        const VISITED_PARAM = 'visited';
-        public function register_ajax_actions(): void
-        {
-        }
-        public function has_visited_cta(): bool
-        {
-        }
-    }
-}
-namespace Elementor\Modules\Promotions {
     class Module extends \Elementor\Core\Base\Module
     {
         const ADMIN_MENU_PRIORITY = 100;
@@ -76472,19 +76501,6 @@ namespace Elementor\Modules\Promotions\Widgets {
         {
         }
         public function add_promotion_data(array $settings): array
-        {
-        }
-    }
-    class Birthday_Easter_Egg_Promotion
-    {
-        const WIDGET_NAME = 'e-birthday-easter-egg';
-        const PACKAGE_NAME = 'birthday-easter-egg-modal';
-        const SCRIPT_HANDLE = 'elementor-v2-birthday-easter-egg-modal';
-        const LOTTIE_DATA_TRANSIENT_KEY = '_elementor_10th_bday_lottie_data';
-        public function __construct($force_request_assets = false)
-        {
-        }
-        public function register(): void
         {
         }
     }
