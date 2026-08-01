@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.1.5');
+		define('ELEMENTOR_VERSION', '4.2.1');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -778,6 +778,9 @@ namespace Elementor {
          * @access public
          */
         public function get_parsed_dynamic_settings($setting = null, $settings = null)
+        {
+        }
+        public function reset_render_state(): void
         {
         }
         /**
@@ -1730,6 +1733,9 @@ namespace Elementor {
          * @return \Elementor\Element_Base Current instance of the element.
          */
         public function add_link_attributes($element, array $url_control, $overwrite = false)
+        {
+        }
+        public function reset_descendant_render_state(): void
         {
         }
         /**
@@ -9689,11 +9695,24 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         }
     }
     /**
+     * @mixin Has_Atomic_Base
+     */
+    trait Has_Base_Settings
+    {
+        public function get_base_settings(): array
+        {
+        }
+        protected function define_base_settings(): array
+        {
+        }
+    }
+    /**
      * @mixin \Elementor\Element_Base
      */
     trait Has_Atomic_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Base_Styles;
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Base_Settings;
         public function has_widget_inner_wrapper(): bool
         {
         }
@@ -9708,6 +9727,12 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         {
         }
         private function parse_atomic_styles(array $data): array
+        {
+        }
+        private function format_styles_validation_error_message(string $style_id, array $data, array $style, string $validation_errors): string
+        {
+        }
+        private function get_editor_structure_label(array $data): ?string
         {
         }
         private function parse_atomic_settings(array $settings): array
@@ -9822,6 +9847,9 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes\Concerns {
         {
         }
         public function description(string $description): self
+        {
+        }
+        public function alias(string ...$aliases): self
         {
         }
         public function get_meta_item($key, $default_value = null)
@@ -12391,6 +12419,7 @@ namespace Elementor\Core\Base {
         const ELEMENTOR_DATA_META_KEY = '_elementor_data';
         const BUILT_WITH_ELEMENTOR_META_KEY = '_elementor_edit_mode';
         const CACHE_META_KEY = '_elementor_element_cache';
+        const UNEDITABLE_WITH_ELEMENTOR_TYPES = ['kit'];
         /**
          * Document publish status.
          */
@@ -12653,6 +12682,9 @@ namespace Elementor\Core\Base {
          * @return array An updated array of row action links.
          */
         public function filter_admin_row_actions($actions)
+        {
+        }
+        public function is_editable_with_elementor()
         {
         }
         /**
@@ -40426,6 +40458,9 @@ namespace Elementor\App\Modules\SiteBuilder\Rest {
         public function get_home_screen()
         {
         }
+        public function get_auth_credentials()
+        {
+        }
         public function get_snapshot()
         {
         }
@@ -40438,6 +40473,12 @@ namespace Elementor\App\Modules\SiteBuilder\Rest {
     }
 }
 namespace Elementor\App\Modules\SiteBuilder\Services {
+    class Connect_Auth_Service
+    {
+        public function get_connect_auth(): ?array
+        {
+        }
+    }
     class Design_System_Service
     {
         public function __construct(?\Elementor\Core\Kits\Documents\Kit $kit = null)
@@ -44589,6 +44630,41 @@ namespace Elementor\Core\Editor {
         {
         }
         /**
+         * Whether the Document-Isolation-Policy header should be sent on the
+         * Elementor editor screen and the editor preview iframe.
+         *
+         * DIP places the document in its own agent cluster, which is the prerequisite
+         * for cross-origin isolation features such as SharedArrayBuffer (required by
+         * WordPress core's client-side media processing introduced in WP 7.1).
+         *
+         * Both the editor parent document and the preview iframe must send the same
+         * DIP header so they join the same agent cluster and synchronous DOM access
+         * between them (e.g. `iframe.contentWindow.elementorFrontend`) keeps working.
+         *
+         * The header is only honored by browsers on a secure context (HTTPS or
+         * localhost) so the helper short-circuits on insecure origins to avoid
+         * sending a header that the browser will ignore.
+         *
+         * @since 4.1.0
+         *
+         * @return bool
+         */
+        public static function should_use_document_isolation_policy()
+        {
+        }
+        /**
+         * Send the Document-Isolation-Policy header for the current response.
+         *
+         * Safe to call from both the Elementor editor screen handler and the
+         * preview iframe handler. No-op when {@see self::should_use_document_isolation_policy()}
+         * returns false.
+         *
+         * @since 4.1.0
+         */
+        public static function send_document_isolation_policy_header()
+        {
+        }
+        /**
          * Signals to WordPress that Elementor is replacing the block editor on its own editor page,
          * so that block-editor-specific behaviour (e.g. WP 7.0 COOP/COEP isolation headers) is not
          * applied when the Elementor editor is active.
@@ -44784,7 +44860,7 @@ namespace Elementor\Core\Editor\Loader\V2 {
         /**
          * Packages that should only be registered, unless some other asset depends on them.
          */
-        const LIBS = ['editor-modal-shell', 'editor-responsive', 'editor-ui', 'editor-v1-adapters', self::ENV_PACKAGE, 'http-client', 'icons', 'locations', 'menus', 'query', 'schema', 'store', 'session', 'twing', 'ui', 'utils', 'wp-media', 'editor-current-user', 'editor-elements-panel-notice', 'elementor-mcp-common'];
+        const LIBS = ['editor-modal-shell', 'editor-responsive', 'editor-ui', 'editor-v1-adapters', self::ENV_PACKAGE, 'http-client', 'icons', 'locations', 'menus', 'query', 'schema', 'store', 'session', 'twing', 'ui', 'utils', 'wp-media', 'editor-current-user', 'editor-elements-panel-notice', 'elementor-mcp-common', 'editor-embedded-documents-manager'];
         const EXTENSIONS = ['events', 'editor-documents', 'editor-notifications', 'editor-panels', 'editor-elements-panel', 'unlock-v4-promo', 'editor-mcp', 'elementor-v3-mcp', 'elementor-kit-mcp'];
         /**
          * Additional dependencies for packages that rely on global variables, rather than
@@ -55202,6 +55278,19 @@ namespace Elementor {
         {
         }
         /**
+         * Is embeddable background video.
+         *
+         * Whether a given video URL belongs to a provider that the frontend
+         * background-video handler renders as an embedded iframe player.
+         *
+         * @param string $video_url Video URL.
+         *
+         * @return bool
+         **/
+        public static function is_embed_video($video_url)
+        {
+        }
+        /**
          * Get embed URL.
          *
          * Retrieve the embed URL for a given video.
@@ -56896,7 +56985,7 @@ namespace Elementor {
         const NEEDS_UPDATE_OPTION = 'icon_manager_needs_update';
         const FONT_ICON_SVG_CLASS_NAME = 'e-font-icon-svg';
         const LOAD_FA4_SHIM_OPTION_KEY = 'elementor_load_fa4_shim';
-        const ELEMENTOR_ICONS_VERSION = '5.50.0';
+        const ELEMENTOR_ICONS_VERSION = '5.53.0';
         /**
          * @param array  $icon
          * @param array  $attributes
@@ -58093,9 +58182,6 @@ namespace Elementor {
         final public static function get_title()
         {
         }
-        public function sanitize_post_data($post, \WP_REST_Request $request)
-        {
-        }
     }
     /**
      * Elementor preview.
@@ -59203,6 +59289,7 @@ namespace Elementor\TemplateLibrary {
     {
         const ERROR_TEMPLATE_SOURCE_NOT_FOUND = 'Template source not found.';
         const ERROR_TEMPLATE_IDS_MISSING = 'Template IDs are missing.';
+        const ERROR_JSON_UPLOAD_NOT_ALLOWED = 'Uploading JSON files is not allowed for this user.';
         /**
          * Registered template sources.
          *
@@ -61819,6 +61906,9 @@ namespace Elementor {
         {
         }
         public static function print_wp_kses_extended($text, array $tags)
+        {
+        }
+        public static function kses_post_deep($data)
         {
         }
         public static function is_elementor_path($path)
@@ -66222,13 +66312,47 @@ namespace Elementor\Modules\Apps {
         public function body_status_classes($admin_body_classes)
         {
         }
-        public function add_elementor_plugin_install_action_link($tabs)
+    }
+}
+namespace Elementor\Modules\AssetsManager {
+    class Assets
+    {
+        public function __construct()
         {
         }
-        public function maybe_open_elementor_tab()
+        public function append($handle, $uri, $dependencies = [], $version = '', $options = [])
         {
         }
-        public function add_plugins_page_styles()
+        public function assets_map()
+        {
+        }
+        public function priority_queue()
+        {
+        }
+    }
+    class Module extends \Elementor\Core\Base\Module
+    {
+        const MODULE_NAME = 'assets-manager';
+        const EXPERIMENT_NAME = 'e_assets_manager';
+        public function get_name()
+        {
+        }
+        public static function get_experimental_data()
+        {
+        }
+        public function is_experiment_active()
+        {
+        }
+        public function __construct()
+        {
+        }
+        public function manage_style_assets()
+        {
+        }
+        public function manage_script_assets()
+        {
+        }
+        public function manage_assets()
         {
         }
     }
@@ -66289,6 +66413,18 @@ namespace Elementor\Modules\AtomicOptIn {
         {
         }
         public function maybe_enqueue_welcome_popover(): void
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Ajax {
+    class Render_Element_Action
+    {
+        const ACTION = 'render_atomic_element';
+        public function register(\Elementor\Core\Common\Modules\Ajax\Module $ajax): void
+        {
+        }
+        public function handle($request): array
         {
         }
     }
@@ -66454,6 +66590,9 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         public function get_props(): array
         {
         }
+        public function set_free_chips(bool $free_chips): self
+        {
+        }
     }
     class Date_Range_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
     {
@@ -66486,7 +66625,7 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types\Elements {
     }
 }
 namespace Elementor\Modules\AtomicWidgets\Controls\Types {
-    class Email_Form_Action_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    class Email_Form_Action_Control extends \Elementor\Modules\AtomicWidgets\Controls\Types\Chips_Control
     {
         public function get_type(): string
         {
@@ -66504,6 +66643,9 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
         public function set_options(array $options): self
+        {
+        }
+        public function set_groups(array $groups): self
         {
         }
         public function set_collection_id(string $collection_id): self
@@ -66588,6 +66730,24 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
     }
+    class Query_Chips_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function set_query_options(array $query_options): self
+        {
+        }
+        public function set_placeholder(string $placeholder): self
+        {
+        }
+        public function set_min_input_length(int $min_input_length): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
     class Query_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
     {
         public function get_type(): string
@@ -66600,6 +66760,27 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
         public function set_query_config($config): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+    class Query_Filter_Repeater_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function set_allowed_keys(array $keys): self
+        {
+        }
+        public function set_key_config(array $config): self
+        {
+        }
+        public function set_label(string $label): self
+        {
+        }
+        public function set_chips_placeholder(string $placeholder): self
         {
         }
         public function get_props(): array
@@ -66717,6 +66898,1216 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
         public function get_props(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\CssConverter {
+    class Conversion_Context
+    {
+        /**
+         * @param array<int, array{property: string, value: string}> $rules            The full set of sibling declarations.
+         * @param array                                              $global_variables Wired for forward compatibility, empty in v1.
+         */
+        public function __construct(array $rules = [], array $global_variables = [])
+        {
+        }
+        /**
+         * @return array<int, array{property: string, value: string}>
+         */
+        public function get_rules(): array
+        {
+        }
+        public function get_global_variables(): array
+        {
+        }
+        public function get_props(): array
+        {
+        }
+        public function has_prop(string $property): bool
+        {
+        }
+        /**
+         * @return mixed
+         */
+        public function get_prop(string $property)
+        {
+        }
+        /**
+         * @param string $property The output property name the converter owns.
+         * @param mixed  $value    The canonical PropValue contributed for the property.
+         */
+        public function set_prop(string $property, $value): void
+        {
+        }
+        public function reject(string $declaration): void
+        {
+        }
+        public function get_rejected(): array
+        {
+        }
+    }
+    class Converter_Registry_Factory
+    {
+        /**
+         * Every Style_Schema property whose value is a single Size leaf (the schema prop is a Size_Prop_Type,
+         * or a Union with a Size member like `gap` — a size PropValue validates against the union). All are
+         * handled uniformly by Size_Property_Converter + Size_Value_Parser; per-property unit sets are not
+         * enforced here because Size_Prop_Type::validate accepts any all_supported_units() unit.
+         */
+        const SIZE_PROPERTIES = ['width', 'height', 'min-width', 'min-height', 'max-width', 'max-height', 'inset-block-start', 'inset-inline-end', 'inset-block-end', 'inset-inline-start', 'scroll-margin-top', 'font-size', 'letter-spacing', 'word-spacing', 'column-gap', 'line-height', 'outline-width', 'outline-offset', 'opacity', 'gap', 'grid-auto-rows', 'grid-auto-columns'];
+        /**
+         * Size properties that also accept a unitless number (a multiplier, e.g. `line-height: 1.1`). The
+         * value is kept verbatim as a `custom` unit so it renders without a unit; every other size property
+         * declines a unitless non-zero value to custom_css.
+         */
+        const UNITLESS_SIZE_PROPERTIES = ['line-height'];
+        /**
+         * Every Style_Schema property backed by a Number_Prop_Type. Handled uniformly by
+         * Number_Property_Converter (strict numeric, no units/functions).
+         */
+        const NUMBER_PROPERTIES = ['z-index', 'column-count', 'order'];
+        /**
+         * Every Style_Schema property backed by a plain Color_Prop_Type. Handled uniformly by
+         * Color_Property_Converter (raw passthrough; any non-empty value is a valid color).
+         */
+        const COLOR_PROPERTIES = ['color', 'border-color', 'outline-color'];
+        /**
+         * Every Style_Schema property backed by a Span_Prop_Type (grid placement). Handled uniformly by
+         * Span_Property_Converter, with the validation regex sourced from the live schema.
+         */
+        const SPAN_PROPERTIES = ['grid-column', 'grid-row'];
+        /**
+         * Union props whose string member accepts a raw value (e.g. Union(String | Grid_Track_Size)). A
+         * free-string String_Property_Converter emits a `string` PropValue that validates against the union's
+         * String member, covering `1fr 1fr`, `repeat(3, 1fr)`, `minmax(...)`, named lines, etc. The structured
+         * member is intentionally not produced (raw passthrough, mirroring color). NOT wired via
+         * STRING_PROPERTIES because the schema entry is a Union and has no get_enum().
+         */
+        const STRING_PASSTHROUGH_PROPERTIES = ['grid-template-columns', 'grid-template-rows'];
+        /**
+         * Box shorthands backed by Union(Dimensions | Size). Handled uniformly by
+         * Dimensions_Property_Converter (single value -> Size; 2-4 values -> logical Dimensions).
+         */
+        const DIMENSIONS_PROPERTIES = ['padding', 'margin'];
+        /**
+         * Props that each own a bespoke single-property converter (no shared family). Listed here for the
+         * covered set; each is wired explicitly in real_converters() (unlike the family arrays above, the
+         * members do not share a converter class, so there is no uniform loop). Distinct from
+         * NOOP_PROPERTIES, which have no real converter yet.
+         *
+         * - border-radius: Union(Border_Radius | Size); single value -> Size, 2-4 values -> logical
+         *   Border_Radius. Elliptical "/" values decline to custom_css (no two-radii-per-corner shape).
+         * - border-width: Union(Border_Width | Size); shares the four logical sides with the Dimensions
+         *   shorthand, so it reuses Dimensions_Property_Converter with the Border_Width wrapper injected.
+         */
+        const OTHER_PROPERTIES = ['border-radius', 'border-width', 'object-position', 'flex', 'transition', 'transform', 'transform-origin', 'box-shadow'];
+        /**
+         * Scalar background longhands that each fill one field of the aggregate `background` object. Not
+         * Style_Schema properties (the schema only has the `background` aggregate); they are accumulated into
+         * it by Object_Field_Merge_Converter, wired explicitly in real_converters() so each field's leaf prop
+         * type / enum is sourced from the live schema. The overlay array (image/gradient layers) is separate.
+         */
+        const BACKGROUND_FIELD_PROPERTIES = ['background-color', 'background-clip'];
+        /**
+         * Background overlay longhands that are not Style_Schema properties. `background-image` creates the
+         * image layer array in the aggregate; the rest update fields on existing layers via
+         * Background_Layer_Field_Converter. Enums are hardcoded to match the background-image-overlay shape
+         * without needing to instantiate the prop type (which would require WP for image sizes).
+         */
+        const BACKGROUND_LAYER_PROPERTIES = ['background-image', 'background-repeat', 'background-attachment', 'background-size', 'background-position'];
+        const BACKGROUND_REPEAT_ENUM = ['repeat', 'repeat-x', 'repeat-y', 'no-repeat'];
+        const BACKGROUND_ATTACHMENT_ENUM = ['fixed', 'scroll'];
+        const BACKGROUND_SIZE_ENUM = ['auto', 'cover', 'contain'];
+        /**
+         * Logical side keys of the Border_Width / Dimensions objects, and corner keys of the Border_Radius
+         * object, in the order used to seed every side/corner from a single Size.
+         */
+        const BORDER_WIDTH_SIDE_KEYS = ['block-start', 'inline-end', 'block-end', 'inline-start'];
+        const BORDER_RADIUS_CORNER_KEYS = ['start-start', 'start-end', 'end-end', 'end-start'];
+        /**
+         * Physical padding/margin longhands -> [ target schema prop, logical side key ].
+         * Not Style_Schema properties themselves; accumulated into the schema aggregate by
+         * Object_Side_Merge_Converter (same pattern as border_side_specs()).
+         */
+        const DIMENSIONS_SIDE_SPECS = ['padding-top' => ['padding', 'block-start'], 'padding-right' => ['padding', 'inline-end'], 'padding-bottom' => ['padding', 'block-end'], 'padding-left' => ['padding', 'inline-start'], 'padding-block-start' => ['padding', 'block-start'], 'padding-block-end' => ['padding', 'block-end'], 'padding-inline-start' => ['padding', 'inline-start'], 'padding-inline-end' => ['padding', 'inline-end'], 'margin-top' => ['margin', 'block-start'], 'margin-right' => ['margin', 'inline-end'], 'margin-bottom' => ['margin', 'block-end'], 'margin-left' => ['margin', 'inline-start'], 'margin-block-start' => ['margin', 'block-start'], 'margin-block-end' => ['margin', 'block-end'], 'margin-inline-start' => ['margin', 'inline-start'], 'margin-inline-end' => ['margin', 'inline-end']];
+        /**
+         * Filter-function lists backed by Array(Css_Filter_Func) (filter, backdrop-filter). Handled
+         * uniformly by Filter_Property_Converter + Filter_Value_Parser; the two share inner items and
+         * differ only by the wrapping $$type, which is sourced from the live schema.
+         */
+        const FILTER_PROPERTIES = ['filter', 'backdrop-filter'];
+        /**
+         * Hardcoded Style_Schema properties with no real converter yet (objects, unions, shorthands). They
+         * still get a Noop_Converter so they keep routing to custom_css. Combined with the real-converter
+         * families via covered_properties() to form the exhaustive covered set. Intentionally NOT derived
+         * from Style_Schema: a coverage test diffs the live schema against the covered set so adding a schema
+         * property without coverage fails CI until it is added here.
+         */
+        const NOOP_PROPERTIES = [
+            // SVG-only family. The editor UI does not expose stroke controls, so there is no
+            // LLM-facing use case worth converting. All stroke-* longhands are listed explicitly
+            // (rather than relying on silent fallthrough) so the intent is "preserve verbatim in
+            // customCss by-design", not "forgot to wire". `stroke` itself is the only top-level
+            // Style_Schema entry; the longhands are not in the schema and only need coverage here.
+            'stroke',
+            'stroke-width',
+            'stroke-opacity',
+            'stroke-dasharray',
+            'stroke-dashoffset',
+            'stroke-linecap',
+            'stroke-linejoin',
+            'stroke-miterlimit',
+            // Last-resort fallback for `background` values the shorthand expander cannot decompose
+            // (e.g. exotic syntax). The expander handles the common forms; this entry keeps the
+            // raw declaration in customCss when expansion fails.
+            'background',
+        ];
+        /**
+         * Properties that are structurally incompatible with Elementor's inline style system.
+         * They are explicitly rejected (not routed to customCss) so the client can surface a
+         * hint to the LLM that these constructs are unsupported in element style definitions.
+         *
+         * `animation` and its longhands rely on @keyframes which cannot be declared inline.
+         */
+        const REJECTED_PROPERTIES = ['animation', 'animation-name', 'animation-duration', 'animation-timing-function', 'animation-delay', 'animation-iteration-count', 'animation-direction', 'animation-fill-mode', 'animation-play-state'];
+        /**
+         * Every Style_Schema property backed by a plain String_Prop_Type. Enum-backed and free-string
+         * props are handled the same way: get_enum() returns the allowlist (enum props) or null
+         * (free-string props), so the allowlist is always sourced from the schema, never duplicated.
+         */
+        const STRING_PROPERTIES = ['overflow', 'aspect-ratio', 'object-fit', 'position', 'font-family', 'font-weight', 'text-align', 'font-style', 'text-decoration', 'text-transform', 'direction', 'all', 'cursor', 'border-style', 'outline-style', 'mix-blend-mode', 'display', 'flex-direction', 'flex-wrap', 'grid-auto-flow', 'justify-content', 'justify-items', 'align-content', 'align-items', 'align-self', 'content', 'appearance', 'clip-path'];
+        /**
+         * The exhaustive covered set: every family with a real converter plus the remaining no-ops. Single
+         * source of truth for the coverage test, with no property listed twice.
+         *
+         * @return string[]
+         */
+        public static function covered_properties(): array
+        {
+        }
+        public static function create(?\Elementor\Modules\Variables\Services\Variables_Service $variables_service = null): \Elementor\Modules\AtomicWidgets\CssConverter\Converter_Registry
+        {
+        }
+    }
+    class Converter_Registry
+    {
+        public function register(\Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter $converter): self
+        {
+        }
+        /**
+         * Converters in registration order. The dispatcher iterates these and applies
+         * the try-until-success flow (is_supported -> convert -> fallthrough on failure).
+         *
+         * @return \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter[]
+         */
+        public function all(): array
+        {
+        }
+    }
+    interface Property_Converter
+    {
+        /**
+         * @param array{property: string, value: string} $rule A single parsed CSS declaration.
+         */
+        public function is_supported(array $rule): bool;
+        /**
+         * Mutates the shared context and returns whether the rule was converted.
+         *
+         * @param \Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context                     $context The shared mutable conversion context.
+         * @param array{property: string, value: string} $rule    A single parsed CSS declaration.
+         */
+        public function convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool;
+    }
+    abstract class Property_Converter_Base implements \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter
+    {
+        /**
+         * Exact, enumerated property names this converter owns.
+         *
+         * @return string[]
+         */
+        abstract protected function get_supported_properties(): array;
+        public function is_supported(array $rule): bool
+        {
+        }
+        public function convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+        /**
+         * Override to customize null-reset behavior. Default: set the prop to null directly.
+         */
+        protected function convert_null(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+        abstract protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool;
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\CssConverter\Converters {
+    /**
+     * Converter for `background-image`. Delegates parsing to Background_Image_Value_Parser which returns
+     * fully-constructed overlay PropValues (image overlays for url(), gradient overlays for linear/radial-
+     * gradient()). The resulting ordered list is stored as `background-overlay` in the `background`
+     * aggregate context object, preserving any existing scalar fields (color, clip).
+     *
+     * Sibling background longhands processed afterwards (background-repeat, background-size, etc.) read
+     * and update the image-overlay items via Background_Layer_Field_Converter.
+     */
+    class Background_Image_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function convert_null(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for scalar sub-layer longhands of `background-image`: background-repeat,
+     * background-attachment, background-size, background-position. One instance per CSS property.
+     *
+     * Reads the ordered list of `background-image-overlay` items currently in the `background` context
+     * object. If no image layers exist yet the declaration is declined (-> custom_css) because there is
+     * nothing to attach the value to. CSS comma-separated lists are correlated to layers by position: a
+     * single value applies to all layers; multiple values are distributed 1:1. A mismatch in count
+     * declines the declaration.
+     *
+     * Each per-layer token is validated first against an optional string enum (e.g. repeat, cover).
+     * When a token is not in the enum and a pair prop type is configured, the token is re-parsed as two
+     * whitespace-separated Size values (e.g. `50% 50%` for size, `10px 20px` for position offset).
+     * Any token that fails both checks declines the whole declaration.
+     */
+    class Background_Layer_Field_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        /**
+         * @param string        $property        The CSS longhand property this converter owns.
+         * @param string        $field_key       The field key inside each background-image-overlay value.
+         * @param string[]|null $allowed_values  String enum allowlist, or null to skip enum check.
+         * @param string|null   $pair_prop_type  Object_Prop_Type class for size-pair values, or null.
+         * @param string[]      $pair_keys       The two field keys of the pair type (e.g. ['x','y']).
+         */
+        public function __construct(string $property, string $field_key, ?array $allowed_values, ?string $pair_prop_type = null, array $pair_keys = [])
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function convert_null(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+        protected function parse_token(string $token): ?array
+        {
+        }
+    }
+    /**
+     * Converter for `background-position`.
+     *
+     * The schema accepts only two shapes for a position value:
+     *   - String enum (one of Position_Prop_Type::get_position_enum_values())
+     *   - Background_Image_Position_Offset_Prop_Type { x: Size, y: Size }
+     *
+     * This subclass adds keyword normalization to the generic Background_Layer_Field_Converter
+     * so common LLM-emitted inputs reach the enum branch instead of declining:
+     *   - single keyword:  center  -> "center center", top -> "top center", left -> "center left", ...
+     *   - swapped pair:    left top -> "top left"  (enum is y-then-x ordered)
+     *
+     * Anything that cannot be normalized to an enum string or to two parseable Sizes
+     * (e.g. center 20%, bottom 4px, anything containing calc()) declines to custom_css.
+     */
+    class Background_Position_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Converters\Background_Layer_Field_Converter
+    {
+        const SINGLE_KEYWORD_TO_PAIR = ['center' => 'center center', 'top' => 'top center', 'bottom' => 'bottom center', 'left' => 'center left', 'right' => 'center right'];
+        const X_ONLY_KEYWORDS = ['left', 'right'];
+        const Y_ONLY_KEYWORDS = ['top', 'bottom'];
+        public function __construct()
+        {
+        }
+        protected function parse_token(string $token): ?array
+        {
+        }
+    }
+    /**
+     * Reusable converter for border-radius (Union(Border_Radius | Size)). One instance per property.
+     * Delegates tokenizing/expansion to Box_Shorthand_Parser; a null parse declines (-> custom_css).
+     *
+     * A single token emits the Size member. Two-to-four tokens expand via the CSS corner rule
+     * (top-left/top-right/bottom-right/bottom-left) and map physical->logical (TL=start-start,
+     * TR=start-end, BR=end-end, BL=end-start) into a Border_Radius PropValue. Elliptical values (a "/"
+     * separating horizontal/vertical radii) cannot be modeled by the single-Size-per-corner shape, so
+     * they decline to custom_css — the parser already rejects the "/" form while keeping calc() division
+     * (a single paren-wrapped token) convertible.
+     */
+    class Border_Radius_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        public function __construct(string $property)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for the `box-shadow` CSS property -> Box_Shadow_Prop_Type (array of Shadow_Prop_Type).
+     *
+     * Per-layer CSS grammar:
+     *   <shadow> = <color>? && [<length>{2,4}] && inset?
+     *
+     * Token classification (paren-aware so rgb(255 0 0) stays one token):
+     *   - `inset`              -> position keyword
+     *   - parses as Size       -> length token
+     *   - anything else        -> color (at most one per layer)
+     *
+     * Length mapping by count:
+     *   2 -> hOffset, vOffset
+     *   3 -> hOffset, vOffset, blur
+     *   4 -> hOffset, vOffset, blur, spread
+     * Any other count, multiple colors, or unrecognised tokens decline the entire declaration to custom_css.
+     *
+     * Defaults:
+     *   - missing color -> `currentColor` (CSS spec default)
+     *   - missing blur/spread -> 0 px
+     *
+     * Special values:
+     *   - `none` -> empty Box_Shadow array (clears the prop).
+     */
+    class Box_Shadow_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        const INSET_KEYWORD = 'inset';
+        const DEFAULT_COLOR = 'currentColor';
+        const ZERO_SIZE = ['size' => 0, 'unit' => 'px'];
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Reusable converter for properties backed by a Color_Prop_Type. One instance per property.
+     * Color_Prop_Type extends String_Prop_Type with no enum/regex, so any non-empty value is valid:
+     * named colors, hex, rgb()/hsl(), var(), color-mix(), currentcolor, transparent. Raw passthrough,
+     * apart from one guard: the model holds a single color, so a multi-color value (e.g. the per-side
+     * `border-color: red green blue`) is declined to custom_css. Multiplicity is detected paren-aware so a
+     * single functional color with internal spaces (`rgb(255 0 0)`, `color-mix(in srgb, red, blue)`) stays
+     * one token. Emits the canonical Color PropValue from generate().
+     */
+    class Color_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        public function __construct(string $property)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Reusable converter for box shorthands backed by Union(<sides object> | Size): padding/margin
+     * (Dimensions) and border-width (Border_Width) all share the four logical sides, differing only by the
+     * wrapping object prop type, which is injected. One instance per property. Delegates
+     * tokenizing/expansion to Box_Shorthand_Parser; a null parse declines (-> custom_css).
+     *
+     * A single token emits the Size member (the union accepts it). Two-to-four tokens expand via the CSS
+     * box rule and map physical->logical (top=block-start, right=inline-end, bottom=block-end,
+     * left=inline-start) into the injected object's PropValue.
+     */
+    class Dimensions_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        /**
+         * @param string $property         The CSS property this instance owns.
+         * @param string $object_prop_type Object_Prop_Type class used to wrap the four expanded sides.
+         */
+        public function __construct(string $property, string $object_prop_type = \Elementor\Modules\AtomicWidgets\PropTypes\Dimensions_Prop_Type::class)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Reusable converter for the filter-function lists backed by Array(Css_Filter_Func) (filter/
+     * backdrop-filter). One instance per property; the wrapping $$type differs only by key, so it is
+     * injected. Delegates the whole value to Filter_Value_Parser; a null parse declines (-> custom_css).
+     */
+    class Filter_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        public function __construct(string $property, string $type_key)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for the `flex` shorthand: Flex_Prop_Type{flexGrow: Number, flexShrink: Number, flexBasis: Size}.
+     *
+     * Supported forms:
+     *   flex: none          -> 0 1 auto  (CSS spec equivalent)
+     *   flex: auto          -> 1 1 auto
+     *   flex: <grow>        -> <grow> 1 0  (unitless number only)
+     *   flex: <grow> <basis>            (unitless grow + size basis)
+     *   flex: <grow> <shrink> <basis>
+     *
+     * Declines to custom_css for any unrecognised syntax.
+     */
+    class Flex_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        const AUTO_BASIS = ['size' => 'auto', 'unit' => 'custom'];
+        const ZERO_BASIS = ['size' => 0, 'unit' => 'px'];
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Placeholder that explicitly claims a schema property but declines conversion, so the rule
+     * routes to customCss. Real converters replace the no-op for their property (Phase 1+).
+     */
+    class Noop_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        public function __construct(string $property)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Reusable converter for properties backed by a Number_Prop_Type. One instance per property.
+     * Accepts only a strict numeric value (no units, no functions); anything else declines (-> custom_css).
+     * Emits the canonical Number PropValue from generate().
+     */
+    class Number_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        public function __construct(string $property)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for a single scalar longhand that contributes one field to a flat aggregate object prop,
+     * e.g. background-color -> the `color` field of `background` (Background), background-clip -> `clip`.
+     * One instance per input property.
+     *
+     * The target object is accumulated in the shared context across sibling declarations: each instance
+     * reads the current target prop, re-populates it when it is already this object, or starts a fresh one
+     * otherwise, then writes the single field it owns. Unlike Object_Side_Merge_Converter there is no
+     * single-member seeding because the aggregate has no scalar union member.
+     *
+     * The leaf is produced by the injected leaf prop type's generate(). An optional allowlist rejects
+     * out-of-enum values, and an optional single-token guard rejects multi-token values (a faithful single
+     * color must be one paren-aware token). A rejected value declines the declaration (-> custom_css) and
+     * leaves the accumulated object untouched.
+     */
+    class Object_Field_Merge_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        /**
+         * @param string        $property          The input longhand this converter owns (e.g. background-color).
+         * @param string        $target_property   The aggregate prop it contributes to (e.g. background).
+         * @param string        $type_key          The aggregate object's $$type (e.g. background).
+         * @param string        $field_key         The object field this longhand fills (e.g. color).
+         * @param string        $leaf_prop_type    Prop_Type class whose generate() wraps the leaf value.
+         * @param string        $object_prop_type  Object_Prop_Type class used to wrap the merged fields.
+         * @param string[]|null $allowed_values    Enum allowlist for the leaf, or null to accept any value.
+         * @param bool          $single_token_only Reject values that split into more than one top-level token.
+         */
+        public function __construct(string $property, string $target_property, string $type_key, string $field_key, string $leaf_prop_type, string $object_prop_type, ?array $allowed_values = null, bool $single_token_only = false)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function convert_null(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for `object-position`: Union(String enum | Position_Prop_Type{x, y}).
+     *
+     * Named keyword pairs (e.g. `center left`) emit a String PropValue validated against the enum.
+     * Two size tokens (e.g. `50% 30%`, `10px 20px`) emit a Position_Prop_Type PropValue.
+     * Anything else declines to custom_css.
+     */
+    class Object_Position_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for a single side/corner longhand that contributes a fragment to a multi-side object prop:
+     * border-{side}-width -> a side of `border-width` (Border_Width), border-{corner}-radius -> a corner of
+     * `border-radius` (Border_Radius). One instance per input property.
+     *
+     * The target object is accumulated in the shared context across sibling declarations: each instance
+     * reads the current target prop and re-populates it. If the target is already this object it merges the
+     * one side in; if it is the single Size member (e.g. a prior `border-width: 1px`) all sides are seeded
+     * from that single before the override, so the CSS cascade stays faithful; otherwise a fresh object is
+     * created. A value the Size parser rejects declines the declaration (-> custom_css) and leaves the
+     * accumulated object untouched.
+     */
+    class Object_Side_Merge_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        const SIZE_TYPE = 'size';
+        /**
+         * @param string                 $property         The input longhand this converter owns (e.g. border-top-width).
+         * @param string                 $target_property  The aggregate prop it contributes to (e.g. border-width).
+         * @param string                 $type_key         The aggregate object's $$type (e.g. border-width).
+         * @param string                 $side_key         The object key this longhand fills (e.g. block-start).
+         * @param string[]               $all_side_keys    Every key of the object, used to seed from a single Size.
+         * @param string                 $object_prop_type Object_Prop_Type class used to wrap the merged sides.
+         * @param \Elementor\Modules\Variables\Services\Variables_Service|null $variables_service When provided, a var-only value that resolves to a
+         *                                                  known size variable is emitted as a variable PropValue
+         *                                                  instead of a raw Size leaf.
+         */
+        public function __construct(string $property, string $target_property, string $type_key, string $side_key, array $all_side_keys, string $object_prop_type, ?\Elementor\Modules\Variables\Services\Variables_Service $variables_service = null)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function convert_null(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Claims a property and unconditionally rejects it: the declaration is added to the `rejected`
+     * bucket instead of `customCss`. Used for properties that are structurally incompatible with
+     * Elementor's style system (e.g. `animation`, `@keyframes`), so the client can surface a hint
+     * to the LLM rather than silently emitting broken CSS.
+     */
+    class Rejected_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        public function __construct(string $property)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Reusable converter for properties backed by a Size_Prop_Type. One instance per property.
+     * Delegates value parsing to Size_Value_Parser; a null parse declines (-> custom_css). On success
+     * it emits the canonical Size PropValue from generate(). $allow_unitless opts a property into
+     * keeping unitless multipliers (e.g. line-height: 1.1) instead of declining them.
+     */
+    class Size_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        public function __construct(string $property, bool $allow_unitless = false)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Reusable converter for properties backed by a Span_Prop_Type (grid-column/grid-row). One instance
+     * per property. Accepts any non-empty string that matches the schema regex (URLs/semicolons are
+     * rejected by the live grid-* pattern); a non-matching value declines (-> custom_css). Emits the
+     * canonical Span PropValue from generate().
+     */
+    class Span_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        /**
+         * @param string      $property The schema property this converter owns.
+         * @param string|null $pattern  The Span regex sourced from the schema, or null for no constraint.
+         */
+        public function __construct(string $property, ?string $pattern = null)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Reusable converter for properties backed by a plain String_Prop_Type. One instance per property.
+     * When an allowlist is provided the value must be one of it (enum-backed props); otherwise any
+     * non-empty value is accepted (free-string props). Emits the canonical PropValue from generate().
+     */
+    class String_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        /**
+         * @param string        $property       The schema property this converter owns.
+         * @param string[]|null $allowed_values Enum allowlist, or null for a free-string property.
+         */
+        public function __construct(string $property, ?array $allowed_values = null)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for the `transform-origin` CSS property.
+     *
+     * Maps into the `transform-origin` field nested inside the `transform` Prop_Type
+     * (merging with any prior transform fields already in the context).
+     *
+     * Accepted CSS syntax (1, 2, or 3 tokens, order = x y z):
+     *   - keywords:   left | right | center | top | bottom
+     *   - length:     <number><px|em|rem>
+     *   - percentage: <number>%
+     *
+     * Unit rules:
+     *   - x/y: % px em rem
+     *   - z:   px em rem  (no %)
+     *
+     * Anything else declines the entire declaration to customCss.
+     */
+    class Transform_Origin_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        const XY_UNITS = ['%', 'px', 'em', 'rem'];
+        const Z_UNITS = ['px', 'em', 'rem'];
+        const X_KEYWORDS = ['left' => 0, 'center' => 50, 'right' => 100];
+        const Y_KEYWORDS = ['top' => 0, 'center' => 50, 'bottom' => 100];
+        const CENTER = ['size' => 50, 'unit' => '%'];
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for the `transform` CSS property -> Transform_Prop_Type.
+     *
+     * Supported CSS functions -> schema type:
+     *   translate(x)               -> transform-move {x, y:0, z:0}
+     *   translate(x, y)            -> transform-move {x, y, z:0}
+     *   translateX(n)              -> transform-move {x:n, y:0, z:0}
+     *   translateY(n)              -> transform-move {x:0, y:n, z:0}
+     *   translateZ(n)              -> transform-move {x:0, y:0, z:n}
+     *   translate3d(x, y, z)      -> transform-move {x, y, z}
+     *   scale(n)                   -> transform-scale {x:n, y:n, z:1}
+     *   scale(x, y)                -> transform-scale {x, y, z:1}
+     *   scaleX(n)                  -> transform-scale {x:n, y:1, z:1}
+     *   scaleY(n)                  -> transform-scale {x:1, y:n, z:1}
+     *   scaleZ(n)                  -> transform-scale {x:1, y:1, z:n}
+     *   scale3d(x, y, z)          -> transform-scale {x, y, z}
+     *   rotate(a)                  -> transform-rotate {x:0, y:0, z:a}
+     *   rotateX(a)                 -> transform-rotate {x:a, y:0, z:0}
+     *   rotateY(a)                 -> transform-rotate {x:0, y:a, z:0}
+     *   rotateZ(a)                 -> transform-rotate {x:0, y:0, z:a}
+     *   rotate3d not supported     -> decline
+     *   matrix / perspective / skew / etc -> decline
+     *
+     * Move units:   %  px  em  rem  vw  custom
+     * Rotate units: deg  rad  grad  turn  custom
+     * Scale values: unitless numbers (floats)
+     *
+     * Any unrecognised function declines the entire declaration to customCss.
+     */
+    class Transform_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        const MOVE_UNITS = ['%', 'px', 'em', 'rem', 'vw', 'custom'];
+        const ROTATE_UNITS = ['deg', 'rad', 'grad', 'turn', 'custom'];
+        const ZERO_MOVE = ['size' => 0, 'unit' => 'px'];
+        const ZERO_ROTATE = ['size' => 0, 'unit' => 'deg'];
+        const ONE_SCALE = 1.0;
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+    /**
+     * Converter for the `transition` CSS property -> Transition_Prop_Type (array of Selection_Size).
+     *
+     * Parses comma-separated transition layers. Each layer is whitespace-split into tokens:
+     *   <property> <duration> [<easing>] [<delay>]
+     *
+     * Only the property name and the FIRST duration/delay time value are mapped — the schema has no
+     * field for easing or delay, so they are intentionally dropped (silently).
+     *
+     * The `property` token must be in ALLOWED_PROPERTIES (sourced from the Elementor UI data).
+     * Layers with an unrecognised property decline the entire declaration to customCss.
+     *
+     * Time values must be in `s` or `ms`; any other unit declines the layer.
+     */
+    class Transition_Property_Converter extends \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter_Base
+    {
+        const ALLOWED_PROPERTIES = ['all', 'background-color', 'background-position', 'border', 'border-color', 'border-radius', 'border-width', 'box-shadow', 'color', 'filter', 'flex', 'flex-basis', 'flex-grow', 'flex-shrink', 'font-size', 'font-variation-settings', 'height', 'inset-block-end', 'inset-block-start', 'inset-inline-end', 'inset-inline-start', 'letter-spacing', 'line-height', 'margin', 'margin-block-end', 'margin-block-start', 'margin-inline-end', 'margin-inline-start', 'max-height', 'max-width', 'min-height', 'min-width', 'opacity', 'padding', 'padding-block-end', 'padding-block-start', 'padding-inline-end', 'padding-inline-start', 'transform', 'width', 'word-spacing', '-webkit-text-stroke-color', 'z-index'];
+        const TIME_UNITS = ['s', 'ms'];
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function do_convert(\Elementor\Modules\AtomicWidgets\CssConverter\Conversion_Context $context, array $rule): bool
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\CssConverter {
+    class Css_Converter_REST_API
+    {
+        const API_NAMESPACE = 'elementor/v1';
+        const API_BASE = 'css-to-atomic';
+        public function register_hooks()
+        {
+        }
+    }
+    class Css_Converter
+    {
+        const BLOCKED_PROPERTIES = ['behavior', '-moz-binding'];
+        const BLOCKED_VALUE_NEEDLES = ['expression(', 'javascript:'];
+        public function __construct(\Elementor\Modules\AtomicWidgets\CssConverter\Converter_Registry $registry, \Elementor\Modules\AtomicWidgets\CssConverter\Metrics\Conversion_Failure_Reporter $failure_reporter, ?\Elementor\Modules\AtomicWidgets\CssConverter\Expander_Registry $expanders = null, ?\Elementor\Modules\AtomicWidgets\CssConverter\Variable_Prop_Value_Transformer $variable_transformer = null)
+        {
+        }
+        /**
+         * @return array{props: array, customCss: string, rejected: string[]}
+         */
+        public function convert(string $css): array
+        {
+        }
+    }
+    class Css_Var_Reference
+    {
+        public static function parse(string $value): ?string
+        {
+        }
+    }
+    class Css_Var_Token_Resolver
+    {
+        public static function is_var_only_token(string $token): bool
+        {
+        }
+        public static function resolve_var_only_token_type(?\Elementor\Modules\Variables\Services\Variables_Service $service, string $token): ?string
+        {
+        }
+        /**
+         * If $token is a var-only token that resolves to a known size variable, returns the ready-made
+         * size-variable PropValue `['$$type' => ..., 'value' => $id]`. Returns null if the token is not
+         * a var, the variable is unknown, or the variable type is not a size (caller should then fall
+         * back to the raw Size leaf or decline to customCss based on context).
+         *
+         * @return array{$$type: string, value: string}|null
+         */
+        public static function resolve_size_var_prop_value(?\Elementor\Modules\Variables\Services\Variables_Service $service, string $token): ?array
+        {
+        }
+    }
+    class Expander_Registry_Factory
+    {
+        const BORDER_SIDES = ['top', 'right', 'bottom', 'left'];
+        public static function create(?\Elementor\Modules\Variables\Services\Variables_Service $variables_service = null): \Elementor\Modules\AtomicWidgets\CssConverter\Expander_Registry
+        {
+        }
+        /**
+         * Role -> longhand property name for the all-sides (`border`, infix '') or per-side (e.g. 'top-')
+         * shorthand. Per-side style/color have no converter and route to custom_css.
+         *
+         * @return array<string, string>
+         */
+        public static function border_longhands(string $infix): array
+        {
+        }
+    }
+    class Expander_Registry
+    {
+        public function register(\Elementor\Modules\AtomicWidgets\CssConverter\Shorthand_Expander $expander): self
+        {
+        }
+        /**
+         * Expanders in registration order. The dispatcher applies the first one that supports a rule.
+         *
+         * @return \Elementor\Modules\AtomicWidgets\CssConverter\Shorthand_Expander[]
+         */
+        public function all(): array
+        {
+        }
+    }
+    /**
+     * A pre-processing pass that rewrites a single shorthand declaration (e.g. `border`) into the
+     * longhand declarations the schema-bound converters already understand. Runs before the converter
+     * loop so the converter registry stays a 1:1 mirror of Style_Schema and the shorthand never becomes a
+     * prop or a coverage key.
+     */
+    interface Shorthand_Expander
+    {
+        /**
+         * @param array{property: string, value: string} $rule A single parsed CSS declaration.
+         */
+        public function is_supported(array $rule): bool;
+        /**
+         * Rewrite the shorthand into longhand declarations. Returning an empty array declines the
+         * expansion, so the original shorthand is kept and routed to custom_css.
+         *
+         * @param array{property: string, value: string} $rule
+         * @return array<int, array{property: string, value: string, declaration: string}>
+         */
+        public function expand(array $rule): array;
+    }
+    abstract class Shorthand_Expander_Base implements \Elementor\Modules\AtomicWidgets\CssConverter\Shorthand_Expander
+    {
+        /**
+         * Exact, enumerated shorthand property names this expander owns.
+         *
+         * @return string[]
+         */
+        abstract protected function get_supported_properties(): array;
+        public function is_supported(array $rule): bool
+        {
+        }
+        public function expand(array $rule): array
+        {
+        }
+        /**
+         * Override to fan out null resets to all longhand properties.
+         * Default: re-emit the same property with a null value (covers simple renamers).
+         *
+         * @return array<int, array{property: string, value: null, declaration: string}>
+         */
+        protected function expand_null(array $rule): array
+        {
+        }
+        /**
+         * @return array{property: string, value: null, declaration: string}
+         */
+        protected function null_rule(string $property): array
+        {
+        }
+        /**
+         * @param array{property: string, value: string} $rule A rule with a guaranteed non-null value.
+         * @return array<int, array{property: string, value: string, declaration: string}>
+         */
+        abstract protected function do_expand(array $rule): array;
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\CssConverter\Expanders {
+    /**
+     * Expands a `background` shorthand into its constituent longhand declarations so the
+     * existing per-property converters can process each one independently.
+     *
+     * Each comma-separated layer is parsed into role slots: image, repeat, attachment, clip, position,
+     * size, and (last layer only) color. Slot values are then aggregated across layers to form the
+     * longhand values:
+     *  - background-image:      comma-joined per layer (none for layers without an explicit image).
+     *  - background-repeat:     comma-joined if all layers that have an image also specify it.
+     *  - background-attachment: same.
+     *  - background-position:   same.
+     *  - background-size:       same (position must also be present when size is used).
+     *  - background-color:      from the last layer only.
+     *  - background-clip:       from the last layer only (single scalar in our model).
+     *
+     * A layer whose tokens cannot be unambiguously classified declines the entire shorthand (returns [])
+     * so the original declaration is kept and routed to custom_css.
+     */
+    class Background_Shorthand_Expander extends \Elementor\Modules\AtomicWidgets\CssConverter\Shorthand_Expander_Base
+    {
+        const REPEAT_ENUM = ['repeat', 'repeat-x', 'repeat-y', 'no-repeat'];
+        const ATTACHMENT_ENUM = ['fixed', 'scroll'];
+        const CLIP_ENUM = ['border-box', 'padding-box', 'content-box', 'text'];
+        const POSITION_KEYWORDS = ['top', 'bottom', 'left', 'right', 'center'];
+        const SIZE_KEYWORDS = ['cover', 'contain', 'auto'];
+        public function __construct(?\Elementor\Modules\Variables\Services\Variables_Service $variables_service = null)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        const ALL_LONGHANDS = ['background-image', 'background-repeat', 'background-attachment', 'background-position', 'background-size', 'background-clip', 'background-color'];
+        protected function expand_null(array $rule): array
+        {
+        }
+        protected function do_expand(array $rule): array
+        {
+        }
+    }
+    /**
+     * Expands a `border` / `border-{side}` shorthand into its width / style / color longhands. There is no
+     * aggregate Border prop type; these are independent longhands, so this is a split, not a merge. The
+     * concrete longhand property names are injected, so the same logic serves the all-sides `border`
+     * (border-width/style/color) and each per-side shorthand (e.g. border-top-width/style/color).
+     *
+     * Each token is classified once: a border-style keyword (enum from the live schema) -> style; a length
+     * the Size parser accepts, or a width keyword (thin/medium/thick) -> width; anything else -> color (the
+     * catch-all, mirroring the raw-passthrough color converter). Only the parts present are emitted (omitted
+     * parts are not reset to CSS initials). A second token for an already filled role is ambiguous, so the
+     * whole expansion declines and the original shorthand is kept for custom_css. A produced longhand can
+     * still individually decline downstream (e.g. `border-{side}-style`, which has no converter), degrading
+     * to custom_css for that part only.
+     */
+    class Border_Shorthand_Expander extends \Elementor\Modules\AtomicWidgets\CssConverter\Shorthand_Expander_Base
+    {
+        const WIDTH_KEYWORDS = ['thin', 'medium', 'thick'];
+        const ROLE_WIDTH = 'width';
+        const ROLE_STYLE = 'style';
+        const ROLE_COLOR = 'color';
+        /**
+         * @param string                $property       The shorthand this expander owns (border, border-top, ...).
+         * @param array<string, string> $longhands      Role -> longhand property name to emit.
+         * @param string[]              $style_keywords The border-style enum, sourced from the live schema.
+         */
+        public function __construct(string $property, array $longhands, array $style_keywords, ?\Elementor\Modules\Variables\Services\Variables_Service $variables_service = null)
+        {
+        }
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function expand_null(array $rule): array
+        {
+        }
+        protected function do_expand(array $rule): array
+        {
+        }
+    }
+    /**
+     * Expands the `outline` shorthand into its supported longhands (outline-width, outline-style,
+     * outline-color). Token classification mirrors the border expander: a style keyword -> style; a
+     * length or width keyword -> width; anything else -> color. Duplicate roles or unclassifiable
+     * tokens cause the whole expansion to decline (-> custom_css).
+     *
+     * On null reset, outline-offset is also included because it is a supported prop type even though
+     * it is not part of the outline shorthand syntax.
+     */
+    class Outline_Shorthand_Expander extends \Elementor\Modules\AtomicWidgets\CssConverter\Shorthand_Expander_Base
+    {
+        const STYLE_KEYWORDS = ['none', 'auto', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset'];
+        const WIDTH_KEYWORDS = ['thin', 'medium', 'thick'];
+        const SHORTHAND_LONGHANDS = ['width' => 'outline-width', 'style' => 'outline-style', 'color' => 'outline-color'];
+        const ALL_LONGHANDS = ['outline-width', 'outline-style', 'outline-color', 'outline-offset'];
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function expand_null(array $rule): array
+        {
+        }
+        protected function do_expand(array $rule): array
+        {
+        }
+    }
+    /**
+     * Rewrites physical inset properties (top, right, bottom, left) to their logical equivalents
+     * (inset-block-start, inset-inline-end, inset-block-end, inset-inline-start) so the standard
+     * Size converters can handle them without needing separate converter registrations.
+     *
+     * Assumes LTR writing mode, which matches the Elementor canvas default.
+     */
+    class Physical_To_Logical_Expander extends \Elementor\Modules\AtomicWidgets\CssConverter\Shorthand_Expander_Base
+    {
+        const PHYSICAL_TO_LOGICAL = ['top' => 'inset-block-start', 'right' => 'inset-inline-end', 'bottom' => 'inset-block-end', 'left' => 'inset-inline-start'];
+        protected function get_supported_properties(): array
+        {
+        }
+        protected function expand_null(array $rule): array
+        {
+        }
+        protected function do_expand(array $rule): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\CssConverter\Metrics {
+    interface Conversion_Failure_Reporter
+    {
+        const CATEGORY_EXCEPTION = 'exception';
+        const CATEGORY_NULL_RETURN = 'null_return';
+        /**
+         * @param string $property The CSS property that failed to convert.
+         * @param string $category One of the CATEGORY_* constants.
+         * @param array  $context  Sanitized reproduction context, free of user content.
+         */
+        public function report(string $property, string $category, array $context): void;
+    }
+    /**
+     * Default no-op reporter. Real telemetry (channel, payload, PII policy) is deferred to Phase 4.
+     */
+    class Null_Failure_Reporter implements \Elementor\Modules\AtomicWidgets\CssConverter\Metrics\Conversion_Failure_Reporter
+    {
+        public function report(string $property, string $category, array $context): void
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\CssConverter\ValueParsers {
+    /**
+     * Stateless parser: a raw CSS `background-image` value -> an ordered list of overlay PropValues (one
+     * per comma-separated layer), or null to decline the whole declaration (-> custom_css).
+     *
+     * Each layer token is classified:
+     *  - `none`                    -> layer is silently skipped (not added to the list).
+     *  - `url(...)`                -> Background_Image_Overlay_Prop_Type PropValue.
+     *  - `linear-gradient(...)`    -> Background_Gradient_Overlay_Prop_Type PropValue (linear).
+     *  - `radial-gradient(...)`    -> Background_Gradient_Overlay_Prop_Type PropValue (radial).
+     *  - anything else             -> decline the entire value.
+     *
+     * Gradient parsing supports:
+     *  - Linear: optional leading `Ndeg` angle, then comma-separated color stops.
+     *  - Radial:  optional leading `circle at <named-position>`, then color stops.
+     *  - Color stops: `<color> <N>%` pairs; offset is optional.
+     *  - Unsupported syntax (direction keywords, conic, complex shapes) declines.
+     */
+    class Background_Image_Value_Parser
+    {
+        const DEFAULT_IMAGE_SIZE = 'large';
+        /**
+         * @return array[]|null  Ordered overlay PropValues per layer, or null to decline.
+         */
+        public static function parse(string $value): ?array
+        {
+        }
+    }
+    /**
+     * Stateless parser for the CSS box shorthands (padding/margin/border-width/border-radius): a raw
+     * value -> 1..4 Size leaves, or null to decline (the caller routes the declaration to custom_css).
+     * It never touches the registry, context, or PropTypes; the caller maps the result onto its own keys.
+     *
+     * Tokenizing is paren-aware so function values such as calc(100% / 4) survive as one token (and are
+     * parsed as a Size leaf). This also makes the elliptical border-radius form (a "/" separator) decline
+     * for free: a bare "/" is an unparsable token, and "a / b" exceeds four tokens.
+     *
+     * - 1 token  -> [ 'single' => <Size leaf> ]            (the union's Size member)
+     * - 2-4 tokens -> [ 'sides' => [ s0, s1, s2, s3 ] ]    (expanded via the CSS box rule)
+     * - 0 / >4 tokens, or any unparsable token -> null
+     */
+    class Box_Shorthand_Parser
+    {
+        const MAX_SIDES = 4;
+        /**
+         * @return array{single: array}|array{sides: array<int, array>}|null
+         */
+        public static function parse(string $value): ?array
+        {
+        }
+    }
+    /**
+     * Stateless tokenizer shared by the box shorthands and shorthand expanders. Splits a CSS value on
+     * whitespace runs that sit at parenthesis depth 0, so function values such as calc(50% - 10px) or
+     * rgb(0, 0, 0) stay intact as a single token.
+     */
+    class Css_Token_Splitter
+    {
+        /**
+         * Split a CSS value on top-level commas (paren-aware), trimming each segment.
+         *
+         * @return string[]
+         */
+        public static function split_by_comma(string $value): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public static function split_by_whitespace(string $value): array
+        {
+        }
+    }
+    /**
+     * Stateless parser: a raw CSS `filter`/`backdrop-filter` value -> the ordered list of
+     * `css-filter-func` PropValues an Array(Filter) accepts, or null to decline (the caller routes the
+     * whole declaration to custom_css). It never touches the registry, context, or the wrapping prop type.
+     *
+     * Conversion is all-or-nothing per declaration: a single unsupported function or unparsable argument
+     * declines the entire value. Single-argument functions (blur/brightness/contrast/saturate/hue-rotate/
+     * grayscale/invert/sepia) reuse Size_Value_Parser; drop-shadow expands to xAxis/yAxis/blur/color.
+     */
+    class Filter_Value_Parser
+    {
+        const DROP_SHADOW = 'drop-shadow';
+        const DEFAULT_DROP_SHADOW_BLUR = ['size' => 10, 'unit' => \Elementor\Modules\AtomicWidgets\Styles\Size_Constants::UNIT_PX];
+        const DEFAULT_DROP_SHADOW_COLOR = 'rgba(0, 0, 0, 1)';
+        const FUNCTION_GROUPS = ['blur' => 'blur', 'brightness' => 'intensity', 'contrast' => 'intensity', 'saturate' => 'intensity', 'grayscale' => 'color-tone', 'invert' => 'color-tone', 'sepia' => 'color-tone', 'hue-rotate' => 'hue-rotate', self::DROP_SHADOW => self::DROP_SHADOW];
+        const GROUP_PROP_TYPES = ['blur' => \Elementor\Modules\AtomicWidgets\PropTypes\Filters\Functions\Blur_Prop_Type::class, 'intensity' => \Elementor\Modules\AtomicWidgets\PropTypes\Filters\Functions\Intensity_Prop_Type::class, 'color-tone' => \Elementor\Modules\AtomicWidgets\PropTypes\Filters\Functions\Color_Tone_Prop_Type::class, 'hue-rotate' => \Elementor\Modules\AtomicWidgets\PropTypes\Filters\Functions\Hue_Rotate_Prop_Type::class];
+        const DROP_SHADOW_MIN_SIZES = 2;
+        const DROP_SHADOW_MAX_SIZES = 3;
+        /**
+         * @return array<int, array>|null
+         */
+        public static function parse(string $value): ?array
+        {
+        }
+    }
+    /**
+     * Stateless leaf parser: a raw CSS length-ish value -> the {size, unit} leaf a Size_Prop_Type accepts,
+     * or null to decline (the caller then routes the declaration to custom_css). It never touches the
+     * registry, context, or PropTypes.
+     *
+     * - "auto"                          -> { size: null, unit: 'auto' }
+     * - calc()/clamp()/min()/max()/var()/env() -> { size: '<raw>', unit: 'custom' } (kept verbatim)
+     * - "<number><unit>" (unit in all_supported_units) -> { size: <number>, unit: <unit> }
+     * - unitless "0"                    -> { size: 0, unit: 'px' }
+     * - unitless non-zero, $allow_unitless on -> { size: '<raw>', unit: 'custom' } (e.g. line-height: 1.1)
+     * - anything else (unitless non-zero with $allow_unitless off, unknown unit, multi-value) -> null
+     */
+    class Size_Value_Parser
+    {
+        const NUMBER_WITH_UNIT_PATTERN = '/^(-?\d*\.?\d+)([a-z%]*)$/i';
+        const DYNAMIC_FUNCTION_PATTERN = '/(?:calc|clamp|min|max|var|env)\(/i';
+        /**
+         * @param string $value          The raw CSS value.
+         * @param bool   $allow_unitless When true, a unitless non-zero number (e.g. a line-height multiplier)
+         *                               is kept verbatim as a `custom` unit instead of declining.
+         *
+         * @return array{size: mixed, unit: string}|null
+         */
+        public static function parse(string $value, bool $allow_unitless = false): ?array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\CssConverter {
+    class Variable_Prop_Value_Transformer
+    {
+        public function __construct(\Elementor\Modules\Variables\Services\Variables_Service $variables_service)
+        {
+        }
+        /**
+         * @param array                                                                   $props
+         * @param array                                                                   $schema
+         * @param array<int, array{property: string, value: string, declaration: string}> $rules
+         * @return array{props: array, custom_css: string[], rejected: string[]}
+         */
+        public function eject_unresolved_var_props(array $props, array $schema, array $rules): array
+        {
+        }
+        public function transform(array $props, array $schema): array
         {
         }
     }
@@ -66920,6 +68311,58 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Button {
         }
     }
 }
+namespace Elementor\Modules\AtomicWidgets\Elements\Promotions {
+    trait Preserves_Children_Subtree
+    {
+        protected function _get_default_child_type(array $element_data)
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Collection_Loop {
+    class Collection_Loop_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        use \Elementor\Modules\AtomicWidgets\Elements\Promotions\Preserves_Children_Subtree;
+        const BASE_STYLE_KEY = 'base';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function should_show_in_panel()
+        {
+        }
+        protected function should_print_empty()
+        {
+        }
+        public function print_content()
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Divider {
     class Atomic_Divider extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
@@ -66955,14 +68398,6 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Divider {
         {
         }
         public function render_markdown(): string
-        {
-        }
-    }
-}
-namespace Elementor\Modules\AtomicWidgets\Elements\Promotions {
-    trait Preserves_Children_Subtree
-    {
-        protected function _get_default_child_type(array $element_data)
         {
         }
     }
@@ -67051,6 +68486,9 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
         {
         }
         protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_base_settings(): array
         {
         }
         protected function define_base_styles(): array
@@ -67170,6 +68608,17 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form\Form_Success_Mess
         {
         }
         protected function get_css_id_control_meta(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
+    class Webmcp_Utils
+    {
+        public static function build_tool_name(string $form_name, string $element_id = ''): string
+        {
+        }
+        public static function build_tool_description(string $form_name): string
         {
         }
     }
@@ -67831,6 +69280,49 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Flexbox {
         }
     }
 }
+namespace Elementor\Modules\AtomicWidgets\Elements\Grid {
+    class Grid extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        const BASE_STYLE_KEY = 'base';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_base_padding(): array
+        {
+        }
+        protected function add_render_attributes()
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
 namespace Elementor\Modules\AtomicWidgets\Elements\Loader {
     class Frontend_Assets_Loader
     {
@@ -68144,6 +69636,57 @@ namespace Elementor\Modules\AtomicWidgets\Library {
         {
         }
     }
+    /**
+     * Elementor Grid library document.
+     *
+     * Elementor grid library document handler class is responsible for
+     * handling a document of a grid type.
+     *
+     * @since 3.29.0
+     */
+    class Grid extends \Elementor\Modules\Library\Documents\Library_Document
+    {
+        public static function get_properties()
+        {
+        }
+        /**
+         * Get document name.
+         *
+         * Retrieve the document name.
+         *
+         * @since 2.0.0
+         * @access public
+         *
+         * @return string Document name.
+         */
+        public function get_name()
+        {
+        }
+        /**
+         * Get document title.
+         *
+         * Retrieve the document title.
+         *
+         * @since 2.0.0
+         * @access public
+         * @static
+         *
+         * @return string Document title.
+         */
+        public static function get_title()
+        {
+        }
+        /**
+         * Get Type
+         *
+         * Return the grid document type.
+         *
+         * @return string
+         */
+        public static function get_type()
+        {
+        }
+    }
 }
 namespace Elementor\Modules\AtomicWidgets\Logger {
     /**
@@ -68170,8 +69713,6 @@ namespace Elementor\Modules\AtomicWidgets {
         const EXPERIMENT_NAME = 'e_atomic_elements';
         const ENFORCE_CAPABILITIES_EXPERIMENT = 'atomic_widgets_should_enforce_capabilities';
         const EXPERIMENT_EDITOR_MCP = 'editor_mcp';
-        const EXPERIMENT_CSS_GRID = 'e_css_grid';
-        const EXPERIMENT_DESIGN_SYSTEM_PANEL = 'e_editor_design_system_panel';
         const PACKAGES = [
             'editor-canvas',
             'editor-controls',
@@ -68364,7 +69905,7 @@ namespace Elementor\Modules\AtomicWidgets\PropTypeMigrations {
     }
     class Migrations_Loader
     {
-        public static function make(string $base_path, string $manifest_file = 'manifest.json'): self
+        public static function make(string $base_path, string $manifest_file = 'manifest.json', ?string $fallback_base_path = null): self
         {
         }
         public static function destroy(): void
@@ -68387,6 +69928,7 @@ namespace Elementor\Modules\AtomicWidgets\PropTypeMigrations {
     {
         const EXPERIMENT_BC_MIGRATIONS = 'e_bc_migrations';
         const MIGRATIONS_URL = 'https://editor.elementor.com/v1/migrations/';
+        const BUNDLED_MIGRATIONS_DIRECTORY = 'migrations/';
         public function register_hooks()
         {
         }
@@ -68397,6 +69939,9 @@ namespace Elementor\Modules\AtomicWidgets\PropTypeMigrations {
         {
         }
         public static function destroy(): void
+        {
+        }
+        public static function is_rollback(): bool
         {
         }
         public static function register_affecting_feature_flag_hooks(array $features): void
@@ -68626,6 +70171,14 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
     }
+}
+namespace Elementor\Modules\AtomicWidgets\PropTypes\Contracts {
+    interface Font_Enqueueable
+    {
+        public function get_enqueue_font_family($stored_value): ?string;
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\PropTypes {
     class Date_Range_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
     {
         public static function get_key(): string
@@ -68677,6 +70230,18 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
         protected function define_shape(): array
+        {
+        }
+    }
+    class Emails_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Email_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+        protected function validate_value($value): bool
         {
         }
     }
@@ -68767,12 +70332,51 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
     }
+    class Font_Family_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type implements \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Font_Enqueueable
+    {
+        public static function get_key(): string
+        {
+        }
+        public function get_enqueue_font_family($stored_value): ?string
+        {
+        }
+    }
     class Gradient_Color_Stop_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
     {
         public static function get_key(): string
         {
         }
         protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+    class Size_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public function units($units = 'all'): self
+        {
+        }
+        public function default_unit($unit)
+        {
+        }
+        public function get_settings(): array
+        {
+        }
+        public static function get_key(): string
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        public function sanitize_value($value)
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
+    class Grid_Track_Size_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Size_Prop_Type
+    {
+        public static function get_key(): string
         {
         }
     }
@@ -68945,6 +70549,12 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         public static function get_position_enum_values(): array
         {
         }
+        public static function get_radial_position_regex(): string
+        {
+        }
+        public static function is_valid_radial_position(string $pos): bool
+        {
+        }
     }
 }
 namespace Elementor\Modules\AtomicWidgets\PropTypes\Primitives {
@@ -68974,6 +70584,33 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes\Primitives {
     }
 }
 namespace Elementor\Modules\AtomicWidgets\PropTypes {
+    class Query_Array_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+    class Query_Filter_Array_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+    class Query_Filter_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
     class Query_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
     {
         public static function get_key(): string
@@ -69004,31 +70641,7 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
     }
-    class Size_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
-    {
-        public function units($units = 'all'): self
-        {
-        }
-        public function default_unit($unit)
-        {
-        }
-        public function get_settings(): array
-        {
-        }
-        public static function get_key(): string
-        {
-        }
-        protected function validate_value($value): bool
-        {
-        }
-        public function sanitize_value($value)
-        {
-        }
-        protected function define_shape(): array
-        {
-        }
-    }
-    class Span_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\Number_Prop_Type
+    class Span_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type
     {
         public static function get_key(): string
         {
@@ -69648,6 +71261,18 @@ namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers\Styles {
         {
         }
     }
+    class Font_Family_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
+        {
+        }
+    }
+    class Grid_Track_Size_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
+        {
+        }
+    }
     class Multi_Props_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
     {
         public function __construct(array $keys, callable $key_generator)
@@ -69842,6 +71467,16 @@ namespace Elementor\Modules\AtomicWidgets\Styles {
         {
         }
     }
+    class Grid_Track_Renderer
+    {
+        public const GRID_TRACK_PROPERTIES = ['grid-template-columns', 'grid-template-rows'];
+        public static function is_grid_track_property(?string $css_property): bool
+        {
+        }
+        public static function format_repeat(int $count): ?string
+        {
+        }
+    }
     class Size_Constants
     {
         const UNIT_PX = 'px';
@@ -69861,11 +71496,18 @@ namespace Elementor\Modules\AtomicWidgets\Styles {
         const UNIT_TURN = 'turn';
         const UNIT_AUTO = 'auto';
         const UNIT_CUSTOM = 'custom';
+        const UNIT_FR = 'fr';
         const DEFAULT_UNIT = self::UNIT_PX;
         public static function standard_units(): array
         {
         }
         public static function all_supported_units(): array
+        {
+        }
+        public static function grid_track(): array
+        {
+        }
+        public static function grid_auto_track(): array
         {
         }
         public static function grouped_units(): array
@@ -70009,6 +71651,7 @@ namespace Elementor\Modules\AtomicWidgets\Styles {
         const FOCUS_VISIBLE = 'focus-visible';
         const CHECKED = 'checked';
         const SELECTED = 'e--selected';
+        const DISABLED = 'e--disabled';
         public static function get_selector_with_state(string $base_selector, string $state): string
         {
         }
@@ -70085,7 +71728,7 @@ namespace Elementor\Modules\AtomicWidgets\Styles {
         public function render(array $styles): string
         {
         }
-        public function on_prop_transform(callable $callback): self
+        public function on_font_enqueue(callable $callback): self
         {
         }
         public static function get_media_query($breakpoint): ?string
@@ -71896,6 +73539,9 @@ namespace Elementor\Modules\DesignSystemSync {
         public function clear_classes_cache()
         {
         }
+        public function invalidate_sync_stylesheet($context = null)
+        {
+        }
         public function enqueue_sync_stylesheet()
         {
         }
@@ -72848,6 +74494,8 @@ namespace Elementor\Modules\GlobalClasses {
     class Atomic_Global_Styles
     {
         const STYLES_KEY = 'global';
+        const RELATED_KEY = 'related';
+        const RELATED_REVERSE_KEY = 'related-reverse';
         public function __construct(\Elementor\Modules\GlobalClasses\Global_Classes_Relations $relations)
         {
         }
@@ -72880,7 +74528,7 @@ namespace Elementor\Modules\GlobalClasses\Concerns {
 namespace Elementor\Modules\GlobalClasses\Database {
     class Global_Classes_Database_Updater extends \Elementor\Core\Database\Base_Database_Updater
     {
-        const DB_VERSION = 3;
+        const DB_VERSION = 4;
         const OPTION_NAME = 'elementor_global_classes_db_version';
         protected function get_migrations(): array
         {
@@ -72903,10 +74551,34 @@ namespace Elementor\Modules\GlobalClasses\Database\Migrations {
         {
         }
     }
+    /**
+     * Ensures every kit on the site has a complete, exclusive _elementor_global_classes_post_ids map.
+     *
+     * Pass A — Kits that were never migrated (no order meta, but have the old aggregated meta):
+     *           Runs the same migrate-to-posts logic that previously applied only to the active kit.
+     *
+     * Pass B — Kits that are already migrated but may be missing some entries in their post-id map
+     *           (possible due to the old lazy-backfill being shared across kits):
+     *           Fills in missing class_id → post_id entries using a conflict-aware resolver that
+     *           never reuses a post_id already claimed by another kit.
+     *
+     * Pass C — Ensures no single post_id is referenced by more than one kit's map.
+     *           For each shared post_id, the kit with the smallest ID is kept as the owner; all
+     *           other ("loser") kits get a freshly created CPT post cloned from the current data.
+     */
+    class Migrate_All_Kits_Post_IDs extends \Elementor\Core\Database\Base_Migration
+    {
+        public function up(): void
+        {
+        }
+    }
     class Migrate_To_Posts extends \Elementor\Core\Database\Base_Migration
     {
         use \Elementor\Modules\GlobalClasses\Concerns\Has_Kit_Dependency;
         public function up()
+        {
+        }
+        public static function migrate_kit(\Elementor\Core\Kits\Documents\Kit $kit): bool
         {
         }
         public static function get_aggregate_global_classes(?\Elementor\Core\Kits\Documents\Kit $kit = null): array
@@ -73003,6 +74675,9 @@ namespace Elementor\Modules\GlobalClasses {
         public function delete(): bool
         {
         }
+        public static function clone_to_other_kit(string $style_id, \Elementor\Core\Kits\Documents\Kit $source_kit, \Elementor\Core\Kits\Documents\Kit $target_kit): ?\Elementor\Modules\GlobalClasses\Global_Class_Post
+        {
+        }
     }
     class Global_Classes_Cleanup
     {
@@ -73082,7 +74757,6 @@ namespace Elementor\Modules\GlobalClasses {
     {
         use \Elementor\Modules\GlobalClasses\Concerns\Has_Kit_Dependency;
         const META_KEY = '_elementor_global_classes_post_ids';
-        const BACKFILL_BATCH_SIZE = 100;
         public static function make(?\Elementor\Core\Kits\Documents\Kit $kit = null): self
         {
         }
@@ -73153,7 +74827,7 @@ namespace Elementor\Modules\GlobalClasses {
         const CONTEXT_PREVIEW = 'preview';
         const READ_BATCH_SIZE = 100;
         const PERSIST_BATCH_SIZE = 100;
-        protected array $context_keys = ['event' => ['frontend' => self::CONTEXT_FRONTEND, 'preview' => self::CONTEXT_PREVIEW], 'meta_key' => ['frontend' => self::META_KEY_FRONTEND, 'preview' => self::META_KEY_PREVIEW]];
+        protected array $context_keys = ['event' => ['frontend' => self::CONTEXT_FRONTEND, 'preview' => self::CONTEXT_PREVIEW]];
         public function __construct(?\Elementor\Core\Kits\Documents\Kit $kit = null)
         {
         }
@@ -73346,6 +75020,16 @@ namespace Elementor\Modules\GlobalClasses {
         public function add_meta_to_preserve_on_kit_import(array $meta_keys): array
         {
         }
+        /**
+         * Duplicates global classes posts from the previous kit to the new kit, after a new kit is created.
+         * So each kit has its own, separate, global classes posts, and editing one kit's classes will not affect the other kits.
+         *
+         * @param array $params The parameters passed to the action - 'new_kit_id' and 'previous_kit_id'.
+         * @return void
+         */
+        public function create_global_classes_posts_for_new_kit(array $params): void
+        {
+        }
     }
 }
 namespace Elementor\Modules\GlobalClasses\Usage {
@@ -73502,6 +75186,17 @@ namespace Elementor\Modules\GlobalClasses\Utils {
         {
         }
         public static function normalize_style_fields(array $item): array
+        {
+        }
+    }
+    class Kit_Utils
+    {
+        /**
+         * Returns all kit documents on the current site.
+         *
+         * @return \Elementor\Core\Kits\Documents\Kit[]
+         */
+        public static function get_all_kit_documents(): array
         {
         }
     }
@@ -76256,7 +77951,7 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
     }
     class Go_Pro_Promotion_Item implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        const URL = 'https://go.elementor.com/pro-admin-menu/';
+        const URL = 'https://go.elementor.com/go-pro-upgrade-one-wp-menu/';
         public function get_name()
         {
         }
@@ -76354,14 +78049,6 @@ namespace Elementor\Modules\Promotions {
         public function __construct()
         {
         }
-        /**
-         * Get Ally Scanner URL
-         *
-         * @return string
-         */
-        public static function get_ally_external_scanner_url(): string
-        {
-        }
         public function override_one_menu_upgrade_label_during_sale($menu)
         {
         }
@@ -76455,47 +78142,16 @@ namespace Elementor\Modules\Promotions\PropTypes {
     }
 }
 namespace Elementor\Modules\Promotions\Widgets {
-    class Ally_Dashboard_Widget
+    class Atomic_Form_Widget_Promotion
     {
-        public const ALLY_SCANNER_RUN = 'ea11y_dashboard_widget_scanner_run';
-        public const ALLY_NONCE_KEY = 'ea11y_dashboard_widget_nonce';
-        /**
-         * Check is widget already submitted
-         *
-         * @access public
-         */
-        public static function is_scanner_run()
+        public function register(): void
         {
         }
-        /**
-         * Displays the Elementor Ally dashboard widget.
-         *
-         * @access public
-         */
-        public static function ally_widget_render(): void
-        {
-        }
-        /**
-         * Ajax action handler
-         *
-         * @access public
-         */
-        public static function handle_click()
-        {
-        }
-        /**
-         * Add widget to the list
-         *
-         * @access public
-         */
-        public static function register_ally_dashboard_widgets()
-        {
-        }
-        public static function init(): void
+        public function add_promotion_data(array $settings): array
         {
         }
     }
-    class Atomic_Form_Widget_Promotion
+    class Collection_Loop_Widget_Promotion
     {
         public function register(): void
         {
@@ -78707,6 +80363,9 @@ namespace Elementor\Modules\Variables\Services {
         public function get_variables_list(): array
         {
         }
+        public function find_by_label_or_id(string $needle): ?array
+        {
+        }
         public function load()
         {
         }
@@ -78783,6 +80442,12 @@ namespace Elementor\Modules\Variables\Storage\Entities {
         {
         }
         public function set_value($value)
+        {
+        }
+        public function sync_to_v3(): bool
+        {
+        }
+        public function set_sync_to_v3(bool $sync_to_v3)
         {
         }
         public function type()
@@ -78959,7 +80624,7 @@ namespace Elementor\Modules\Variables\Storage {
 namespace Elementor\Modules\Variables\Transformers {
     class Global_Variable_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
     {
-        public function transform($value, $key)
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
         {
         }
     }
@@ -79494,6 +81159,12 @@ namespace Elementor\Modules\WpRest\Classes {
     class Elementor_Post_Meta
     {
         public function register(): void
+        {
+        }
+        public function sanitize_elementor_data($value)
+        {
+        }
+        public function sanitize_page_settings($value)
         {
         }
         /**
