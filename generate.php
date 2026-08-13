@@ -138,6 +138,10 @@ $content .= "\n" . getClassAliases();
 // classes absent from GPL mirrors). Runs iteratively until the stubs file loads cleanly.
 $content = fixMissingParentStubs( $content );
 
+// 5.6. Patch missing @return/@param docblocks for methods that also lack them in
+// Elementor's own source, so php-stubs/generator has nothing to lift.
+$content = addMissingReturnDocblocks( $content );
+
 // 6. Write final output
 file_put_contents( __DIR__ . '/elementor-stubs.php', $content );
 
@@ -607,6 +611,44 @@ function fixMissingParentStubs( string $content ): string {
 		if ( ! $changed ) {
 			break;
 		}
+	}
+
+	return $content;
+}
+
+/**
+ * Add @return/@param docblocks for a handful of methods that PHPStan infers as
+ * `void` because the empty stub body carries no type info. The generator can't
+ * derive these from source since Elementor's own methods lack docblocks too, so
+ * they're patched in here based on manual tracing of the real implementations.
+ *
+ * @see https://github.com/artkrsk/elementor-stubs/issues/63
+ */
+function addMissingReturnDocblocks( string $content ): string {
+	$patches = array(
+		"        public function get_active_id()\n" =>
+			"        /**\n" .
+			"         * @return int|string|false\n" .
+			"         */\n" .
+			"        public function get_active_id()\n",
+		"        public function get_current_settings(\$setting = null)\n" =>
+			"        /**\n" .
+			"         * @param string|null \$setting Optional. The key of the requested setting. Default is null.\n" .
+			"         *\n" .
+			"         * @return mixed An array of all settings, or a single value if `\$setting` was specified.\n" .
+			"         */\n" .
+			"        public function get_current_settings(\$setting = null)\n",
+		"        public static function get_font_family(\$icon_library)\n" =>
+			"        /**\n" .
+			"         * @param string \$icon_library\n" .
+			"         *\n" .
+			"         * @return string\n" .
+			"         */\n" .
+			"        public static function get_font_family(\$icon_library)\n",
+	);
+
+	foreach ( $patches as $search => $replace ) {
+		$content = str_replace( $search, $replace, $content );
 	}
 
 	return $content;
