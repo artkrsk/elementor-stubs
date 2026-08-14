@@ -3,14 +3,14 @@ name: Generate Stubs
 on:
   workflow_dispatch:
     inputs:
-      elementor_version:
-        description: 'Elementor version: "latest" (stable), "3.33.6" (specific), or "dev" (GitHub main)'
+      source_version:
+        description: 'Elementor version: "latest", "X.Y.Z", or "dev" (GitHub main)'
         required: true
         default: 'latest'
         type: string
-      elementor_pro_version:
-        description: 'Elementor Pro version: "latest", "3.33.6", or "skip"'
-        required: true
+      secondary_version:
+        description: 'Elementor Pro version: "latest", "X.Y.Z", or "" to skip'
+        required: false
         default: 'latest'
         type: string
 
@@ -21,221 +21,15 @@ permissions:
 
 jobs:
   generate:
-    runs-on: self-hosted
-
-    steps:
-      - name: Disable git hooks
-        run: git config --global core.hooksPath /dev/null
-
-      - name: Checkout elementor-stubs
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0  # Need full history for tags
-
-      # Elementor Free: WordPress.org (stable) or GitHub (dev)
-      - name: Download Elementor Free (stable)
-        if: inputs.elementor_version != 'dev'
-        run: |
-          if [ "${{ inputs.elementor_version }}" = "latest" ]; then
-            URL="https://downloads.wordpress.org/plugin/elementor.zip"
-            echo "Downloading latest stable from WordPress.org..."
-          else
-            URL="https://downloads.wordpress.org/plugin/elementor.${{ inputs.elementor_version }}.zip"
-            echo "Downloading v${{ inputs.elementor_version }} from WordPress.org..."
-          fi
-
-          curl -L "$URL" -o elementor.zip
-          unzip -q elementor.zip -d .
-          mv elementor elementor-source
-          echo "✓ Elementor Free downloaded"
-
-      - name: Checkout Elementor Free (dev)
-        if: inputs.elementor_version == 'dev'
-        uses: actions/checkout@v7
-        with:
-          repository: elementor/elementor
-          ref: main
-          path: elementor-source
-
-      # Elementor Pro: GitHub public repo
-      - name: Checkout Elementor Pro
-        if: inputs.elementor_pro_version != 'skip'
-        id: checkout-pro
-        uses: actions/checkout@v7
-        with:
-          repository: proelements/proelements
-          ref: ${{ inputs.elementor_pro_version == 'latest' && 'master' || format('v{0}', inputs.elementor_pro_version) }}
-          path: elementor-pro-source
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
-
-      - name: Generate stubs
-        env:
-          ELEMENTOR_PATH: ./elementor-source
-          ELEMENTOR_PRO_PATH: ${{ inputs.elementor_pro_version != 'skip' && './elementor-pro-source' || '' }}
-        run: composer generate
-
-      - name: Install git-cliff
-        run: |
-          if ! command -v git-cliff &> /dev/null; then
-            ARCH=$(uname -m)
-            # Get latest release download URL for this architecture
-            DOWNLOAD_URL=$(curl -s https://api.github.com/repos/orhun/git-cliff/releases/latest | \
-              grep "browser_download_url.*${ARCH}.*linux-gnu.*tar.gz\"" | head -1 | cut -d '"' -f 4)
-            if [ -n "$DOWNLOAD_URL" ]; then
-              curl -sSfL "$DOWNLOAD_URL" | tar xz
-              sudo mv git-cliff-*/git-cliff /usr/local/bin/
-              rm -rf git-cliff-*/
-            else
-              pip3 install git-cliff
-            fi
-          fi
-
-      - name: Update CHANGELOG
-        run: git-cliff --config cliff.toml --verbose --output CHANGELOG.md
-
-      - name: Extract Elementor version
-        id: version
-        run: |
-          VERSION=$(grep -oP "define\('ELEMENTOR_VERSION', '\K[^']+" elementor-stubs.php)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Detected Elementor version: $VERSION"
-
-      - name: Check for changes
-        id: changes
-        run: |
-          if git diff --quiet elementor-stubs.php CHANGELOG.md; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "No changes detected in stubs or CHANGELOG"
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Changes detected in stubs or CHANGELOG"
-          fi
-
-      - name: Run tests
-        if: steps.changes.outputs.changed == 'true'
-        run: composer test
-
-      - name: Create branch and push
-        if: steps.changes.outputs.changed == 'true'
-        id: branch
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          BRANCH="stubs/elementor-${VERSION}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Create branch and commit
-          git checkout -b "$BRANCH"
-          git add elementor-stubs.php CHANGELOG.md
-          git commit -m "chore(stubs): update for Elementor $VERSION"
-          git push -u origin "$BRANCH"
-
-          # Get the commit SHA
-          SHA=$(git rev-parse HEAD)
-          echo "sha=$SHA" >> $GITHUB_OUTPUT
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "✅ Pushed branch $BRANCH (SHA: $SHA)"
-
-      - name: Report status checks
-        if: steps.changes.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          SHA="${{ steps.branch.outputs.sha }}"
-
-          # Report success for required status check
-          gh api repos/${{ github.repository }}/statuses/$SHA \
-            -f state=success \
-            -f context="test" \
-            -f description="Tests passed (via generate workflow)"
-
-      - name: Create PR with auto-merge
-        if: steps.changes.outputs.changed == 'true'
-        id: pr
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          BRANCH="${{ steps.branch.outputs.branch }}"
-
-          # Create PR
-          PR_URL=$(gh pr create \
-            --title "chore(stubs): update for Elementor $VERSION" \
-            --body "Automated stub generation for Elementor $VERSION" \
-            --head "$BRANCH" \
-            --base master)
-
-          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
-          echo "✅ Created PR: $PR_URL"
-
-          # Enable auto-merge (squash)
-          gh pr merge "$PR_URL" --auto --squash --delete-branch
-          echo "✅ Auto-merge enabled"
-
-      - name: Wait for PR merge and create release
-        if: steps.changes.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          PR_URL="${{ steps.pr.outputs.pr_url }}"
-
-          echo "Waiting for PR to be merged..."
-
-          # Wait up to 10 minutes for PR to merge
-          for i in {1..60}; do
-            STATE=$(gh pr view "$PR_URL" --json state --jq '.state')
-            if [ "$STATE" = "MERGED" ]; then
-              echo "✅ PR merged!"
-              break
-            elif [ "$STATE" = "CLOSED" ]; then
-              echo "❌ PR was closed without merging"
-              exit 1
-            fi
-            echo "Waiting... ($i/60) - State: $STATE"
-            sleep 10
-          done
-
-          if [ "$STATE" != "MERGED" ]; then
-            echo "❌ Timeout waiting for PR to merge"
-            exit 1
-          fi
-
-          # Fetch latest to get merge commit
-          git fetch origin master
-          git checkout master
-          git pull origin master
-
-          # Determine tag version
-          BASE_TAG="v$VERSION"
-          if git rev-parse "$BASE_TAG" >/dev/null 2>&1; then
-            PATCH=1
-            while git rev-parse "${BASE_TAG}.${PATCH}" >/dev/null 2>&1; do
-              PATCH=$((PATCH + 1))
-            done
-            TAG="${BASE_TAG}.${PATCH}"
-            echo "Base tag $BASE_TAG exists, creating patch: $TAG"
-          else
-            TAG="$BASE_TAG"
-            echo "Creating tag: $TAG"
-          fi
-
-          # Create and push tag
-          git tag "$TAG" -m "Stubs for Elementor $VERSION"
-          git push origin "$TAG"
-          echo "✅ Created tag: $TAG"
-
-          # Create release
-          gh release create "$TAG" \
-            --title "Elementor $VERSION Stubs" \
-            --generate-notes \
-            --verify-tag
-          echo "✅ Created release for $TAG"
-
-      - name: No changes summary
-        if: steps.changes.outputs.changed == 'false'
-        run: |
-          echo "No changes to commit. Stubs are already up to date for Elementor ${{ steps.version.outputs.version }}"
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-generate.yml@master
+    with:
+      source_version: ${{ inputs.source_version }}
+      secondary_version: ${{ inputs.secondary_version }}
+      wp_org_slug: elementor
+      primary_dev_repo: elementor/elementor
+      secondary_github_repo: proelements/proelements
+      source_env_name: ELEMENTOR_PATH
+      secondary_env_name: ELEMENTOR_PRO_PATH
+      stub_file: elementor-stubs.php
+      version_define_name: ELEMENTOR_VERSION
+      release_title: 'Elementor'
