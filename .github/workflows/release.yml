@@ -10,29 +10,6 @@ permissions:
 
 jobs:
   release:
-    runs-on: self-hosted
-
-    steps:
-      - name: Disable git hooks
-        run: git config --global core.hooksPath /dev/null
-
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Extract version from tag
-        id: version
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          # Extract base version (v3.33.6 or v3.33.6.1 -> 3.33.6)
-          VERSION=$(echo "$TAG" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --title "Elementor ${{ steps.version.outputs.version }} Stubs" \
-            --generate-notes \
-            --verify-tag
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-release.yml@master
+    with:
+      release_title: 'Elementor'

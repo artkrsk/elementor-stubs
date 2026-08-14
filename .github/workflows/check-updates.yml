@@ -2,105 +2,17 @@ name: Check for Elementor Updates
 
 on:
   schedule:
-    - cron: '0 0 1,15 * *'  # Runs at midnight UTC on 1st and 15th of each month (biweekly)
-  workflow_dispatch:  # Allow manual triggering for testing
+    - cron: '0 0 1,15 * *' # biweekly
+  workflow_dispatch:
 
 permissions:
-  contents: write  # Needed for checkout with full history
-  actions: write   # Needed to trigger generate.yml workflow
+  contents: write
+  actions: write
 
 jobs:
   check-version:
-    runs-on: self-hosted
-
-    steps:
-      - name: Disable git hooks
-        run: git config --global core.hooksPath /dev/null
-
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0  # Need full history for tags
-
-      - name: Get latest Elementor Free version from WordPress.org
-        id: elementor-free
-        run: |
-          # Query WordPress.org API for latest Elementor version
-          LATEST_VERSION=$(curl -s 'https://api.wordpress.org/plugins/info/1.0/elementor.json' | \
-            python3 -c "import sys, json; print(json.load(sys.stdin)['version'])")
-
-          if [ -z "$LATEST_VERSION" ]; then
-            echo "❌ Failed to fetch Elementor version from WordPress.org API"
-            exit 1
-          fi
-
-          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-          echo "✓ Latest Elementor Free: $LATEST_VERSION"
-
-      - name: Get latest Elementor Pro version from GitHub
-        id: elementor-pro
-        run: |
-          # Query GitHub API for latest Elementor Pro release
-          LATEST_TAG=$(curl -s https://api.github.com/repos/proelements/proelements/releases/latest | \
-            python3 -c "import sys, json; print(json.load(sys.stdin)['tag_name'])")
-
-          if [ -z "$LATEST_TAG" ]; then
-            echo "❌ Failed to fetch Elementor Pro version from GitHub API"
-            exit 1
-          fi
-
-          # Remove 'v' prefix if present (v3.33.2 -> 3.33.2)
-          LATEST_VERSION="${LATEST_TAG#v}"
-
-          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
-          echo "✓ Latest Elementor Pro: $LATEST_VERSION"
-
-      - name: Check if stubs exist for this version
-        id: check
-        run: |
-          ELEMENTOR_VERSION="${{ steps.elementor-free.outputs.version }}"
-
-          # Get all tags matching this Elementor version (v3.33.6, v3.33.6.1, etc.)
-          MATCHING_TAGS=$(git tag -l "v${ELEMENTOR_VERSION}*" | sort -V | tail -1)
-
-          if [ -z "$MATCHING_TAGS" ]; then
-            echo "needs_update=true" >> $GITHUB_OUTPUT
-            echo "✅ No stubs found for Elementor $ELEMENTOR_VERSION - update needed"
-          else
-            echo "needs_update=false" >> $GITHUB_OUTPUT
-            echo "⏭️  Stubs already exist for Elementor $ELEMENTOR_VERSION (tag: $MATCHING_TAGS)"
-          fi
-
-      - name: Trigger stub generation
-        if: steps.check.outputs.needs_update == 'true'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'generate.yml',
-              ref: 'master',
-              inputs: {
-                elementor_version: '${{ steps.elementor-free.outputs.version }}',
-                elementor_pro_version: '${{ steps.elementor-pro.outputs.version }}'
-              }
-            });
-
-            console.log('✅ Triggered stub generation workflow for Elementor ${{ steps.elementor-free.outputs.version }}');
-
-      - name: Summary
-        run: |
-          echo "## Version Check Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Elementor Free**: ${{ steps.elementor-free.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Elementor Pro**: ${{ steps.elementor-pro.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Update Needed**: ${{ steps.check.outputs.needs_update }}" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ steps.check.outputs.needs_update }}" == "true" ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "🚀 Stub generation workflow has been triggered!" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✓ Stubs are already up-to-date." >> $GITHUB_STEP_SUMMARY
-          fi
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-check-updates.yml@master
+    with:
+      primary_slug: elementor
+      secondary_source: github-release
+      secondary_repo: proelements/proelements

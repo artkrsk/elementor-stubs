@@ -11,23 +11,6 @@ permissions:
 
 jobs:
   test:
-    runs-on: self-hosted
-
-    steps:
-      - name: Disable git hooks
-        run: git config --global core.hooksPath /dev/null
-
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
-
-      - name: Verify stub syntax
-        run: php -l elementor-stubs.php
-
-      - name: Verify no uncommitted changes
-        run: git diff --exit-code
-
-      - name: Run test suite
-        run: composer test
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-test.yml@master
+    with:
+      stub_file: elementor-stubs.php
