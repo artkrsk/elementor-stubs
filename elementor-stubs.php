@@ -46807,6 +46807,9 @@ namespace Elementor\Core\Kits {
         const OPTION_ACTIVE = 'elementor_active_kit';
         const OPTION_PREVIOUS = 'elementor_previous_kit';
         const E_HASH_COMMAND_OPEN_SITE_SETTINGS = 'e:run:panel/global/open';
+        /**
+         * @return int|string|false
+         */
         public function get_active_id()
         {
         }
@@ -46843,6 +46846,11 @@ namespace Elementor\Core\Kits {
         public function init_kit_controls()
         {
         }
+        /**
+         * @param string|null $setting Optional. The key of the requested setting. Default is null.
+         *
+         * @return mixed An array of all settings, or a single value if `$setting` was specified.
+         */
         public function get_current_settings($setting = null)
         {
         }
@@ -47640,6 +47648,11 @@ namespace Elementor\Core\Page_Assets\Data_Managers\Font_Icon_Svg {
         public static function get_font_icon_svg_data($icon)
         {
         }
+        /**
+         * @param string $icon_library
+         *
+         * @return string
+         */
         public static function get_font_family($icon_library)
         {
         }
