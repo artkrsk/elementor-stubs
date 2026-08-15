@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+- ci: adopt stub-package-workflows thin callers + Renovate (#72)
+- added: missing @return docblocks for Kits\Manager and Font_Icon_Svg\Manager methods (#70)
+
+## [4.2.1] - 2026-08-01
+
+- changed: updated stubs for Elementor 4.2.1 (#65)
+
 ## [4.1.5] - 2026-07-15
 
 - changed: updated stubs for Elementor 4.1.5 (#60)
@@ -111,6 +120,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[4.2.1]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.5...v4.2.1
 [4.1.5]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.4...v4.1.5
 [4.1.4]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.3...v4.1.4
 [4.1.3]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.1...v4.1.3
