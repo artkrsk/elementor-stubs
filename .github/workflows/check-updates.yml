@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   check-version:
-    uses: artkrsk/stub-package-workflows/.github/workflows/stub-check-updates.yml@master
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-check-updates.yml@165729a6013366aa155d252c39bcc204f5151dac # master
     with:
       primary_slug: elementor
       secondary_source: github-release
