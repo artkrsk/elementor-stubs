@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   generate:
-    uses: artkrsk/stub-package-workflows/.github/workflows/stub-generate.yml@master
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-generate.yml@165729a6013366aa155d252c39bcc204f5151dac # master
     with:
       source_version: ${{ inputs.source_version }}
       secondary_version: ${{ inputs.secondary_version }}

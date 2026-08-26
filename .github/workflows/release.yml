@@ -10,6 +10,6 @@ permissions:
 
 jobs:
   release:
-    uses: artkrsk/stub-package-workflows/.github/workflows/stub-release.yml@master
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-release.yml@165729a6013366aa155d252c39bcc204f5151dac # master
     with:
       release_title: 'Elementor'

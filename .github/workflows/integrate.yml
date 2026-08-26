@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   test:
-    uses: artkrsk/stub-package-workflows/.github/workflows/stub-test.yml@master
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-test.yml@165729a6013366aa155d252c39bcc204f5151dac # master
     with:
       stub_file: elementor-stubs.php
