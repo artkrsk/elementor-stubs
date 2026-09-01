@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.2.2');
+		define('ELEMENTOR_VERSION', '4.2.4');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -27,7 +27,7 @@ namespace {
 
 	// Elementor Pro constants
 	if (!defined('ELEMENTOR_PRO_VERSION')) {
-		define('ELEMENTOR_PRO_VERSION', '4.1.0');
+		define('ELEMENTOR_PRO_VERSION', '4.2.2');
 	}
 	if (!defined('ELEMENTOR_PRO__FILE__')) {
 		define('ELEMENTOR_PRO__FILE__', __FILE__);
@@ -4042,7 +4042,7 @@ namespace Elementor\App\Modules\Onboarding\Data\Endpoints {
     }
     class Install_Theme extends \Elementor\Data\V2\Base\Endpoint
     {
-        const ALLOWED_THEMES = ['hello-elementor', 'hello-biz'];
+        const ALLOWED_THEMES = ['hello-elementor'];
         public function get_name(): string
         {
         }
@@ -4262,7 +4262,7 @@ namespace Elementor\App\Modules\Onboarding\Storage {
     {
         const PROGRESS_OPTION_KEY = 'elementor_onboarding_progress';
         const CHOICES_OPTION_KEY = 'elementor_onboarding_choices';
-        const DEFAULT_TOTAL_STEPS = 5;
+        const DEFAULT_TOTAL_STEPS = 4;
         public static function instance(): \Elementor\App\Modules\Onboarding\Storage\Onboarding_Progress_Manager
         {
         }
@@ -4970,6 +4970,10 @@ namespace Elementor\Core\Admin\EditorOneMenu\Interfaces {
     {
         public function get_icon(): string;
         public function has_children(): bool;
+    }
+    interface Menu_Item_With_Event_Id_Interface
+    {
+        public function get_event_id(): string;
     }
 }
 namespace Elementor\Core\Admin\EditorOneMenu\Menu {
@@ -27889,6 +27893,8 @@ namespace Elementor {
         const CATEGORY_ANGIE_WIDGETS = 'angie-widgets';
         const CATEGORY_CUSTOM_WIDGETS = 'custom-widgets';
         const CATEGORY_BASIC = 'basic';
+        const CATEGORY_PRO_ELEMENTS = 'pro-elements';
+        const CATEGORY_WORDPRESS = 'wordpress';
         /**
          * Elements constructor.
          *
@@ -46477,6 +46483,9 @@ namespace Elementor\Modules\EditorOne\Classes {
         public static function get_excluded_level3_slugs(): array
         {
         }
+        public static function get_excluded_flyout_menu_level3_slugs(): array
+        {
+        }
         public static function get_legacy_slug_mapping(): array
         {
         }
@@ -51428,6 +51437,7 @@ namespace Elementor\Modules\Promotions {
         const DISMISS_KEY = 'conversion_banner_go_pro';
         const AJAX_ACTION = 'elementor_dismiss_conversion_banner';
         const CONTAINER_ID = 'e-conversion-banner';
+        const UPGRADE_URL = 'https://go.elementor.com/go-pro-wp-admin-upgrade-notice/';
         const BIRTHDAY_PROMOTION_URL = 'https://go.elementor.com/go-pro-wp-admin-upgrad-notice/';
         const HELLO_THEME_CONFIG_FILTER = 'hello-plus-theme/rest/admin-config';
         const THEME_SLUGS = ['hello-elementor', 'hello-biz', 'hello-commerce'];
@@ -56738,7 +56748,7 @@ namespace ElementorPro\Core\Editor {
     class Editor extends \Elementor\Core\Base\App
     {
         const APP_BAR_DEPS_V2 = ['editor-site-navigation-extended', 'editor-documents-extended', 'license-api'];
-        const EDITOR_V4_PACKAGES = ['editor-controls-extended', 'editor-editing-panel-extended', 'editor-components-extended', 'core-adapter-utils', 'editor-templates-extended'];
+        const EDITOR_V4_PACKAGES = ['editor-controls-extended', 'editor-editing-panel-extended', 'editor-components-extended', 'core-adapter-utils', 'editor-templates-extended', 'editor-canvas-extended'];
         /**
          * Get app name.
          *
@@ -56779,6 +56789,19 @@ namespace ElementorPro\Core\Editor {
         protected function get_assets_base_url()
         {
         }
+        /**
+         * Map of `@elementor/*` package names to the minimum Elementor Core version
+         * in which the corresponding script handle is registered.
+         *
+         * Keys use the original npm package name (`@elementor/<name>`) so it stays
+         * grep-able against actual `import` statements in the Pro packages. They are
+         * converted to script handles (`elementor-v2-<name>`) at filter time
+         *
+         * NOTE: When adding an entry here, make sure every usage of the package in Pro
+         * source code is guarded by a runtime version check (see e.g.
+         * `isCoreWithEmbeddedDocumentsManager()` in `editor-templates-extended`).
+         */
+        const VERSION_GATED_CORE_PACKAGES = ['@elementor/editor-embedded-documents-manager' => '4.2.0'];
     }
     class Notice_Bar extends \Elementor\Core\Editor\Notice_Bar
     {
@@ -59676,6 +59699,9 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
         public static function get_all_types(): array
         {
         }
+        public static function normalize_email_actions(string $type): string
+        {
+        }
         /**
          * Check if an action type is valid.
          *
@@ -59703,13 +59729,10 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
         public function execute(array $form_data, array $widget_settings, array $context): array
         {
         }
-        protected function validate_settings(array $widget_settings)
-        {
-        }
     }
     class Email_Settings
     {
-        public function __construct(array $widget_settings)
+        public function __construct(array $widget_settings, string $settings_key = \ElementorPro\Modules\AtomicForm\Actions\Action_Type::EMAIL)
         {
         }
         public function to()
@@ -59737,6 +59760,9 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
         {
         }
         public function content_type()
+        {
+        }
+        public function meta_data(): array
         {
         }
     }
@@ -59842,6 +59868,26 @@ namespace ElementorPro\Modules\AtomicForm\Classes {
         {
         }
     }
+    class Atomic_Form_Panel_Promotion
+    {
+        const CORE_PROMOTION_CLASS = \Elementor\Modules\Promotions\Widgets\Atomic_Form_Widget_Promotion::class;
+        const CATEGORY_NAME = 'atomic-form';
+        const FORM_FEATURE_NAME = 'form';
+        const RENEW_WIDGET_CTA_URL = 'https://go.elementor.com/renew-license-atomic-form-modal';
+        const RENEW_SECTION_CTA_URL = 'https://go.elementor.com/renew-license-atomic-form-section';
+        public function register(): void
+        {
+        }
+        public function add_promotion_data(array $settings): array
+        {
+        }
+        public function configure_document_panel(array $config, $post_id): array
+        {
+        }
+        public function enqueue_promotion_scripts(): void
+        {
+        }
+    }
     class Composite_Shortcode_Resolver implements \ElementorPro\Modules\AtomicForm\Classes\Shortcode_Resolver
     {
         public function __construct(array $form_data, bool $is_html, array $field_metadata, array $cssid_map)
@@ -59863,6 +59909,15 @@ namespace ElementorPro\Modules\AtomicForm\Classes {
     class Field_Id_Shortcode_Resolver implements \ElementorPro\Modules\AtomicForm\Classes\Shortcode_Resolver
     {
         public function __construct(array $form_data)
+        {
+        }
+        public function resolve(string $message): string
+        {
+        }
+    }
+    class Metadata_Resolver
+    {
+        public function __construct(array $meta_keys, array $context, bool $is_html)
         {
         }
         public function resolve(string $message): string
@@ -60203,7 +60258,15 @@ namespace ElementorPro\Modules\AtomicForm {
         const MODULE_NAME = 'e-atomic-form';
         const EXPERIMENT_NAME = 'e_pro_atomic_form';
         const AKISMET_LICENSE_FEATURE_NAME = 'akismet';
+        const EMAIL_ACTION_COUNT = 2;
+        const FORM_ELEMENT_TYPE = 'e-form';
         public function get_name()
+        {
+        }
+        public static function get_form_widget_types(): array
+        {
+        }
+        public static function get_form_field_widget_types(): array
         {
         }
         public static function get_experimental_data(): array
@@ -60337,6 +60400,26 @@ namespace ElementorPro\Modules\AtomicForm\Submit_Button {
         {
         }
         public static function get_inline_styles(): string
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm\Textarea\Controls {
+    class Number_Range_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function set_min_label(string $min_label): self
+        {
+        }
+        public function set_max_label(string $max_label): self
+        {
+        }
+        public function set_error_message(string $error_message): self
+        {
+        }
+        public function get_props(): array
         {
         }
     }
@@ -61094,12 +61177,109 @@ namespace ElementorPro\Modules\CodeHighlight\Widgets {
         }
     }
 }
+namespace ElementorPro\Modules\CollectionLoop\Controls {
+    class Loop_Query_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Data {
+    class Controller extends \ElementorPro\Core\Data\Controller
+    {
+        public function get_name()
+        {
+        }
+        protected function register_endpoints()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Data\Endpoints {
+    class Loop_Preview extends \ElementorPro\Core\Data\Endpoints\Base implements \ElementorPro\Core\Data\Interfaces\Endpoint
+    {
+        public function get_name(): string
+        {
+        }
+        public function get_route(): string
+        {
+        }
+        public function get_preview(\WP_REST_Request $request): array
+        {
+        }
+        protected function register()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Traits {
+    trait Has_Pagination_Context
+    {
+        protected function get_pagination_context(): array
+        {
+        }
+        protected function has_pagination_context(): bool
+        {
+        }
+        protected function get_pagination_urls_config(): array
+        {
+        }
+        protected function build_page_url(int $page): string
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Elements\Base {
+    abstract class Collection_Loop_Pagination_Button extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        use \ElementorPro\Modules\CollectionLoop\Traits\Has_Pagination_Context;
+        const BASE_STYLE_KEY = 'base';
+        abstract protected static function get_default_label(): string;
+        abstract protected function get_direction(): string;
+        abstract protected function get_target_page(int $current_page, int $max_pages): int;
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public function should_show_in_panel()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_style_states(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function build_template_context(): array
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Item {
     class Collection_Loop_Item extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
         const ELEMENT_TYPE = 'e-collection-loop-item';
-        public static $widget_description = 'Repeating item template for a Collection Loop. Renders once per item in the collection.';
+        public static $widget_description = 'Repeating item template for a Loop. Renders once per item in the collection.';
         public function __construct($data = [], $args = null)
         {
         }
@@ -61135,9 +61315,7 @@ namespace ElementorPro\Modules\CollectionLoop\Traits {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template {
             render_children_to_html as protected render_default_children_to_html;
         }
-        protected function get_loop_context_key(): string
-        {
-        }
+        abstract protected function get_loop_context_key(): string;
         protected function render_children_to_html(): string
         {
         }
@@ -61154,7 +61332,109 @@ namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Layout {
         const BASE_STYLE_KEY = 'base';
         const DEFAULT_GRID_GAP_PX = 20;
         const DEFAULT_GRID_TEMPLATE_COLUMNS = 'repeat(3, 1fr)';
-        public static $widget_description = 'Layout container for the Collection Loop. Hosts the repeating item.';
+        public static $widget_description = 'Layout container for the Loop. Hosts the repeating item.';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected function get_loop_context_key(): string
+        {
+        }
+        public function should_show_in_panel()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Pagination_Next {
+    class Collection_Loop_Pagination_Next extends \ElementorPro\Modules\CollectionLoop\Elements\Base\Collection_Loop_Pagination_Button
+    {
+        const ELEMENT_TYPE = 'e-pagination-next';
+        public static $widget_description = 'Pagination next-page control. Container for custom label, icons, or other atomic content.';
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function get_default_label(): string
+        {
+        }
+        protected function get_direction(): string
+        {
+        }
+        protected function get_target_page(int $current_page, int $max_pages): int
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Pagination_Prev {
+    class Collection_Loop_Pagination_Prev extends \ElementorPro\Modules\CollectionLoop\Elements\Base\Collection_Loop_Pagination_Button
+    {
+        const ELEMENT_TYPE = 'e-pagination-prev';
+        public static $widget_description = 'Pagination previous-page control. Container for custom label, icons, or other atomic content.';
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function get_default_label(): string
+        {
+        }
+        protected function get_direction(): string
+        {
+        }
+        protected function get_target_page(int $current_page, int $max_pages): int
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Pagination {
+    class Collection_Loop_Pagination extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        use \ElementorPro\Modules\CollectionLoop\Traits\Has_Pagination_Context;
+        const ELEMENT_TYPE = 'e-pagination';
+        const BASE_STYLE_KEY = 'base';
+        public static $widget_description = 'Pagination container for the Loop. Added as a direct child of e-collection-loop when pagination is enabled.';
         public function __construct($data = [], $args = null)
         {
         }
@@ -61182,7 +61462,26 @@ namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop_Layout {
         protected function define_base_styles(): array
         {
         }
+        protected function define_default_children()
+        {
+        }
         protected function get_templates(): array
+        {
+        }
+        protected function build_template_context(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Traits {
+    trait Has_Loop_Query
+    {
+        abstract protected function get_loop_query();
+        abstract protected function get_loop_context_key(): string;
+        protected function define_render_context(): array
+        {
+        }
+        protected function extend_loop_render_context(array $context, \WP_Query $wp_query): array
         {
         }
     }
@@ -61191,13 +61490,20 @@ namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop {
     class Collection_Loop extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        use \ElementorPro\Modules\CollectionLoop\Traits\Has_Loop_Query;
         const ELEMENT_TYPE = 'e-collection-loop';
-        const SOURCE_POST = 'post';
-        const SOURCE_PAGE = 'page';
-        const DEFAULT_POSTS_PER_PAGE = 3;
-        const MIN_POSTS_PER_PAGE = 1;
-        const MAX_POSTS_PER_PAGE = 100;
+        const BASE_STYLE_KEY = 'base';
         const TEMPLATE_CHILD_INDEX = 0;
+        const LOOP_CONTEXT_KEY = 'collection-loop';
+        const LAYOUT_CONTENT_ID_PREFIX = 'e-collection-loop-layout-';
+        const PAGINATION_PROP = 'pagination';
+        const PAGINATION_TYPE_PROP = 'pagination_type';
+        const PAGINATION_TYPE_PREV_NEXT = 'prev_next';
+        const PAGINATION_TYPE_OPTIONS = [self::PAGINATION_TYPE_PREV_NEXT];
+        const PAGINATION_LOAD_TYPE_PROP = 'pagination_load_type';
+        const PAGINATION_LOAD_PAGE_RELOAD = 'page_reload';
+        const PAGINATION_LOAD_AJAX = 'ajax';
+        const PAGINATION_LOAD_TYPE_OPTIONS = [self::PAGINATION_LOAD_PAGE_RELOAD, self::PAGINATION_LOAD_AJAX];
         public static $widget_description = 'Repeats a content template for each item in a collection (posts, terms, etc.).';
         public function __construct($data = [], $args = null)
         {
@@ -61220,10 +61526,22 @@ namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop {
         protected static function define_props_schema(): array
         {
         }
+        protected function get_loop_context_key(): string
+        {
+        }
+        protected function get_loop_query(): \WP_Query
+        {
+        }
+        public static function get_layout_content_id(string $layout_element_id): string
+        {
+        }
+        protected function extend_loop_render_context(array $context, \WP_Query $wp_query): array
+        {
+        }
         protected function define_atomic_controls(): array
         {
         }
-        protected function define_render_context(): array
+        protected function define_base_styles(): array
         {
         }
         protected function define_default_children()
@@ -61232,14 +61550,44 @@ namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop {
         protected function get_templates(): array
         {
         }
+        public function get_script_depends()
+        {
+        }
+        public function register_frontend_handlers()
+        {
+        }
+    }
+    class Query_Filters
+    {
+        const MODE_INCLUDE = 'include';
+        const MODE_EXCLUDE = 'exclude';
+        const TYPE_TERMS = 'terms';
+        const TYPE_AUTHORS = 'authors';
+        const TYPE_MANUAL_SELECTION = 'manual_selection';
+        const TYPE_CURRENT_POST = 'current_post';
+        public static function apply(array $args, array $filters, string $mode): array
+        {
+        }
     }
 }
 namespace ElementorPro\Modules\CollectionLoop {
+    class Embedded_Loop_Item_Css
+    {
+        public function register_hooks(): void
+        {
+        }
+        public function enqueue_for_embedded_template(\Elementor\Core\Base\Document $document, bool $is_excerpt): void
+        {
+        }
+    }
     class Module extends \ElementorPro\Base\Module_Base
     {
         const MODULE_NAME = 'e-collection-loop';
         const EXPERIMENT_NAME = 'e_pro_collection_loop';
         const PACKAGE_HANDLE = 'editor-collection-loop';
+        const LICENSE_FEATURE_NAME = 'atomic-loop';
+        const MIN_ELEMENTOR_VERSION = '4.2';
+        const PAGINATION_SCRIPT_HANDLE = 'elementor-pro-collection-loop-pagination-handler';
         public function get_name()
         {
         }
@@ -61247,6 +61595,255 @@ namespace ElementorPro\Modules\CollectionLoop {
         {
         }
         public function __construct()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Query {
+    final class Loop_Query_Args_Builder
+    {
+        public static function from_resolved(array $value): array
+        {
+        }
+    }
+    final class Loop_Query_Pagination
+    {
+        const PAGE_QUERY_VAR_PREFIX = 'e-page-';
+        public static function get_page_query_var_key(string $loop_id): string
+        {
+        }
+        public static function get_current_page_for_loop(string $loop_id): int
+        {
+        }
+        public static function apply_paged_to_args(array $args, string $loop_id): array
+        {
+        }
+    }
+    class Loop_Query_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
+    final class Loop_Query_Runner
+    {
+        public function __construct(array $args, string $query_id = '')
+        {
+        }
+        public function args(): array
+        {
+        }
+        public function run(?\Elementor\Element_Base $element = null): \WP_Query
+        {
+        }
+    }
+    class Loop_Query_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
+    {
+        public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
+        {
+        }
+    }
+    class Loop_Query
+    {
+        const SOURCE_POST = \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Post_Template_Type::SOURCE_POST;
+        const SOURCE_PAGE = \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Post_Template_Type::SOURCE_PAGE;
+        const SOURCE_MANUAL = \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Post_Template_Type::SOURCE_MANUAL;
+        const SOURCE_CURRENT_QUERY = \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Post_Template_Type::SOURCE_CURRENT_QUERY;
+        const NON_POST_TYPE_SOURCES = \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Post_Template_Type::NON_POST_TYPE_SOURCES;
+        const DEFAULT_POSTS_PER_PAGE = 3;
+        const DEFAULT_IGNORE_STICKY_POSTS = true;
+        const MIN_POSTS_PER_PAGE = 1;
+        const MAX_POSTS_PER_PAGE = 100;
+        const EMPTY_QUERY_SENTINEL_ID = 0;
+        const INCLUDE_FILTER_TYPES = \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Post_Template_Type::INCLUDE_FILTER_TYPES;
+        const EXCLUDE_FILTER_TYPES = \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Post_Template_Type::EXCLUDE_FILTER_TYPES;
+        const SELECT_DATE_ANYTIME = 'anytime';
+        const SELECT_DATE_TODAY = 'today';
+        const SELECT_DATE_WEEK = 'week';
+        const SELECT_DATE_MONTH = 'month';
+        const SELECT_DATE_QUARTER = 'quarter';
+        const SELECT_DATE_YEAR = 'year';
+        const SELECT_DATE_EXACT = 'exact';
+        const SELECT_DATE_OPTIONS = [self::SELECT_DATE_ANYTIME, self::SELECT_DATE_TODAY, self::SELECT_DATE_WEEK, self::SELECT_DATE_MONTH, self::SELECT_DATE_QUARTER, self::SELECT_DATE_YEAR, self::SELECT_DATE_EXACT];
+        const SELECT_DATE_OFFSET_MAP = [self::SELECT_DATE_TODAY => '-1 day', self::SELECT_DATE_WEEK => '-1 week', self::SELECT_DATE_MONTH => '-1 month', self::SELECT_DATE_QUARTER => '-3 month', self::SELECT_DATE_YEAR => '-1 year'];
+        const ORDERBY_POST_DATE = 'post_date';
+        const ORDERBY_POST_TITLE = 'post_title';
+        const ORDERBY_MENU_ORDER = 'menu_order';
+        const ORDERBY_MODIFIED = 'modified';
+        const ORDERBY_COMMENT_COUNT = 'comment_count';
+        const ORDERBY_RAND = 'rand';
+        const ORDERBY_OPTIONS = [self::ORDERBY_POST_DATE, self::ORDERBY_POST_TITLE, self::ORDERBY_MENU_ORDER, self::ORDERBY_MODIFIED, self::ORDERBY_COMMENT_COUNT, self::ORDERBY_RAND];
+        const ORDER_ASC = 'asc';
+        const ORDER_DESC = 'desc';
+        const ORDER_OPTIONS = [self::ORDER_ASC, self::ORDER_DESC];
+        public static function get_post_type_sources(): array
+        {
+        }
+        public static function get_post_like_sources(): array
+        {
+        }
+        public static function get_source_options(): array
+        {
+        }
+        public static function clamp_posts_per_page($value): int
+        {
+        }
+        public static function get_schema(): array
+        {
+        }
+        public static function prop_type(): \ElementorPro\Modules\CollectionLoop\Query\Loop_Query_Prop_Type
+        {
+        }
+        public static function query_section_items(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Query\TemplateTypes {
+    abstract class Template_Type_Base
+    {
+        abstract public function get_id(): string;
+        abstract public function get_label(): string;
+        /**
+         * Atomic prop schema fragment contributed by this template type.
+         *
+         * Returned array is keyed by prop name and contains Prop_Type instances.
+         * Implementations are responsible for adding any `eq template_type === <id>`
+         * dependency clauses needed to keep their props hidden when another type is active.
+         *
+         * @return array<string, mixed>
+         */
+        abstract public function get_schema_fragment(): array;
+        /**
+         * Atomic controls contributed by this template type.
+         *
+         * Implementations should not include the shared Template Type select / posts_per_page
+         * / query_id controls; those are owned by Loop_Query.
+         *
+         * @return array<int, mixed>
+         */
+        abstract public function get_query_section_items(): array;
+        abstract public function build_query_args(array $query_settings): array;
+        protected function setting(array $query_settings, string $key)
+        {
+        }
+        protected function template_type_clause(): array
+        {
+        }
+        protected function normalize_filters($filters): array
+        {
+        }
+        /**
+         * Sanitize a "selection" atomic setting array into a list of unique-order integer IDs.
+         *
+         * Non-array input yields an empty list. Caller decides what to do with empties
+         * (typically `Loop_Query::EMPTY_QUERY_SENTINEL_ID`).
+         *
+         * @return int[]
+         */
+        protected function selection_ids_to_int_list($selection): array
+        {
+        }
+        protected function build_order_toggle_control(string $bind_to): \Elementor\Modules\AtomicWidgets\Controls\Types\Toggle_Control
+        {
+        }
+        protected function build_current_query_args(array $query_settings): array
+        {
+        }
+    }
+    class Post_Template_Type extends \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Template_Type_Base
+    {
+        const ID = 'post';
+        const SOURCE_POST = 'post';
+        const SOURCE_PAGE = 'page';
+        const SOURCE_MANUAL = 'manual';
+        const SOURCE_CURRENT_QUERY = 'current_query';
+        const NON_POST_TYPE_SOURCES = [self::SOURCE_MANUAL, self::SOURCE_CURRENT_QUERY];
+        const INCLUDE_FILTER_TYPES = [\ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_TERMS, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_AUTHORS];
+        const EXCLUDE_FILTER_TYPES = [\ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_CURRENT_POST, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_MANUAL_SELECTION, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_TERMS, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_AUTHORS];
+        public function get_id(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public static function get_post_type_sources(): array
+        {
+        }
+        public static function get_post_like_sources(): array
+        {
+        }
+        public static function get_source_options(): array
+        {
+        }
+        public function get_schema_fragment(): array
+        {
+        }
+        public function get_query_section_items(): array
+        {
+        }
+        public function build_query_args(array $query_settings): array
+        {
+        }
+        public function build_source_select_options(): array
+        {
+        }
+    }
+    class Template_Type_Registry
+    {
+        const REGISTER_ACTION = 'elementor_pro/collection_loop/register_template_types';
+        public static function instance(): self
+        {
+        }
+        public static function reset(): void
+        {
+        }
+        public function register(\ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Template_Type_Base $template_type, bool $is_default = false): void
+        {
+        }
+        public function get(string $id): ?\ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Template_Type_Base
+        {
+        }
+        /**
+         * @return \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Template_Type_Base[]
+         */
+        public function all(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function get_ids(): array
+        {
+        }
+        public function get_default_id(): string
+        {
+        }
+        public function get_default(): ?\ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Template_Type_Base
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\CollectionLoop\Utils {
+    /**
+     * Whether the current render is inside a v4 Collection Loop iteration,
+     * as signaled on the shared Render_Context stack.
+     */
+    class Loop_Iteration_Context
+    {
+        public static function is_v4_collection_loop_active(): bool
+        {
+        }
+    }
+    class Non_Overridable_Props
+    {
+        public static function apply_to_schema(array $schema): array
+        {
+        }
+        public static function apply(\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $prop_type): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
         {
         }
     }
@@ -62986,10 +63583,6 @@ namespace ElementorPro\Modules\DynamicTags {
         {
         }
         public function get_groups()
-        {
-        }
-        // TODO: Remove this in 3.37.0
-        public static function add_v4_svg_category($categories)
         {
         }
     }
@@ -67697,6 +68290,17 @@ namespace ElementorPro\Modules\Library\Classes {
         {
         }
     }
+    class Template_Shortcode_Utils
+    {
+        const SHORTCODE = 'elementor-template';
+        const RENDER_ACTION = 'elementor/shortcode/render';
+        public static function extract_template_ids_from_settings(array $settings): array
+        {
+        }
+        public static function extract_template_ids_from_shortcode_string(string $value): array
+        {
+        }
+    }
 }
 namespace ElementorPro\Modules\Library {
     class Module extends \ElementorPro\Base\Module_Base
@@ -68246,6 +68850,12 @@ namespace ElementorPro\Modules\LoopBuilder\Documents {
     }
 }
 namespace ElementorPro\Modules\LoopBuilder\Files\Css {
+    class Loop_Css_Printer
+    {
+        public static function print_for_post(int $post_id, bool $is_autosave): void
+        {
+        }
+    }
     trait Loop_Css_Trait
     {
         /**
@@ -69301,6 +69911,9 @@ namespace ElementorPro\Modules\Posts\Traits {
          * @return array
          */
         public function get_widgets_that_support_pagination()
+        {
+        }
+        public function has_multiple_posts_widgets_on_page(): bool
         {
         }
         /**
@@ -70508,18 +71121,6 @@ namespace ElementorPro\Modules\NavMenu\Widgets {
         public function on_export($element)
         {
         }
-        /**
-         * When importing a menu, if the menu has a slug that already exists, we add "-duplicate" to the slug of the imported menu.
-         * Upon importing a menu widget, we replace the slug to the correct one by fetching it from the correct ID in the $data array.
-         *
-         * Please take note that this function overrides On_Import_Trait::on_import_update_dynamic_content().
-         *
-         * @param array $element_config
-         * @param array $data
-         * @param $controls
-         *
-         * @return array
-         */
         public static function on_import_update_dynamic_content(array $element_config, array $data, $controls = null): array
         {
         }
@@ -73292,6 +73893,24 @@ namespace ElementorPro\Modules\Popup {
         {
         }
     }
+    /**
+     * Popups opened via a runtime trigger (form action, "Open Popup" dynamic tag) miss the
+     * one-time per-request CSS enqueue pass, since they're only queued once the triggering
+     * widget renders. This scans a post's elements for such triggers and registers the
+     * referenced popups early enough (via `elementor/post/render`) to be included in that pass.
+     *
+     * @see https://github.com/elementor/elementor/issues/35397
+     */
+    class Popup_Trigger_Styles
+    {
+        const CACHE_ROOT_KEY = 'popup-trigger-styles-related-posts';
+        public function __construct()
+        {
+        }
+        public function register_hooks()
+        {
+        }
+    }
     class Tag extends \ElementorPro\Modules\DynamicTags\Tags\Base\Tag
     {
         public function get_name()
@@ -74739,6 +75358,9 @@ namespace ElementorPro\Modules\Search\Widgets {
         public function set_page_number(int $page_number)
         {
         }
+        public function set_breakpoint(?string $breakpoint)
+        {
+        }
         public function get_name()
         {
         }
@@ -75735,6 +76357,9 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
         public function filter_add_location_meta_on_create_new_post($meta)
         {
         }
+        public function get_location_doc_ids_for_post(array $related, $post_id): array
+        {
+        }
         public function inspector_log($args)
         {
         }
@@ -75742,6 +76367,12 @@ namespace ElementorPro\Modules\ThemeBuilder\Classes {
     class Preview_Manager
     {
         public function __construct()
+        {
+        }
+        public function on_atomic_before_render($document = null)
+        {
+        }
+        public function on_atomic_after_render($document = null)
         {
         }
         public function filter_post_terms_taxonomy_arg($taxonomy_args)
@@ -76668,6 +77299,9 @@ namespace ElementorPro\Modules\ThemeBuilder {
         const ADMIN_MENU_PRIORITY = 15;
         const THEME_BUILDER_MENU_PRIORITY_BEFORE_SUBMISSIONS = 5;
         public static function is_preview()
+        {
+        }
+        public static function is_missing_term_or_author_archive()
         {
         }
         public static function get_public_post_types($args = [])
@@ -77904,6 +78538,61 @@ namespace ElementorPro\Modules\Woocommerce\Classes {
         }
     }
 }
+namespace ElementorPro\Modules\Woocommerce\CollectionLoop {
+    class Product_Template_Type extends \ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Template_Type_Base
+    {
+        const ID = 'product';
+        const SOURCE_PRODUCT = 'product';
+        const SOURCE_SALE = 'sale';
+        const SOURCE_FEATURED = 'featured';
+        const SOURCE_BY_ID = 'by_id';
+        const SOURCE_RELATED_PRODUCTS = 'related_products';
+        const SOURCE_UPSELLS = 'upsells';
+        const SOURCE_CROSS_SELLS = 'cross_sells';
+        const SOURCE_CURRENT_QUERY = 'current_query';
+        const SOURCES = [self::SOURCE_PRODUCT, self::SOURCE_SALE, self::SOURCE_FEATURED, self::SOURCE_BY_ID, self::SOURCE_RELATED_PRODUCTS, self::SOURCE_UPSELLS, self::SOURCE_CROSS_SELLS, self::SOURCE_CURRENT_QUERY];
+        const SINGLE_PRODUCT_CONTEXT_SOURCES = [self::SOURCE_RELATED_PRODUCTS, self::SOURCE_UPSELLS, self::SOURCE_CROSS_SELLS];
+        // Sources that support include/exclude filters (term, author, manual).
+        const FILTERABLE_SOURCES = [self::SOURCE_PRODUCT, self::SOURCE_SALE, self::SOURCE_FEATURED, self::SOURCE_BY_ID];
+        // Current Query uses the global query and has no meaningful orderby override.
+        const NON_ORDERABLE_SOURCES = [self::SOURCE_CURRENT_QUERY];
+        const PRODUCT_INCLUDE_FILTER_TYPES = [\ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_TERMS, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_AUTHORS];
+        const PRODUCT_EXCLUDE_FILTER_TYPES = [\ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_CURRENT_POST, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_MANUAL_SELECTION, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_TERMS, \ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop\Query_Filters::TYPE_AUTHORS];
+        const ORDERBY_DATE = 'date';
+        const ORDERBY_TITLE = 'title';
+        const ORDERBY_PRICE = 'price';
+        const ORDERBY_POPULARITY = 'popularity';
+        const ORDERBY_RATING = 'rating';
+        const ORDERBY_RAND = 'rand';
+        const ORDERBY_MENU_ORDER = 'menu_order';
+        const ORDERBY_OPTIONS = [self::ORDERBY_DATE, self::ORDERBY_TITLE, self::ORDERBY_PRICE, self::ORDERBY_POPULARITY, self::ORDERBY_RATING, self::ORDERBY_RAND, self::ORDERBY_MENU_ORDER];
+        const ORDERBY_META_KEY_MAP = [self::ORDERBY_PRICE => '_price', self::ORDERBY_RATING => '_wc_average_rating', self::ORDERBY_POPULARITY => 'total_sales'];
+        public function get_id(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_schema_fragment(): array
+        {
+        }
+        public function get_query_section_items(): array
+        {
+        }
+        public function build_query_args(array $query_settings): array
+        {
+        }
+        /**
+         * WP_Query silently ignores `post__not_in` when `post__in` is non-empty
+         * (see `WP_Query::get_posts()`), so for sources that pre-populate `post__in`
+         * (Sale) we have to apply excludes manually. v3 mirrors this in
+         * `Products_Renderer::set_exclude_query_args()` via `array_diff`.
+         */
+        protected static function reconcile_post_in_with_excludes(array $args): array
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\Woocommerce\Conditions {
     class Product_Archive extends \ElementorPro\Modules\ThemeBuilder\Conditions\Condition_Base
     {
@@ -78426,6 +79115,9 @@ namespace ElementorPro\Modules\Woocommerce {
         {
         }
         public function add_products_type_to_template_popup($form)
+        {
+        }
+        public function register_collection_loop_template_types(\ElementorPro\Modules\CollectionLoop\Query\TemplateTypes\Template_Type_Registry $registry): void
         {
         }
         public function add_products_type_to_loop_settings_query($form)
