@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- chore(deps): update dependency vlucas/phpdotenv to v5.7.0 (#77)
+- chore(deps): update anthropics/claude-code-action digest to a874e9e (#76)
+- chore(deps): pin dependencies (#74)
+- chore(deps): update all non-major dependencies (#75)
+- changed: updated stubs for Elementor 4.2.2 (#73)
 - ci: adopt stub-package-workflows thin callers + Renovate (#72)
 - added: missing @return docblocks for Kits\Manager and Font_Icon_Svg\Manager methods (#70)
 
