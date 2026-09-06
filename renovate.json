@@ -1,4 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>artkrsk/renovate-config"]
+  "extends": ["github>artkrsk/renovate-config"],
+  "packageRules": [
+    {
+      "description": "PHPUnit 10+ requires PHP 8.1+ (13 requires 8.4); this package targets PHP 8.0 via config.platform.php",
+      "matchPackageNames": ["phpunit/phpunit"],
+      "allowedVersions": "<10"
+    },
+    {
+      "description": "PHPCS 4 needs WPCS 4.0, which is unreleased (latest stable WPCS 3.4.1 requires PHPCS ^3.13.5)",
+      "matchPackageNames": ["squizlabs/php_codesniffer"],
+      "allowedVersions": "<4"
+    }
+  ]
 }

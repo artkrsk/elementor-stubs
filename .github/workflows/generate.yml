@@ -31,5 +31,7 @@ jobs:
       source_env_name: ELEMENTOR_PATH
       secondary_env_name: ELEMENTOR_PRO_PATH
       stub_file: elementor-stubs.php
+      # Must match the master ruleset's required check, or the generated PR never unblocks
+      status_check_context: 'test / test'
       version_define_name: ELEMENTOR_VERSION
       release_title: 'Elementor'
