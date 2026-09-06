@@ -73,7 +73,7 @@ Set these via `.env` file (copy from `.env.example`) or export directly.
 ### GitHub Workflows
 - `generate.yml` - Manual workflow to generate stubs from specific Elementor version (includes CHANGELOG update)
 - `check-updates.yml` - Biweekly check for new Elementor releases (auto-triggers generate.yml)
-- `integrate.yml` - CI tests on push/PR (PHP 8.0-8.4)
+- `integrate.yml` - CI tests on push/PR (single PHP 8.0 job via the reusable workflow)
 - `release.yml` - Creates GitHub release with auto-generated notes when tag is pushed
 
 ### Testing
