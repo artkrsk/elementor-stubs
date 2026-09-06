@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   generate:
-    uses: artkrsk/stub-package-workflows/.github/workflows/stub-generate.yml@165729a6013366aa155d252c39bcc204f5151dac # master
+    uses: artkrsk/stub-package-workflows/.github/workflows/stub-generate.yml@17a54677f1a78e137125ce050ff292a695782d0d # master
     with:
       source_version: ${{ inputs.source_version }}
       secondary_version: ${{ inputs.secondary_version }}
@@ -31,7 +31,5 @@ jobs:
       source_env_name: ELEMENTOR_PATH
       secondary_env_name: ELEMENTOR_PRO_PATH
       stub_file: elementor-stubs.php
-      # Must match the master ruleset's required check, or the generated PR never unblocks
-      status_check_context: 'test / test'
       version_define_name: ELEMENTOR_VERSION
       release_title: 'Elementor'
