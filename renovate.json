@@ -8,6 +8,11 @@
       "allowedVersions": "<10"
     },
     {
+      "description": "wordpress-stubs 7 is unresolvable while the latest wp-cli-stubs release (v2.12.0) caps it at ^6.0; upstream widened the range but has not tagged since",
+      "matchPackageNames": ["php-stubs/wordpress-stubs"],
+      "allowedVersions": "<7"
+    },
+    {
       "description": "PHPCS 4 needs WPCS 4.0, which is unreleased (latest stable WPCS 3.4.1 requires PHPCS ^3.13.5)",
       "matchPackageNames": ["squizlabs/php_codesniffer"],
       "allowedVersions": "<4"
