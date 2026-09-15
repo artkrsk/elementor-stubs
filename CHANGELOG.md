@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+- chore(deps): keep wordpress-stubs on 6.x until wp-cli-stubs tags a release (#87)
+- chore(deps): update all non-major dependencies (#86)
+- chore(deps): update dependency phpstan/phpstan to v2.2.13 (#84)
+- ci: drop the Claude Code workflows (#83)
+- ci: repin reusable workflows and drop the status-context override (#82)
+- ci: unblock auto-generated stub PRs and stop unresolvable dep bumps (#81)
+- changed: updated stubs for Elementor 4.2.4 (#80)
 - chore(deps): update dependency vlucas/phpdotenv to v5.7.0 (#77)
 - chore(deps): update anthropics/claude-code-action digest to a874e9e (#76)
 - chore(deps): pin dependencies (#74)
