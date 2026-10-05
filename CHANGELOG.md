@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- fixed: stub ElementorDeps Mixpanel consumer parent for Elementor 4.3 (#90)
+- chore(deps): update all non-major dependencies (#89)
+
+## [4.2.4] - 2026-09-15
+
+- changed: updated stubs for Elementor 4.2.4 (#88)
 - chore(deps): keep wordpress-stubs on 6.x until wp-cli-stubs tags a release (#87)
 - chore(deps): update all non-major dependencies (#86)
 - chore(deps): update dependency phpstan/phpstan to v2.2.13 (#84)
@@ -132,6 +138,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[4.2.4]: https://github.com/artkrsk/elementor-stubs/compare/v4.2.1...v4.2.4
 [4.2.1]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.5...v4.2.1
 [4.1.5]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.4...v4.1.5
 [4.1.4]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.3...v4.1.4
