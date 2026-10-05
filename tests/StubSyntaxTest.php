@@ -32,21 +32,25 @@ class StubSyntaxTest extends TestCase {
 	 * Test that ElementorDeps namespace is properly removed from stubs.
 	 *
 	 * Verifies removeElementorDepsNamespace() post-processor is working correctly.
-	 * Note: Some ElementorDeps classes are intentionally added back via getClassAliases()
-	 * for Twig compatibility (LoaderInterface, Source).
+	 * Note: Some ElementorDeps classes are intentionally added back via getClassAliases():
+	 * Twig compatibility (LoaderInterface, Source) and the Mixpanel consumer parent
+	 * (ConsumerStrategies_AbstractConsumer). Any other ElementorDeps namespace block, such as an
+	 * empty parent stub injected by fixMissingParentStubs(), means a new vendored parent needs
+	 * an explicit stub in getClassAliases().
 	 */
 	public function testElementorDepsNamespaceIsAbsent(): void {
 		$stubContent = file_get_contents( $this->stubsFile );
 		$this->assertNotFalse( $stubContent, 'Stub file should be readable' );
 
-		// Count occurrences - should only be the intentional Twig stubs.
+		// Count occurrences - should only be the intentional Twig stubs and the single
+		// root-namespace block holding the Mixpanel consumer stub.
 		$matches = array();
 		preg_match_all( '/namespace\s+ElementorDeps(?!\\\\Twig)/', $stubContent, $matches );
 
 		$this->assertCount(
-			0,
+			1,
 			$matches[0],
-			'ElementorDeps namespace (except Twig) should not exist in stubs'
+			'ElementorDeps namespace should only exist for the Twig and Mixpanel consumer stubs'
 		);
 	}
 
@@ -242,6 +246,27 @@ class StubSyntaxTest extends TestCase {
 		$this->assertTrue(
 			class_exists( 'ElementorDeps\Twig\Source' ),
 			'ElementorDeps\Twig\Source should exist'
+		);
+	}
+
+	/**
+	 * Test that the Mixpanel consumer parent stub exists for ElementorDeps.
+	 *
+	 * Intentionally added by getClassAliases() because Wp_Http_Consumer extends it and
+	 * the real class lives in Elementor's scoped vendor_prefixed directory.
+	 */
+	public function testMixpanelConsumerParentStubExists(): void {
+		$this->assertTrue(
+			class_exists( 'ElementorDeps\ConsumerStrategies_AbstractConsumer' ),
+			'ElementorDeps\ConsumerStrategies_AbstractConsumer should exist'
+		);
+
+		$this->assertTrue(
+			is_subclass_of(
+				'Elementor\Core\Common\Modules\EventsManager\Wp_Http_Consumer',
+				'ElementorDeps\ConsumerStrategies_AbstractConsumer'
+			),
+			'Wp_Http_Consumer should extend ElementorDeps\ConsumerStrategies_AbstractConsumer'
 		);
 	}
 

@@ -702,5 +702,35 @@ namespace ElementorDeps\Twig {
 		public function getPath(): string {}
 	}
 }
+
+namespace ElementorDeps {
+	/**
+	 * Mixpanel SDK consumer base, parent of Elementor\Core\Common\Modules\EventsManager\Wp_Http_Consumer.
+	 */
+	abstract class ConsumerStrategies_AbstractConsumer {
+		/** @var array<string, mixed> */
+		protected $_options = array();
+		/** @param array<string, mixed> $options */
+		public function __construct($options = array()) {}
+		/**
+		 * @param array<mixed> $params
+		 * @return string
+		 */
+		protected function _encode($params) {}
+		/**
+		 * @param int|string $code
+		 * @param string $msg
+		 * @return void
+		 */
+		protected function _handleError($code, $msg) {}
+		/** @return int */
+		public function getNumThreads() {}
+		/**
+		 * @param array<mixed> $batch
+		 * @return bool
+		 */
+		abstract public function persist($batch);
+	}
+}
 PHP;
 }
