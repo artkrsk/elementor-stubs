@@ -42,16 +42,24 @@ class StubSyntaxTest extends TestCase {
 		$stubContent = file_get_contents( $this->stubsFile );
 		$this->assertNotFalse( $stubContent, 'Stub file should be readable' );
 
-		// Count occurrences - should only be the intentional Twig stubs and the single
-		// root-namespace block holding the Mixpanel consumer stub.
+		// Count occurrences - should only be the intentional Twig stubs, plus at most one
+		// root-namespace block holding the Mixpanel consumer stub (Elementor 4.3+).
 		$matches = array();
 		preg_match_all( '/namespace\s+ElementorDeps(?!\\\\Twig)/', $stubContent, $matches );
 
-		$this->assertCount(
+		$this->assertLessThanOrEqual(
 			1,
-			$matches[0],
+			count( $matches[0] ),
 			'ElementorDeps namespace should only exist for the Twig and Mixpanel consumer stubs'
 		);
+
+		if ( 1 === count( $matches[0] ) ) {
+			$this->assertStringContainsString(
+				'abstract class ConsumerStrategies_AbstractConsumer',
+				$stubContent,
+				'The root ElementorDeps namespace should hold the explicit Mixpanel parent stub, not an empty one'
+			);
+		}
 	}
 
 	/**
@@ -256,6 +264,10 @@ class StubSyntaxTest extends TestCase {
 	 * the real class lives in Elementor's scoped vendor_prefixed directory.
 	 */
 	public function testMixpanelConsumerParentStubExists(): void {
+		if ( ! class_exists( 'Elementor\Core\Common\Modules\EventsManager\Wp_Http_Consumer' ) ) {
+			$this->markTestSkipped( 'Wp_Http_Consumer is not in these stubs (Elementor before 4.3).' );
+		}
+
 		$this->assertTrue(
 			class_exists( 'ElementorDeps\ConsumerStrategies_AbstractConsumer' ),
 			'ElementorDeps\ConsumerStrategies_AbstractConsumer should exist'
