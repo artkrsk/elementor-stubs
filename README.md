@@ -23,7 +23,7 @@ Get full IDE autocomplete, IntelliSense, and type safety when developing Element
 
 - PHP 8.0 or higher
 - PHPStan for static analysis
-- Automatically includes WordPress and WooCommerce stubs as dependencies
+- Automatically includes WordPress, WP-CLI and WooCommerce stubs as dependencies
 
 ## Installation
 
@@ -39,9 +39,12 @@ Add to your `phpstan.neon`:
 parameters:
     bootstrapFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - vendor/arts/elementor-stubs/elementor-stubs.php
 ```
+
+Elementor's WP-CLI commands extend `WP_CLI_Command` and `bootstrapFiles` are executed in order, so `wp-cli-stubs.php` must be listed before `elementor-stubs.php`.
 
 The stubs include both Elementor Free and Elementor Pro type definitions.
 
