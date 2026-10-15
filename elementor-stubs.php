@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.3.3');
+		define('ELEMENTOR_VERSION', '4.3.5');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -4457,6 +4457,8 @@ namespace Elementor\Core\Admin {
     }
     class Admin extends \Elementor\Core\Base\App
     {
+        const PLUGINS_PAGE_TRANSIENT_KEY = 'elementor_plugins_page_assets_data';
+        const URL = 'https://go.elementor.com/go-pro-wp-plugins/';
         /**
          * Get module name.
          *
@@ -12313,7 +12315,7 @@ namespace Elementor\Core\Experiments {
          *
          * @param string $feature_name       Experiment feature name.
          * @param bool   $check_dependencies When true, also require dependency experiments to be active.
-         *                                   Missing or hidden dependencies are treated as active for compatibility.
+         *                                   Missing dependencies always fail closed. Hidden dependencies are treated as satisfied.
          *
          * @return bool
          */
@@ -13330,7 +13332,9 @@ namespace Elementor\Core\Files {
         /**
          * Handle Elementor WP Media Upload
          *
-         * Runs on the 'wp_handle_upload_prefilter' filter.
+         * Runs on `wp_handle_upload_prefilter` and `wp_handle_sideload_prefilter`.
+         * Validates any Elementor upload (`is_elementor_upload()`), not only
+         * `uploadTypeCaller=elementor-wp-media-upload`.
          *
          * @since 3.2.0
          * @access public
@@ -17204,6 +17208,7 @@ namespace Elementor\Core\Upgrade {
          * @deprecated 3.17.0
          */
         const INSTALLS_HISTORY_META = 'elementor_install_history';
+        const VERSION_OPTION_NAME = 'elementor_version';
         public static function get_install_history_meta()
         {
         }
@@ -25601,6 +25606,7 @@ namespace Elementor\Includes {
         const ASSETS_DATA_KEY = 'ASSETS_DATA_KEY';
         const ASSETS_DATA_EXPIRATION = 'ASSETS_DATA_EXPIRATION';
         const DEFAULT_EXPIRATION_TIME = '+1 hour';
+        const FAILED_FETCH_EXPIRATION = '+30 minutes';
         const PRODUCTION_URL = 'https://assets.elementor.com';
         const STAGING_URL = 'https://assets.stg.elementor.red';
         const DEV_URL = 'https://assets.dev.builder.elementor.red';
@@ -42884,6 +42890,7 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Div_Block {
         public static function get_type()
         {
         }
+        public static $widget_description = 'A block container (div) for grouping and wrapping content, with default styles (see llm_guidance.default_styles).';
         public static function get_element_type(): string
         {
         }
@@ -54146,6 +54153,28 @@ namespace Elementor\Modules\Mcp\Abilities {
     }
 }
 namespace Elementor\Modules\Mcp\Abilities\Utils {
+    /**
+     * Every atomic element (not widget) renders with the `.e-con` class. These are the declarations
+     * from assets/dev/scss/frontend/_container.scss that affect atomic elements, kept in sync by a
+     * PHPUnit check.
+     *
+     * The kit's Container Padding (10px by default) is left out on purpose: `.e-con` applies it as
+     * inline padding only, the base padding of most atomic elements overrides it, and the value is
+     * user-editable per breakpoint so it can't be hardcoded here.
+     */
+    class Atomic_Container_Presentation
+    {
+        const WIDGET_EL_TYPE = 'widget';
+        const SHELL_STYLES = ['position' => 'relative', 'width' => '100%', 'min-width' => '0'];
+        const SHELL_CSS = '.e-con{position:relative;width:100%;min-width:0;}';
+        const DOCUMENT_ROOT_SHELL_CSS = '.e-con{position:relative;width:100%;min-width:0;margin-inline-start:auto;margin-inline-end:auto;max-width:100%;}';
+        public static function applies_to(array $element_config): bool
+        {
+        }
+        public static function to_css_string(bool $is_document_root): string
+        {
+        }
+    }
     class Bulk_Operations_Result
     {
         public function add_success(int $index, string $action, array $extra = []): void
@@ -54216,16 +54245,31 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         }
     }
     /**
+     * Finds keys of a plain input value that did not survive plain → envelope resolution,
+     * either because they are not fields of the prop or because their value could not be resolved.
+     * Compares against the resolver output instead of the schema so unions, custom resolvers
+     * and open slots are judged by what was actually stored.
+     */
+    class Dropped_Plain_Keys_Finder
+    {
+        /**
+         * @return string[] Dotted paths relative to $path.
+         */
+        public static function find($plain_value, $resolved_value, string $path): array
+        {
+        }
+    }
+    /**
      * Renders the effective default-style CSS that the browser would apply to a V4 atomic
      * element before any inline/global class overrides.
      *
      * Each layer is rendered via Styles_Renderer (same pipeline as frontend enqueue), then
-     * concatenated in cascade order: widget base_styles first, kit site-wide default for the
-     * element's rendered tag second.
+     * concatenated in cascade order: the `.e-con` shell of atomic elements first, widget
+     * base_styles second, kit site-wide default for the element's rendered tag last.
      */
     class Element_Default_Styles_Builder
     {
-        public static function render(array $widget_base_style_defs, ?string $tag, ?\Elementor\Modules\DefaultStyles\Default_Styles_Repository $repository, ?\Elementor\Modules\AtomicWidgets\Styles\Styles_Renderer $renderer = null): string
+        public static function render(array $widget_base_style_defs, ?string $tag, ?\Elementor\Modules\DefaultStyles\Default_Styles_Repository $repository, ?\Elementor\Modules\AtomicWidgets\Styles\Styles_Renderer $renderer = null, string $shell_css = ''): string
         {
         }
         public static function render_kit_default(?string $tag, ?\Elementor\Modules\DefaultStyles\Default_Styles_Repository $repository, ?\Elementor\Modules\AtomicWidgets\Styles\Styles_Renderer $renderer = null): string
@@ -54540,13 +54584,22 @@ namespace Elementor\Modules\Mcp {
     class Module extends \Elementor\Core\Base\Module
     {
         const ANALYTICS_REGISTRAR_HANDLE = 'elementor-mcp-analytics-registrar';
+        const PROMOTION_REGISTRAR_HANDLE = 'elementor-mcp-promotion-registrar';
+        const MCP_PROMOTION_UPGRADE_URL = 'https://go.elementor.com/go-pro-mcp-connector-page-upgrade/';
+        const MCP_PROMOTION_ALLOWED_DOMAIN = 'elementor.com';
         public function get_name()
         {
         }
         public function enqueue_analytics_registrar(): void
         {
         }
+        public function enqueue_promotion_registrar(): void
+        {
+        }
         public static function is_active()
+        {
+        }
+        public static function is_site_mcp_exposure_enabled(): bool
         {
         }
         public function __construct()
@@ -55351,6 +55404,7 @@ namespace Elementor\Modules\PerformanceLab {
 namespace Elementor\Modules\ProInstall {
     class Connect_Page_Renderer
     {
+        const CONNECT_PAGE_TRANSIENT_KEY = 'elementor_connect_page_assets_data';
         public function __construct(\Elementor\Modules\ProInstall\Connect $connect, string $page_url, ?array $script_config = null)
         {
         }
@@ -55761,6 +55815,7 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
     class Go_Pro_Promotion_Item implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
         const URL = 'https://go.elementor.com/go-pro-upgrade-one-wp-menu/';
+        const SIDE_MENU_TRANSIENT_KEY = 'elementor_side_menu_assets_data';
         public function get_name()
         {
         }
@@ -55783,6 +55838,9 @@ namespace Elementor\Modules\Promotions\AdminMenuItems {
         {
         }
         public function render()
+        {
+        }
+        public static function get_side_menu_assets_data(): array
         {
         }
     }
@@ -55823,7 +55881,7 @@ namespace Elementor\Modules\Promotions {
         const AJAX_ACTION = 'elementor_dismiss_conversion_banner';
         const CONTAINER_ID = 'e-conversion-banner';
         const UPGRADE_URL = 'https://go.elementor.com/go-pro-wp-admin-upgrade-notice/';
-        const BIRTHDAY_PROMOTION_URL = 'https://go.elementor.com/go-pro-wp-admin-upgrad-notice/';
+        const BANNER_TRANSIENT_KEY = 'elementor_conversion_banner_assets_data';
         const HELLO_THEME_CONFIG_FILTER = 'hello-plus-theme/rest/admin-config';
         const THEME_SLUGS = ['hello-elementor', 'hello-biz', 'hello-commerce'];
         const THEME_SETTINGS_PAGE_SUFFIX = '-settings';
@@ -55874,6 +55932,9 @@ namespace Elementor\Modules\Promotions {
         public function override_one_menu_upgrade_label_during_sale($menu)
         {
         }
+        public function override_one_menu_upgrade_url(string $url): string
+        {
+        }
         public function enqueue_react_data(): void
         {
         }
@@ -55911,12 +55972,12 @@ namespace Elementor\Modules\Promotions\Pointers {
         {
         }
     }
-    class Black_Friday
+    class Promotional_Pointer
     {
-        const PROMOTION_URL = 'https://go.elementor.com/go-pro-wordpress-notice-bf-25/';
-        const ELEMENTOR_POINTER_ID = 'toplevel_page_elementor';
-        const SEEN_TODAY_KEY = '_elementor_2025_black_friday';
-        const DISMISS_ACTION_KEY = 'black_friday_pointer_2025';
+        const POINTER_TRANSIENT_KEY = 'elementor_pointer_assets_data';
+        const ELEMENTOR_POINTER_ID = 'toplevel_page_elementor-home';
+        const SEEN_TODAY_KEY = '_elementor_promotional_pointer';
+        const DISMISS_ACTION_KEY = 'promotional_pointer';
         public function __construct()
         {
         }
@@ -55924,6 +55985,9 @@ namespace Elementor\Modules\Promotions\Pointers {
         {
         }
         public static function should_display_notice(): bool
+        {
+        }
+        public static function get_pointer_assets_data(): array
         {
         }
     }
@@ -58204,6 +58268,9 @@ namespace Elementor\Modules\Variables\Services {
         {
         }
         public function find_by_label_or_id(string $needle): ?array
+        {
+        }
+        public function find_type(string $id): ?string
         {
         }
         public function load()
