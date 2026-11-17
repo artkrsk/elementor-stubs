@@ -1,6 +1,7 @@
 # Development configuration
 .gitignore export-ignore
 .gitattributes export-ignore
+orca.yaml export-ignore
 .editorconfig export-ignore
 .env export-ignore
 .env.example export-ignore
