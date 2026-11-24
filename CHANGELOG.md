@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+- fixed: exclude Elementor's phpcs-rules from stub generation (#107)
+- require captainhook ^5.29.3 and refresh hooks on install (#106)
+- chore(deps): allow php-stubs/wordpress-stubs ^7.0 (#105)
+- drop ergebnis/composer-normalize (#104)
+- chore(deps): update all non-major dependencies (#102)
+- added: orca.yaml to set up new worktrees (#101)
+- chore(deps): update all non-major dependencies (#100)
+- chore(deps): update dependency phpstan/phpstan to v2.3.5 (#99)
+- chore(deps): update all non-major dependencies (#98)
+- chore(deps): update dependency phpstan/phpstan to v2.3.2 (#97)
+
+## [4.3.5] - 2026-10-15
+
+- changed: updated stubs for Elementor 4.3.5 (#96)
 - improved: wp-cli-stubs to the README PHPStan snippet (#95)
 - chore(deps): update all non-major dependencies (#93)
 - ci: repin stub-package-workflows to the direct-merge generate fix (#92)
@@ -145,6 +159,7 @@
 - changed: updated stubs for Elementor 3.33.6
 - Initial commit
 
+[4.3.5]: https://github.com/artkrsk/elementor-stubs/compare/v4.3.3...v4.3.5
 [4.3.3]: https://github.com/artkrsk/elementor-stubs/compare/v4.2.4...v4.3.3
 [4.2.4]: https://github.com/artkrsk/elementor-stubs/compare/v4.2.1...v4.2.4
 [4.2.1]: https://github.com/artkrsk/elementor-stubs/compare/v4.1.5...v4.2.1
