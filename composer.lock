@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bfadd1799445cad4b9180858569eb55e",
+    "content-hash": "4e6fca5fc5bec6cb869a64179daa99c2",
     "packages": [
         {
             "name": "php-stubs/woocommerce-stubs",
