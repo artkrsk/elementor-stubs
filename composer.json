@@ -30,7 +30,7 @@
     "php-stubs/wp-cli-stubs": "^2.12"
   },
   "require-dev": {
-    "captainhook/captainhook": "^5.27",
+    "captainhook/captainhook": "^5.29.3",
     "php-stubs/generator": "^0.8 || ^0.9",
     "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^9.5",
@@ -51,10 +51,10 @@
   },
   "scripts": {
     "post-install-cmd": [
-      "vendor/bin/captainhook install -f -s"
+      "vendor/bin/captainhook install -f"
     ],
     "post-update-cmd": [
-      "vendor/bin/captainhook install -f -s"
+      "vendor/bin/captainhook install -f"
     ],
     "changelog": "git-cliff --output CHANGELOG.md",
     "generate": "php generate.php",
