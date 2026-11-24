@@ -4,7 +4,7 @@
 namespace {
 	// Elementor Free constants
 	if (!defined('ELEMENTOR_VERSION')) {
-		define('ELEMENTOR_VERSION', '4.3.5');
+		define('ELEMENTOR_VERSION', '4.4.2');
 	}
 	if (!defined('ELEMENTOR__FILE__')) {
 		define('ELEMENTOR__FILE__', __FILE__);
@@ -27,7 +27,7 @@ namespace {
 
 	// Elementor Pro constants
 	if (!defined('ELEMENTOR_PRO_VERSION')) {
-		define('ELEMENTOR_PRO_VERSION', '4.3.0');
+		define('ELEMENTOR_PRO_VERSION', '4.4.0');
 	}
 	if (!defined('ELEMENTOR_PRO__FILE__')) {
 		define('ELEMENTOR_PRO__FILE__', __FILE__);
@@ -996,9 +996,13 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
     {
         const ZIP_ARCHIVE_MODULE_MISSING = 'zip-archive-module-is-missing';
         /**
-         * @var \Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base[]
+         * @var array<string, \Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base>
          */
         protected $runners = [];
+        /**
+         * @var array<string, int>
+         */
+        protected $runner_priorities = [];
         public function __construct($settings = [])
         {
         }
@@ -1006,8 +1010,9 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
          * Register a runner.
          *
          * @param \Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base $runner_instance
+         * @param int                $priority
          */
-        public function register(\Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base $runner_instance)
+        public function register(\Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base $runner_instance, int $priority = 0)
         {
         }
         public function register_default_runners()
@@ -1054,9 +1059,13 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
         const ZIP_FILE_ERROR_KEY = 'invalid-zip-file';
         const ZIP_ARCHIVE_ERROR_KEY = 'zip-archive-module-missing';
         /**
-         * @var \Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base[]
+         * @var array<string, \Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base>
          */
         protected $runners = [];
+        /**
+         * @var array<string, int>
+         */
+        protected $runner_priorities = [];
         /**
          * @param string     $path session_id | zip_file_path
          * @param array      $settings Use to determine which content to import.
@@ -1081,11 +1090,12 @@ namespace Elementor\App\Modules\ImportExportCustomization\Processes {
         }
         /**
          * Register a runner.
-         * Be aware that the runner will be executed in the order of registration, the order is crucial for the import process.
+         * Be aware that the runner will be executed by priority first, and by registration order within the same priority.
          *
          * @param \Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base $runner_instance
+         * @param int                $priority
          */
-        public function register(\Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base $runner_instance)
+        public function register(\Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base $runner_instance, int $priority = 0)
         {
         }
         public function register_default_runners()
@@ -1284,6 +1294,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Runners\Export {
     }
     class Elementor_Content extends \Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base
     {
+        const COMPONENTS_DEPENDENCIES_FILE_PATH = 'content/' . \Elementor\Modules\Components\Documents\Component::TYPE . '/dependencies';
         public function __construct()
         {
         }
@@ -1311,7 +1322,7 @@ namespace Elementor\App\Modules\ImportExportCustomization\Runners\Export {
     }
     class Site_Settings extends \Elementor\App\Modules\ImportExportCustomization\Runners\Export\Export_Runner_Base
     {
-        const ALLOWED_SETTINGS = ['theme', 'globalColors', 'globalFonts', 'themeStyleSettings', 'generalSettings', 'experiments', 'customCode', 'customIcons', 'customFonts', 'classes', 'variables'];
+        const ALLOWED_SETTINGS = ['theme', 'globalColors', 'globalFonts', 'themeStyleSettings', 'generalSettings', 'experiments', 'customCode', 'customIcons', 'customFonts', 'classes', 'defaultStyles', 'variables'];
         public static function get_name(): string
         {
         }
@@ -1327,7 +1338,13 @@ namespace Elementor\App\Modules\ImportExportCustomization\Runners\Export {
         public function get_variables_count(): int
         {
         }
+        public function get_default_styles_count(): int
+        {
+        }
         public function is_classes_feature_active(): bool
+        {
+        }
+        public function is_default_styles_feature_active(): bool
         {
         }
         public function is_variables_feature_active(): bool
@@ -3343,9 +3360,7 @@ namespace Elementor\Data\V2\Base {
          *
          * @param \WP_REST_Request $request
          *
-         * @return bool
-         *
-         * @throws \Elementor\Data\V2\Base\Exceptions\WP_Error_Exception If API request validation fails, permissions are insufficient, or processing errors occur.
+         * @return bool|\WP_Error
          */
         public function get_permission_callback($request)
         {
@@ -4330,6 +4345,13 @@ namespace Elementor\App\Modules\OnboardingNew\Validation {
     }
 }
 namespace Elementor\App\Modules\Onboarding {
+    class Account_Screen_Assets
+    {
+        const TRANSIENT_KEY = '_elementor_onboarding_account_screen_assets';
+        public static function get_editor_config(): ?array
+        {
+        }
+    }
     class API
     {
         protected \Elementor\Includes\EditorAssetsAPI $editor_assets_api;
@@ -4381,6 +4403,92 @@ namespace Elementor\App\Modules\Onboarding {
         {
         }
         public function __construct()
+        {
+        }
+    }
+}
+namespace Elementor\Core\Admin\Notices {
+    abstract class Base_Notice
+    {
+        /**
+         * Determine if the notice should be printed or not.
+         *
+         * @return boolean
+         */
+        abstract public function should_print();
+        /**
+         * Returns the config of the notice itself.
+         * based on that config the notice will be printed.
+         *
+         * @see \Elementor\Core\Admin\Admin_Notices::admin_notices
+         *
+         * @return array
+         */
+        abstract public function get_config();
+    }
+}
+namespace Elementor\App\Modules\Onboarding\Notices {
+    class Finish_Setup_Notice extends \Elementor\Core\Admin\Notices\Base_Notice
+    {
+        const NOTICE_ID = 'onboarding_finish_setup';
+        public function should_print()
+        {
+        }
+        public function get_config()
+        {
+        }
+    }
+}
+namespace Elementor\App\Modules\Onboarding {
+    /**
+     * New-install onboarding reach (ED-26365).
+     *
+     * A/B/E: one forced setup entry on the first real admin visit within 14 days of activation.
+     * C: partner already marked onboarded — do not redirect; offer a dismissible notice.
+     * D: existing sites (plugin update, or logged-in reactivate) — no push.
+     */
+    class Onboarding_Entry
+    {
+        const PENDING_OPTION = 'elementor_onboarding_pending';
+        const ACTIVATED_AT_OPTION = 'elementor_onboarding_activated_at';
+        const EVENT_QUEUE_OPTION = 'elementor_onboarding_redirect_event_queue';
+        const TRACKED_REASONS_OPTION = 'elementor_onboarding_redirect_event_reasons';
+        const EVENT_NAME = 'core_onboarding_redirect_decision';
+        const ELIGIBILITY_WINDOW = 14 * DAY_IN_SECONDS;
+        const DECISION_REDIRECT = 'redirect';
+        const DECISION_NOTICE = 'notice';
+        const DECISION_SKIP = 'skip';
+        const REASON_REDIRECTED = 'redirected';
+        const REASON_ALREADY_LOGGED_IN = 'already_logged_in';
+        const REASON_EXPIRED = 'expired';
+        const REASON_AJAX = 'ajax';
+        const REASON_CLI_INSTALL = 'cli_install';
+        const REASON_THIRD_PARTY_SKIP = 'third_party_skip';
+        public static function get_url(): string
+        {
+        }
+        public static function mark_activation(): void
+        {
+        }
+        public static function clear_pending(): void
+        {
+        }
+        public static function is_pending(): bool
+        {
+        }
+        public static function is_within_eligibility_window(): bool
+        {
+        }
+        public static function has_finished_onboarding(): bool
+        {
+        }
+        public static function decide(): array
+        {
+        }
+        public static function should_show_partner_notice(): bool
+        {
+        }
+        public static function flush_event_queue(): void
         {
         }
     }
@@ -4935,6 +5043,10 @@ namespace Elementor\Core\Admin\EditorOneMenu\Interfaces {
     {
         public function get_event_id(): string;
     }
+    interface Menu_Item_With_Tag_Interface
+    {
+        public function get_tag(): string;
+    }
 }
 namespace Elementor\Core\Admin\EditorOneMenu\Menu {
     abstract class Abstract_Level4_Menu_Item implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface
@@ -5215,26 +5327,6 @@ namespace Elementor\Core\Admin\Menu {
         protected function get_init_args()
         {
         }
-    }
-}
-namespace Elementor\Core\Admin\Notices {
-    abstract class Base_Notice
-    {
-        /**
-         * Determine if the notice should be printed or not.
-         *
-         * @return boolean
-         */
-        abstract public function should_print();
-        /**
-         * Returns the config of the notice itself.
-         * based on that config the notice will be printed.
-         *
-         * @see \Elementor\Core\Admin\Admin_Notices::admin_notices
-         *
-         * @return array
-         */
-        abstract public function get_config();
     }
 }
 namespace Elementor\Core\Admin\UI\Components {
@@ -8460,6 +8552,9 @@ namespace Elementor\Core\Common {
          * @since 2.3.0
          * @access public
          */
+        public function register_vendors_redux()
+        {
+        }
         public function register_scripts()
         {
         }
@@ -9092,6 +9187,9 @@ namespace Elementor\Core\Common\Modules\EventsManager {
         {
         }
         public static function get_experimental_data(): array
+        {
+        }
+        public static function can_send_events(): bool
         {
         }
         public static function get_mixpanel_api_host()
@@ -11956,7 +12054,7 @@ namespace Elementor\Core\Editor\Loader {
         const APP_PACKAGE = 'editor';
         const ENV_PACKAGE = 'env';
         const LIBS = ['editor-modal-shell', 'editor-responsive', 'editor-ui', 'editor-v1-adapters', self::ENV_PACKAGE, 'http-client', 'icons', 'locations', 'menus', 'query', 'schema', 'store', 'session', 'twing', 'ui', 'utils', 'wp-media', 'editor-current-user', 'editor-elements-panel-notice', 'elementor-mcp-common', 'editor-embedded-documents-manager'];
-        const EXTENSIONS = ['events', 'editor-documents', 'editor-notifications', 'editor-panels', 'editor-elements-panel', 'unlock-v4-promo', 'editor-mcp', 'elementor-v3-mcp', 'elementor-kit-mcp'];
+        const EXTENSIONS = ['events', 'editor-documents', 'editor-notifications', 'editor-panels', 'editor-elements-panel', 'unlock-v4-promo', 'pro-setup-promotion', 'editor-mcp', 'elementor-v3-mcp', 'elementor-kit-mcp'];
         const ADDITIONAL_DEPS = ['editor-v1-adapters' => ['elementor-web-cli'], 'wp-media' => ['media-models']];
         public function __construct(\Elementor\Core\Utils\Collection $config, \Elementor\Core\Utils\Assets_Config_Provider $assets_config_provider)
         {
@@ -12345,6 +12443,21 @@ namespace Elementor\Core\Experiments {
          * @return string
          */
         public function get_feature_option_key($feature_name)
+        {
+        }
+        /**
+         * Set Feature State
+         *
+         * Saves a feature state and runs the same side effects as the experiments settings page,
+         * also outside of the admin (REST, WP-CLI). Dependencies are validated before anything is saved,
+         * and a Dependency_Exception is thrown when the feature can't be activated because a dependency is inactive.
+         *
+         * @param string $feature_name
+         * @param string $state One of STATE_ACTIVE, STATE_INACTIVE or STATE_DEFAULT.
+         *
+         * @throws \InvalidArgumentException If the feature does not exist, is not mutable, or the state is invalid.
+         */
+        public function set_feature_state(string $feature_name, string $state): void
         {
         }
         /**
@@ -14638,27 +14751,6 @@ namespace Elementor\Core\Kits\Documents\Tabs {
         {
         }
     }
-    class Settings_Agents extends \Elementor\Core\Kits\Documents\Tabs\Tab_Base
-    {
-        public function get_id()
-        {
-        }
-        public function get_title()
-        {
-        }
-        public function get_group()
-        {
-        }
-        public function get_icon()
-        {
-        }
-        public function before_save(array $data)
-        {
-        }
-        protected function register_tab_controls()
-        {
-        }
-    }
     class Settings_Background extends \Elementor\Core\Kits\Documents\Tabs\Tab_Base
     {
         public function get_id()
@@ -15946,6 +16038,15 @@ namespace Elementor\Core\Responsive {
     }
 }
 namespace Elementor\Core\RoleManager {
+    class Content_Only_Save_Guard
+    {
+        public function register(): void
+        {
+        }
+        public function filter_save_data(array $data, \Elementor\Core\Base\Document $document): array
+        {
+        }
+    }
     class Editor_One_Role_Manager_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
         public function get_capability(): string
@@ -17993,6 +18094,7 @@ namespace Elementor\Core\Utils\Document {
     {
         const DOCUMENT_ROOT = 'document';
         const WIDGET_EL_TYPE = 'widget';
+        const LIVE_STATUSES = ['publish', 'private'];
         public function __construct($element_manager, $widgets_manager)
         {
         }
@@ -18034,9 +18136,10 @@ namespace Elementor\Core\Utils\Document {
         }
         /**
          * Duplicate an element in place, inserting the clone right after the source
-         * inside the same parent. All ids in the clone are regenerated.
+         * inside the same parent. All ids in the clone are regenerated, including
+         * atomic local style and interaction ids.
          *
-         * @return array|\WP_Error
+         * @return array{tree: array, new_element_id: string}|\WP_Error
          */
         public function duplicate(array $tree, string $id)
         {
@@ -18056,6 +18159,15 @@ namespace Elementor\Core\Utils\Document {
          * @return bool|\Elementor\Core\Base\Document|\WP_Error
          */
         public function save_as_draft(\Elementor\Core\Base\Document $document, array $elements, bool $preserve_live_status = false)
+        {
+        }
+        /**
+         * Save document settings while keeping the live post untouched: on `publish`/`private` posts they are
+         * written to the current user's autosave revision, like `save_as_draft` with `$preserve_live_status`.
+         *
+         * @return \Elementor\Core\Base\Document|\WP_Error The Document actually written.
+         */
+        public function save_settings_preserving_live_status(\Elementor\Core\Base\Document $document, array $settings)
         {
         }
         /**
@@ -18150,6 +18262,7 @@ namespace Elementor\Core\Utils {
         const CAPABILITY = 'capability';
         const PLUGIN_INSTALLED = 'plugin_installed';
         const PLUGIN_ACTIVE = 'plugin_active';
+        const PLUGIN_CONNECTED = 'plugin_connected';
         const NOT_HAS_OPTION = 'not_has_option';
         const INSTALL = 'install';
         const ACTIVATE = 'activate';
@@ -18215,6 +18328,22 @@ namespace Elementor\Core\Utils {
         {
         }
         /**
+         * Decode_url_for_js
+         *
+         * `wp_nonce_url()` (used by `get_plugin_install_url()` and `get_plugin_activate_url()`) HTML-escapes
+         * its result (e.g. `&` becomes `&amp;`) for direct raw HTML/template output, where the browser's HTML
+         * parser decodes the entities back. Consumers that send the URL through a JSON REST response, editor
+         * script settings, or a React/JS component prop use it as a raw string that is never HTML-parsed, so
+         * it must be decoded back to a literal URL before being handed to those contexts.
+         *
+         * @param $url
+         *
+         * @return string
+         */
+        public static function decode_url_for_js(string $url): string
+        {
+        }
+        /**
          * Is_dismissed
          *
          * @param $key
@@ -18257,6 +18386,9 @@ namespace Elementor\Core\Utils {
         /**
          * Get_plugin_action_url
          *
+         * Returns a decoded install/activate nonce URL (see `decode_url_for_js()`), since every current
+         * caller consumes this over JSON/JS rather than raw HTML output.
+         *
          * @param $plugin
          *
          * @return string
@@ -18272,7 +18404,7 @@ namespace Elementor\Core\Utils {
         public static function get_notice_allowed_html(): array
         {
         }
-        public static function is_plugin_connected($option_prefix): bool
+        public static function is_plugin_connected($option_prefix, $plugin_slug = null): bool
         {
         }
         public static function is_plugin_connected_to_one_subscription(): bool
@@ -20541,6 +20673,15 @@ namespace Elementor {
         {
         }
         public function get_data_for_save()
+        {
+        }
+        /**
+         * Rebuild a stored SVG icon from its attachment ID instead of the client URL.
+         *
+         * @param mixed $icon Icon control value.
+         * @return mixed
+         */
+        public static function normalize_svg_icon($icon)
         {
         }
         /**
@@ -28105,7 +28246,7 @@ namespace Elementor {
         const NEEDS_UPDATE_OPTION = 'icon_manager_needs_update';
         const FONT_ICON_SVG_CLASS_NAME = 'e-font-icon-svg';
         const LOAD_FA4_SHIM_OPTION_KEY = 'elementor_load_fa4_shim';
-        const ELEMENTOR_ICONS_VERSION = '5.54.0';
+        const ELEMENTOR_ICONS_VERSION = '5.57.0';
         /**
          * @param array  $icon
          * @param array  $attributes
@@ -28297,10 +28438,12 @@ namespace Elementor {
          *                                    values in pixels (in that order).
          * @param string       $is_first_time Set 'true' string to force reloading
          *                                    all image sizes.
+         * @param bool         $persist_custom_size Whether to record custom sizes in
+         *                                    the attachment metadata.
          *
          * @return array URLs with different image sizes.
          */
-        public function get_details($id, $size, $is_first_time)
+        public function get_details($id, $size, $is_first_time, $persist_custom_size = true)
         {
         }
         /**
@@ -32654,6 +32797,12 @@ namespace Elementor {
     {
         const DEPRECATION_RANGE = 0.4;
         const EDITOR_BREAK_LINES_OPTION_KEY = 'elementor_editor_break_lines';
+        const CUSTOM_ATTRIBUTE_NAME_PATTERN = '/^[a-zA-Z0-9_-]+$/D';
+        const CUSTOM_ATTRIBUTE_PAIR_PATTERN = '/([a-zA-Z0-9_-]+)\s*=\s*(["\'])(.*?)\2/s';
+        const EVENT_HANDLER_ATTRIBUTE_NAME_PATTERN = '/^on[a-z]*$/iD';
+        const BLOCKED_CUSTOM_ATTRIBUTE_NAME_PREFIXES = ['x-'];
+        const URL_CUSTOM_ATTRIBUTE_NAMES = ['action', 'formaction', 'href', 'src'];
+        const HTML_CUSTOM_ATTRIBUTE_NAMES = ['srcdoc'];
         /**
          * A list of safe tags for `validate_html_tag` method.
          */
@@ -32953,6 +33102,12 @@ namespace Elementor {
         public static function is_license_active(): bool
         {
         }
+        public static function is_license_expired(): bool
+        {
+        }
+        public static function get_license_access_tier(): string
+        {
+        }
         public static function is_pro_installed_and_not_active(): bool
         {
         }
@@ -32976,6 +33131,15 @@ namespace Elementor {
          * @return array
          */
         public static function parse_custom_attributes($attributes_string, $delimiter = ',')
+        {
+        }
+        public static function is_allowed_custom_attribute_name($name, bool $allow_unfiltered_names = false): bool
+        {
+        }
+        public static function sanitize_custom_attribute_value(string $name, string $value): string
+        {
+        }
+        public static function sanitize_custom_attributes_string($attributes_string, bool $allow_unfiltered_names = false): string
         {
         }
         public static function find_element_recursive($elements, $id)
@@ -37355,39 +37519,2978 @@ namespace Elementor\Modules\AdminTopBar {
         }
     }
 }
-namespace Elementor\Modules\Agents {
-    class Module extends \Elementor\Core\Base\Module
+namespace Elementor\Modules\Agents\AdminMenuItems {
+    class Editor_One_Agent_Access_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
-        const EXPERIMENT_NAME = 'agents_llms_txt';
-        const PACKAGES = ['editor-agents'];
-        const DEFAULT_CACHE_MAX_AGE = 300;
-        public function get_name()
+        const POSITION_AFTER_READINESS_SCORE = 27;
+        public function get_capability(): string
         {
         }
-        public static function get_experimental_data()
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_position(): int
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function has_children(): bool
+        {
+        }
+        public function get_page_title()
+        {
+        }
+        public function render()
+        {
+        }
+    }
+    class Editor_One_Agents_Ready_Menu implements \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Third_Level_Interface, \Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_With_Tag_Interface, \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
+    {
+        const POSITION_AFTER_MCP = 26;
+        public function get_capability(): string
+        {
+        }
+        public function get_parent_slug(): string
+        {
+        }
+        public function is_visible(): bool
+        {
+        }
+        public function get_tag(): string
+        {
+        }
+        public function get_group_id(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_wp_menu_label(): string
+        {
+        }
+        public function get_position(): int
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function has_children(): bool
+        {
+        }
+        public function get_page_title()
+        {
+        }
+        public function render()
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\AdminNotices {
+    class Agent_Ready_Notice extends \Elementor\Core\Admin\Notices\Base_Notice
+    {
+        const NOTICE_ID = 'agent_ready_promotion';
+        const ELEMENTOR_SCREEN_IDS = ['elementor_page_elementor-mcp', \Elementor\TemplateLibrary\Source_Local::ADMIN_SCREEN_ID, 'elementor_page_elementor-settings'];
+        const WORDPRESS_SCREEN_IDS = ['dashboard', 'edit-post', 'edit-page'];
+        const NOTICE_CLASSES = ['notice', 'e-notice', 'inline'];
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Classes\Scanner_Report_Store $scanner_store)
+        {
+        }
+        public function should_print()
+        {
+        }
+        public function get_config()
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents {
+    /**
+     * Shared settings object for every Agent Ready module, stored in one option.
+     *
+     * The admin app writes it through the central `elementor/v1/settings/{key}`
+     * REST route, which replaces the whole option value. The sanitize filter
+     * therefore merges incoming module keys onto the stored value, so a save from
+     * one module never wipes another module's data.
+     */
+    class Agent_Ready_Settings
+    {
+        const OPTION = 'elementor_agent_ready_settings';
+        const MODULE_LLMS_TXT = 'llms_txt';
+        const MODULE_MARKDOWN_CONTENT = 'markdown_content';
+        const MODULE_BOT_ACCESS_CONTROL = 'bot_access_control';
+        const MODULE_AGENT_DISCOVERY = 'agent_discovery';
+        const MODULE_BROWSER_TOOLS = 'browser_tools';
+        const ACTIVATED_KEY = 'activated';
+        const MAX_BUSINESS_DETAILS_LENGTH = 2000;
+        const BOT_PERMISSION_SEARCH = 'search';
+        const BOT_PERMISSION_AI_INPUT = 'ai_input';
+        const BOT_PERMISSION_AI_TRAIN = 'ai_train';
+        const DEFAULT_BOT_PERMISSIONS = [self::BOT_PERMISSION_SEARCH => true, self::BOT_PERMISSION_AI_INPUT => true, self::BOT_PERMISSION_AI_TRAIN => false];
+        /**
+         * Keys only PHP may change; values sent by the client are ignored.
+         */
+        const SERVER_OWNED_KEYS = [self::MODULE_LLMS_TXT => ['is_manually_edited']];
+        public function __construct(\Elementor\Modules\Agents\Content_Generator $generator, ?\Elementor\Modules\Agents\Bot_Catalog $bot_catalog = null)
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function ensure_option_exists(): void
+        {
+        }
+        public function get_module_settings(string $module): array
+        {
+        }
+        /**
+         * A stored option without the flag predates it, so its admin already opted in.
+         */
+        public function is_activated(): bool
+        {
+        }
+        public function activate(array $skip_modules = []): void
+        {
+        }
+        public function is_llms_enabled(): bool
+        {
+        }
+        public function is_llms_manually_edited(): bool
+        {
+        }
+        /**
+         * Until the admin saves a selection, every available post type is included,
+         * so post types registered later still show up by default.
+         *
+         * @return string[]
+         */
+        public function get_llms_post_types(): array
+        {
+        }
+        /**
+         * @return int[]
+         */
+        public function get_llms_excluded_post_ids(): array
+        {
+        }
+        public function is_markdown_enabled(): bool
+        {
+        }
+        /**
+         * Until the admin saves a selection, every available post type is included.
+         *
+         * @return string[]
+         */
+        public function get_markdown_post_types(): array
+        {
+        }
+        /**
+         * @return int[]
+         */
+        public function get_markdown_excluded_post_ids(): array
+        {
+        }
+        public function is_post_excluded(string $module, int $post_id): bool
+        {
+        }
+        public function is_bot_access_enabled(): bool
+        {
+        }
+        public function is_agent_discovery_enabled(): bool
+        {
+        }
+        public function is_browser_tools_enabled(): bool
+        {
+        }
+        public function get_business_details(): string
+        {
+        }
+        public function is_module_active(string $module): bool
+        {
+        }
+        public function has_any_active(array $modules): bool
+        {
+        }
+        /**
+         * Bots listed in the admin table, keyed by user-agent token.
+         *
+         * @return array<string, array{search: bool, ai_input: bool, ai_train: bool}>
+         */
+        public function get_managed_bots(): array
+        {
+        }
+        /**
+         * @param mixed $value Incoming option value.
+         * @return array
+         */
+        public function sanitize($value): array
+        {
+        }
+        /**
+         * @param string $module Module key, one of the MODULE_* constants.
+         * @param string $key    Setting key inside the module.
+         * @param mixed  $value  Setting value.
+         */
+        public function set_server_value(string $module, string $key, $value): void
+        {
+        }
+    }
+    /**
+     * Known AI crawlers that the Bot access control module can manage.
+     *
+     * Tokens are published verbatim as robots.txt `User-agent` values; robots.txt
+     * matches them case-insensitively, so `name` only controls the admin display.
+     * Popular bots are managed by default; the rest are offered in the admin picker.
+     */
+    class Bot_Catalog
+    {
+        const LOGOS_DIR = 'images/agents/bots/';
+        const LOGO_EXTENSION = '.svg';
+        /**
+         * @return array<int, array{token: string, name: string, vendor: string, logo: string, is_popular: bool}>
+         */
+        public function get_bots(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function get_tokens(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function get_popular_tokens(): array
+        {
+        }
+        public function get_logo_url(string $logo): string
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Classes {
+    class Agents_Sidebar_Config
+    {
+        const SIDEBAR_CONFIG_FILTER = 'elementor/editor-one/sidebar/config';
+        const EXCLUDED_LEVEL3_SLUGS_FILTER = 'elementor/editor-one/menu/excluded_level3_slugs';
+        const FILTER_PRIORITY = 10;
+        const FILTER_ACCEPTED_ARGS = 1;
+        public function register(): void
+        {
+        }
+        public function exclude_from_editor_sidebar(array $slugs): array
+        {
+        }
+        public function filter_sidebar_config(array $config): array
+        {
+        }
+    }
+    class Content_Items_Ajax
+    {
+        const ACTION = 'agents_ready_list_content_items';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Classes\Markdown_Content_Catalog $catalog)
+        {
+        }
+        /**
+         * @param array $data Ajax request data: { module: string, postType: string, term?: string, page?: int }.
+         * @return array{items: array, hasMore: bool}
+         * @throws \Exception When the user can't manage options or the module is unknown.
+         */
+        public function handle(array $data): array
+        {
+        }
+    }
+    class Dashboard_Overview_Block
+    {
+        const HOOK = 'elementor/admin/dashboard_overview_widget/after_header';
+        const STATE_NOT_SCANNED = 'not_scanned';
+        const STATE_NEEDS_WORK = 'needs_work';
+        const STATE_GETTING_THERE = 'getting_there';
+        const STATE_STRONG = 'strong';
+        const STATE_BY_TIER = [\Elementor\Modules\Agents\Classes\Score_Tiers::TIER_LOW => self::STATE_NEEDS_WORK, \Elementor\Modules\Agents\Classes\Score_Tiers::TIER_MID => self::STATE_GETTING_THERE, \Elementor\Modules\Agents\Classes\Score_Tiers::TIER_HIGH => self::STATE_STRONG];
+        const FAILING_CHECK_STATUSES = ['fail', 'partial'];
+        public function __construct(\Elementor\Modules\Agents\Classes\Scanner_Report_Store $scanner_store)
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function should_render(): bool
+        {
+        }
+        public function get_state(): string
+        {
+        }
+        public function get_score(?array $report): ?int
+        {
+        }
+        public function get_fixes_count(?array $report): int
+        {
+        }
+        public function get_cta_url(): string
+        {
+        }
+        public function render(): void
+        {
+        }
+    }
+    abstract class Feature_Component
+    {
+        /**
+         * Stable string identifier, e.g. 'markdown_endpoint'.
+         * Used as the registry key and audit-log channel.
+         */
+        abstract public function get_id(): string;
+        /**
+         * Layer this component belongs to.
+         * One of: 'discovery' | 'readability' | 'mcp' | 'governance'
+         */
+        abstract public function get_layer(): string;
+        /**
+         * Whether this component overlaps with SEO plugin functionality.
+         * Default false; override in discovery components where relevant.
+         */
+        public function has_seo_overlap(): bool
+        {
+        }
+        /**
+         * Whether this component is enabled.
+         *
+         * Subclasses override ONLY to express additional hard dependency gates
+         * (e.g. mcp-adapter present). Per-module toggles are enforced at runtime.
+         */
+        public function is_enabled(): bool
+        {
+        }
+        /**
+         * Module dependencies required for this component to be registered.
+         * When non-empty, the component is registered only when at least one of
+         * the required modules is active.
+         *
+         * @return string[] Array of Agent_Ready_Settings::MODULE_* constants.
+         */
+        public function get_required_modules(): array
+        {
+        }
+        /**
+         * Wire hooks. Called by the module only when is_enabled() returns true.
+         */
+        abstract public function register(): void;
+    }
+    class Feature_Registry
+    {
+        /**
+         * Register a feature component.
+         */
+        public function register(\Elementor\Modules\Agents\Classes\Feature_Component $component): void
+        {
+        }
+        /**
+         * Return all registered feature components.
+         * Applies elementor/agents/features filter for third-party contribution.
+         *
+         * @return \Elementor\Modules\Agents\Classes\Feature_Component[]
+         */
+        public function get_features(): array
+        {
+        }
+        /**
+         * Return a single registered feature by ID, or null if not found.
+         */
+        public function get_feature(string $id): ?\Elementor\Modules\Agents\Classes\Feature_Component
+        {
+        }
+        /**
+         * Return whether a feature is registered and enabled.
+         */
+        public function is_enabled(string $id): bool
+        {
+        }
+    }
+    class Llms_Content_Ajax
+    {
+        const ACTION = 'agents_ready_save_llms_content';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Llms_Manual_Content $manual_content)
+        {
+        }
+        /**
+         * @param array $data Ajax request data: { content: string }.
+         * @throws \Exception When the user can't manage options, a physical file exists, or the content is invalid.
+         */
+        public function handle(array $data): array
+        {
+        }
+    }
+    class Llms_Revert_Ajax
+    {
+        const ACTION = 'agents_ready_revert_llms_content';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Llms_Manual_Content $manual_content)
+        {
+        }
+        /**
+         * @throws \Exception When the user can't manage options.
+         */
+        public function handle(): array
+        {
+        }
+    }
+    class Llms_Takeover_Ajax
+    {
+        const ACTION = 'agents_ready_takeover_llms_file';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Llms_Manual_Content $manual_content)
+        {
+        }
+        /**
+         * @throws \Exception When the user can't manage options, there is no physical file, or the file can't be deleted.
+         */
+        public function handle(): array
+        {
+        }
+    }
+    class Markdown_Content_Ajax
+    {
+        const ACTION = 'agents_ready_save_markdown_content';
+        public function __construct(\Elementor\Modules\Agents\Components\Readability\Markdown_Endpoint $endpoint, \Elementor\Modules\Agents\Markdown_Manual_Content $manual_content)
+        {
+        }
+        /**
+         * @param array $data Ajax request data: { postId: int, content: string }.
+         * @return array{isOverridden: bool}
+         * @throws \Exception When the user can't manage options, the post is not available, or the content is invalid.
+         */
+        public function handle(array $data): array
+        {
+        }
+    }
+    class Markdown_Content_Catalog
+    {
+        const PAGE_SIZE = 20;
+        const MAX_SCANNED_PAGES = 5;
+        const EXCERPT_WORDS = 40;
+        public function __construct(\Elementor\Modules\Agents\Markdown_Manual_Content $manual_content)
+        {
+        }
+        /**
+         * Published, public, indexable posts the preview picker can show, ordered by title.
+         * An empty term puts the static front page first when it qualifies.
+         *
+         * @param string[] $post_types        Post type slugs to query.
+         * @param string   $term              Title search term.
+         * @param int[]    $excluded_post_ids Posts to leave out.
+         * @return array<int, array{id: int, title: string, path: string, type: string, isOverridden: bool}>
+         */
+        public function search(array $post_types, string $term, array $excluded_post_ids = []): array
+        {
+        }
+        /**
+         * Published, public, indexable posts matching the term anywhere in their content, best match first.
+         *
+         * @param string[] $post_types        Post type slugs to query.
+         * @param string   $term              Search term.
+         * @param int      $limit             Maximum number of items.
+         * @param int[]    $excluded_post_ids Posts to leave out.
+         * @return array<int, array{id: int, title: string, url: string, type: string, date: string, excerpt: string}>
+         */
+        public function search_content(array $post_types, string $term, int $limit, array $excluded_post_ids = []): array
+        {
+        }
+        /**
+         * One page of published, public, indexable posts of a single type, ordered by title.
+         *
+         * @param string $post_type Post type slug.
+         * @param string $term      Title search term.
+         * @param int    $page      One-based results page.
+         * @param int[]  $pinned_post_ids Posts listed ahead of the rest, on the first page only.
+         * @return array{items: array<int, array{id: int, title: string, url: string}>, hasMore: bool}
+         */
+        public function list_page(string $post_type, string $term, int $page, array $pinned_post_ids = []): array
+        {
+        }
+    }
+    class Markdown_Preview_Ajax
+    {
+        const ACTION = 'agents_ready_preview_markdown';
+        public function __construct(\Elementor\Modules\Agents\Components\Readability\Markdown_Endpoint $endpoint)
+        {
+        }
+        /**
+         * @param array $data Ajax request data: { postId: int }.
+         * @return array{content: string, isOverridden: bool}
+         * @throws \Exception When the user can't manage options or the post is not included.
+         */
+        public function handle(array $data): array
+        {
+        }
+    }
+    class Markdown_Revert_Ajax
+    {
+        const ACTION = 'agents_ready_revert_markdown_content';
+        public function __construct(\Elementor\Modules\Agents\Markdown_Manual_Content $manual_content)
+        {
+        }
+        /**
+         * @param array $data Ajax request data: { postId: int }.
+         * @return array{isOverridden: bool}
+         * @throws \Exception When the user can't manage options or the post doesn't exist.
+         */
+        public function handle(array $data): array
+        {
+        }
+    }
+    class Markdown_Search_Ajax
+    {
+        const ACTION = 'agents_ready_search_markdown';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Classes\Markdown_Content_Catalog $catalog)
+        {
+        }
+        /**
+         * @param array $data Ajax request data: { term?: string }.
+         * @return array{items: array}
+         * @throws \Exception When the user can't manage options.
+         */
+        public function handle(array $data): array
+        {
+        }
+    }
+    class Module_Availability
+    {
+        public function __construct(\Elementor\Modules\Agents\Classes\Seo_Llms_Txt_Detector $seo_detector, \Elementor\Modules\Agents\Robots_Txt_Handler $robots_handler)
+        {
+        }
+        public function get_unavailable_reasons(): array
+        {
+        }
+        public function get_reason(string $module): ?array
+        {
+        }
+        public function is_available(string $module): bool
+        {
+        }
+    }
+    class Post_Exclusions
+    {
+        const MAX_EXCLUDED_POSTS = 5000;
+        /**
+         * Keeps IDs of existing, non-trashed posts of the given types, in the requested order.
+         * Unpublished posts keep their exclusion so it still applies when they are published again.
+         *
+         * @param mixed    $ids        Incoming post IDs.
+         * @param string[] $post_types Post type slugs an excluded post may belong to.
+         * @return int[]
+         */
+        public static function sanitize_ids($ids, array $post_types): array
+        {
+        }
+        /**
+         * @param int[]    $ids        Excluded post IDs.
+         * @param string[] $post_types Post type slugs to count.
+         * @return array<string, int> Post type slug => number of excluded published posts.
+         */
+        public static function count_published_by_post_type(array $ids, array $post_types): array
+        {
+        }
+    }
+    class Post_Noindex
+    {
+        /**
+         * Return true if any active SEO plugin has marked this post as noindex,
+         * or if the page/post is otherwise excluded from public indexing.
+         */
+        public static function is_noindex(int $post_id): bool
+        {
+        }
+    }
+    class Post_Title
+    {
+        public static function to_plain_text(string $title): string
+        {
+        }
+    }
+    class Request_Path
+    {
+        /**
+         * Extract the relative path from REQUEST_URI, stripping the home URL
+         * prefix for subdirectory installs and decoding percent-encoded characters.
+         *
+         * @return string Relative path with leading slash, or empty string on failure.
+         */
+        public static function get_relative_path(): string
+        {
+        }
+        /**
+         * Check whether the current request URI matches a given filename.
+         * Handles subdirectory WordPress installs transparently.
+         *
+         * @param string $filename e.g. 'llms.txt' or 'llms-full.txt'
+         */
+        public static function matches(string $filename): bool
+        {
+        }
+    }
+    class Scanner_Client
+    {
+        const DEFAULT_API_URL = 'https://my.elementor.com/apps/api/v1/is-agentic/wordpress/scan';
+        const DEFAULT_TIMEOUT = 90;
+        const TEST_TYPE = 'wordpress';
+        const ERROR_CODE = 'agents_scanner_failed';
+        const REASON_LOCAL = 'local';
+        const REASON_THROTTLED = 'throttled';
+        const REASON_TIMEOUT = 'timeout';
+        const HTTP_OK = 200;
+        const HTTP_BAD_REQUEST = 400;
+        const HTTP_UNPROCESSABLE_ENTITY = 422;
+        const HTTP_TOO_MANY_REQUESTS = 429;
+        const HTTP_BAD_GATEWAY = 502;
+        const HTTP_SERVICE_UNAVAILABLE = 503;
+        const HTTP_GATEWAY_TIMEOUT = 504;
+        const CURL_TIMEOUT_ERROR = 'cURL error 28';
+        /**
+         * @return array|\WP_Error The decoded scan report, or an error carrying `status`, `reason` and `retry_at` (Unix timestamp) data.
+         */
+        public function scan()
+        {
+        }
+        public function get_api_url(): string
+        {
+        }
+        public function get_site_url(): string
+        {
+        }
+    }
+    class Scanner_Orchestrator
+    {
+        const COOLDOWN_ERROR_CODE = 'agents_scanner_cooldown';
+        public function __construct(\Elementor\Modules\Agents\Classes\Scanner_Client $client, \Elementor\Modules\Agents\Classes\Scanner_Report_Store $store)
+        {
+        }
+        /**
+         * @return array{report: ?array, retryAt: ?string}|\WP_Error
+         */
+        public function read_saved_report()
+        {
+        }
+        /**
+         * @return array{report: array, retryAt: string}|\WP_Error
+         */
+        public function run_scan()
+        {
+        }
+    }
+    class Scanner_Report_Store
+    {
+        const OPTION_LAST_REPORT = 'elementor_agents_scanner_last_report';
+        const TRANSIENT_RETRY_AT = 'elementor_agents_scanner_retry_at';
+        const DEFAULT_COOLDOWN = 300;
+        const REPORT_FIELDS = ['score', 'scannedAt', 'retryAt', 'layers', 'checks'];
+        const CHECK_FIELDS = ['id', 'label', 'description', 'layer', 'task', 'tier', 'status', 'earned', 'possible', 'maxScore', 'bonus', 'scorable', 'message', 'fix', 'fixBy', 'fixDetails'];
+        public function get_last_report(): ?array
+        {
+        }
+        public function save_report(array $report): array
+        {
+        }
+        public function get_retry_at(): ?int
+        {
+        }
+        public function start_cooldown(int $retry_at): void
+        {
+        }
+        public function clear_cooldown(): void
+        {
+        }
+        public function get_report_retry_at(array $report): int
+        {
+        }
+    }
+    class Scanner_Rest_Api
+    {
+        const API_NAMESPACE = 'elementor/v1';
+        const ROUTE = '/agents-ready/scan';
+        public function __construct(\Elementor\Modules\Agents\Classes\Scanner_Orchestrator $orchestrator)
+        {
+        }
+        public function register_hooks(): void
+        {
+        }
+        public function register_routes(): void
+        {
+        }
+        /**
+         * @return \WP_REST_Response|\WP_Error
+         */
+        public function scan()
+        {
+        }
+    }
+    class Score_Tiers
+    {
+        const TIER_LOW = 'low';
+        const TIER_MID = 'mid';
+        const TIER_HIGH = 'high';
+        const SCORE_MAX = 100;
+        const LOW_MAX = 30;
+        const HIGH_MIN = 81;
+        public static function get_tier(int $score): string
+        {
+        }
+        public static function to_array(): array
+        {
+        }
+    }
+    class Seo_Llms_Txt_Detector
+    {
+        public static function reset_cache(): void
+        {
+        }
+        public function get_owner(): ?string
+        {
+        }
+        public function get_owner_label(): string
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Discovery {
+    /**
+     * Emits RFC 8288 Link response headers on every front-end and Elementor REST
+     * response, making discovery documents findable without guessing URLs.
+     *
+     * Site-wide (all frontend responses):
+     *   Link: </llms.txt>; rel="llms-txt"; type="text/plain"
+     *
+     * Site-wide when the Agent discovery module is enabled:
+     *   Link: </.well-known/api-catalog>; rel="api-catalog"; type="application/json"
+     *   Link: </.well-known/auth.md>; rel="service-doc"; type="text/markdown"
+     *   Link: </.well-known/ard.json>; rel="ard"; type="application/json"
+     *
+     * On singular exposed views only:
+     *   Link: <{permalink}.md>; rel="alternate"; type="text/markdown"
+     *
+     * When the MCP server card is active (gated by filter, see Mcp_Discovery):
+     *   Link: </.well-known/mcp/server-card.json>; rel="mcp-server-card"; type="application/json"
+     *
+     * Relation types that are not registered in the IANA link relation registry
+     * (llms-txt, mcp-server-card) are used as-is following emerging convention;
+     * they will be replaced with absolute URI forms if IANA registers alternatives.
+     *
+     * Guards:
+     *   - Skips admin, cron, feeds, and login screens.
+     *   - Emits at most once per request (idempotency flag).
+     *   - Scopes REST emission to /elementor/* namespaces only.
+     */
+    class Link_Headers extends \Elementor\Modules\Agents\Classes\Feature_Component
+    {
+        const HOMEPAGE_MARKDOWN_PATH = '/index.md';
+        const ARD_CATALOG_SLUG = 'ard.json';
+        const MCP_SERVER_CARD_SLUG = 'mcp/server-card.json';
+        public function __construct(\Elementor\Modules\Agents\Components\Readability\Markdown_Endpoint $markdown_endpoint, \Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Module $module)
+        {
+        }
+        public function get_id(): string
+        {
+        }
+        public function get_layer(): string
+        {
+        }
+        public function get_required_modules(): array
+        {
+        }
+        public function register(): void
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Hooks
+        // -------------------------------------------------------------------------
+        /**
+         * Emit Link headers on front-end responses.
+         *
+         * Fires during the `send_headers` action, which runs after WordPress has
+         * determined the current query but before the template is loaded.
+         */
+        public function emit_frontend_headers(): void
+        {
+        }
+        /**
+         * Add Link headers to Elementor REST responses.
+         *
+         * Only wires onto /elementor/* routes — skips the WP REST API broadly so
+         * we don't pollute unrelated endpoints.
+         *
+         * @param \WP_HTTP_Response $response Response object.
+         * @param \WP_REST_Server   $server   REST server instance.
+         * @param \WP_REST_Request  $request  REST request object.
+         * @return \WP_HTTP_Response
+         */
+        public function add_rest_headers($response, $server, $request)
+        {
+        }
+        /**
+         * @param \WP_Post|null $post
+         * @return string|null
+         */
+        public function build_singular_markdown_link($post): ?string
+        {
+        }
+    }
+    /**
+     * Advertises the WordPress MCP Adapter default server to agents while the
+     * site-level Elementor MCP setting is on.
+     *
+     * Drives the `elementor/agents/mcp_server/is_active` and
+     * `elementor/agents/link_headers/emit_mcp_card` filters, appends the server
+     * to the ARD catalog, and serves the server card at `<server URL>/server-card`
+     * in addition to /.well-known/mcp/server-card.json.
+     */
+    class Mcp_Discovery extends \Elementor\Modules\Agents\Classes\Feature_Component
+    {
+        const REST_NAMESPACE = 'mcp';
+        const REST_SERVER_ROUTE = 'mcp-adapter-default-server';
+        const REST_SERVER_CARD_ROUTE = '/' . self::REST_SERVER_ROUTE . '/server-card';
+        const SERVER_CARD_PATH = '.well-known/mcp/server-card.json';
+        const SERVER_CARD_SCHEMA = 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json';
+        const SERVER_SLUG = 'elementor-mcp';
+        const SERVER_TITLE = 'Elementor MCP';
+        const SERVER_DESCRIPTION = 'Read and edit this Elementor site\'s pages, content and design through MCP tools.';
+        const TRANSPORT = 'streamable-http';
+        const ARD_ENTRY_TYPE = 'application/json';
+        const ARD_REPRESENTATIVE_QUERIES = ['Edit a page on this site with Elementor', 'Update the site\'s global colors and fonts', 'Create a new landing page layout'];
+        const FALLBACK_HOST = 'localhost';
+        public function get_id(): string
+        {
+        }
+        public function get_layer(): string
+        {
+        }
+        public function register(): void
+        {
+        }
+        public static function is_active(): bool
+        {
+        }
+        public static function get_server_url(): string
+        {
+        }
+        public static function get_server_card_url(): string
+        {
+        }
+        /**
+         * Options whose change flips is_active() and must purge cached discovery output.
+         *
+         * @return string[]
+         */
+        public static function get_settings_option_names(): array
+        {
+        }
+        /**
+         * MCP registry server.json document describing the remote server.
+         */
+        public static function build_server_card(): array
+        {
+        }
+        /**
+         * Reverse-DNS server name, e.g. `com.example.shop/elementor-mcp` for shop.example.com.
+         * IP hosts keep their order since reversing them carries no namespace meaning.
+         */
+        public static function get_server_name(): string
+        {
+        }
+        public function filter_is_active(): bool
+        {
+        }
+        /**
+         * @param mixed $entries ARD catalog entries.
+         * @return array
+         */
+        public function add_ard_catalog_entry($entries): array
+        {
+        }
+        public function register_rest_routes(): void
+        {
+        }
+        public function get_server_card_response(): \WP_REST_Response
+        {
+        }
+    }
+    /**
+     * OpenAPI Specification endpoint — /openapi.json
+     *
+     * Publishes an OpenAPI 3.0.3 description of the WordPress REST API subset safe
+     * for anonymous agent access (posts, pages, search). Published only when the
+     * Agent Discovery module is enabled, permalink structure is not plain, and
+     * anonymous REST API access passes reachability validation.
+     *
+     * Served via template_redirect, reusing transient + ETag + 304 logic from
+     * well-known endpoints.
+     */
+    class Openapi_Spec extends \Elementor\Modules\Agents\Classes\Feature_Component
+    {
+        const TRANSIENT_CONTENT = 'elementor_agents_openapi_content';
+        const TRANSIENT_ETAG = 'elementor_agents_openapi_etag';
+        const TRANSIENT_MODIFIED = 'elementor_agents_openapi_modified';
+        const TRANSIENT_VALIDATED = 'elementor_agents_openapi_validated';
+        const TRANSIENT_TTL = 3600;
+        const ENDPOINT_SLUG = 'openapi.json';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings)
+        {
+        }
+        public function get_id(): string
+        {
+        }
+        public function get_layer(): string
+        {
+        }
+        public function get_required_modules(): array
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function maybe_serve_openapi(): void
+        {
+        }
+        public function is_publishable(): bool
+        {
+        }
+        public function flush_cache(): void
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Discovery\Well_Known {
+    /**
+     * Abstract base class for all /.well-known/ endpoints.
+     *
+     * Subclasses declare:
+     *   - get_well_known_slug()  — the path segment after /.well-known/
+     *   - generate_content()     — returns array (JSON-encoded) or string (sent as-is)
+     *   - is_applicable()        — hard dependency gate (default: true)
+     *
+     * Routing, HTTP caching, and response emission are handled here.
+     * Registration is centralised in Well_Known_Router — subclasses do not
+     * hook template_redirect themselves; register() is a no-op.
+     */
+    abstract class Abstract_Well_Known_Endpoint extends \Elementor\Modules\Agents\Classes\Feature_Component
+    {
+        /** Default cache TTL — 15 minutes. Short enough to propagate config changes quickly. */
+        const CACHE_TTL = 900;
+        /** Transient key prefix. */
+        const TRANSIENT_PREFIX = 'elementor_agents_wk_';
+        // ------------------------------------------------------------------
+        // Subclass interface
+        // ------------------------------------------------------------------
+        /**
+         * Path segment after /.well-known/.
+         * Examples: 'agent.json', 'api-catalog', 'oauth-protected-resource'
+         */
+        abstract public function get_well_known_slug(): string;
+        /**
+         * Generate the endpoint payload.
+         *
+         * Return array/object → JSON-encoded and served as application/json.
+         * Return string       → served as-is (use get_content_type() to set MIME).
+         *
+         * User-controlled strings (site title, description) must pass through
+         * $this->sanitize() before being included.
+         *
+         * @return array|string
+         */
+        abstract protected function generate_content();
+        /**
+         * MIME type for the response. Override for text/markdown or text/plain.
+         */
+        public function get_content_type(): string
+        {
+        }
+        /**
+         * Hard dependency gate — is this endpoint meaningful for this site right now?
+         *
+         * Return false when the feature the endpoint describes does not yet exist
+         * (e.g. WebMCP manifest before the WebMCP module is installed).
+         * The router skips inactive endpoints and lets WordPress produce a 404.
+         */
+        public function is_applicable(): bool
+        {
+        }
+        /**
+         * Extensionless slug aliases for this endpoint.
+         *
+         * Some web servers intercept requests whose URL path ends with a known
+         * file extension (.json, .md) and attempt to serve them as static assets,
+         * returning 404 before WordPress runs. Aliases let the same endpoint be
+         * reached at an extension-free path (e.g. 'agent' for 'agent.json').
+         *
+         * The canonical slug is always registered; aliases are registered in
+         * addition. Override in subclasses that use extension-bearing slugs.
+         *
+         * @return string[]
+         */
+        public function get_slug_aliases(): array
+        {
+        }
+        // ------------------------------------------------------------------
+        // Feature_Component contract
+        // ------------------------------------------------------------------
+        /**
+         * @return string
+         */
+        public function get_layer(): string
+        {
+        }
+        /**
+         * Registration is handled by Well_Known_Router.
+         * Individual endpoints do not wire their own hooks.
+         */
+        public function register(): void
+        {
+        }
+        // ------------------------------------------------------------------
+        // Cache
+        // ------------------------------------------------------------------
+        /**
+         * Transient key for this endpoint's cached response.
+         */
+        public function get_transient_key(): string
+        {
+        }
+        /**
+         * Delete the cached response. Called by the router on global cache invalidation.
+         */
+        public function flush_cache(): void
+        {
+        }
+        // ------------------------------------------------------------------
+        // Request handling (called by Well_Known_Router)
+        // ------------------------------------------------------------------
+        /**
+         * Serve the response. Must exit — never returns.
+         */
+        final public function handle_request(): void
+        {
+        }
+        // ------------------------------------------------------------------
+        // Helpers for subclasses
+        // ------------------------------------------------------------------
+        /**
+         * Sanitize a metadata string before embedding in the response.
+         * Strips HTML and neutralises prompt-injection patterns.
+         */
+        protected function sanitize(string $text): string
+        {
+        }
+    }
+    /**
+     * Agent Skills Index — /.well-known/agent-skills
+     *
+     * Lists the MCP tools (abilities) this site exposes to agents, including input
+     * schemas and, once the OAuth module defines them, required scopes. Generated
+     * from the Abilities API registry so it stays accurate as abilities are added
+     * or removed.
+     *
+     * Applicable when the Abilities API (WP 6.9+) and the agents MCP server are
+     * both active. Returns false (→ 404) on WP < 6.9 or when MCP is disabled.
+     */
+    class Agent_Skills extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        /** Abilities API category registered by the Elementor MCP module. */
+        const ABILITY_CATEGORY = 'elementor';
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        /**
+         * Requires the Abilities API (WP 6.9+).
+         * MCP server check is via filter so it works before that component lands.
+         */
+        public function is_applicable(): bool
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+    }
+    /**
+     * API catalog — /.well-known/api-catalog (RFC 9727)
+     *
+     * Lists all machine-readable APIs this site exposes so agents and API clients
+     * can discover them without prior configuration.
+     *
+     * Always applicable — every WordPress site has a REST API to advertise.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc9727
+     */
+    class Api_Catalog extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        public function get_content_type(): string
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+    }
+    /**
+     * ARD catalog — /.well-known/ard.json (Agentic Resource Discovery v0.91)
+     *
+     * Lists the agent-facing artifacts this site serves as ARD entries, each with
+     * a domain-anchored URN identifier and the media type its URL actually returns.
+     * Also reachable at the predecessor path /.well-known/ai-catalog.json.
+     * The document declares AI Catalog specVersion 1.0, which consumers require.
+     *
+     * Not applicable when the site owner already publishes a physical catalog, so
+     * an existing ard.json or ai-catalog.json is never contradicted.
+     *
+     * @see https://github.com/ards-project/ard-spec/blob/main/spec/ard.md
+     */
+    class Ard_Catalog extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        const PHYSICAL_CATALOG_FILES = ['ard.json', 'ai-catalog.json'];
+        const SPEC_VERSION = '1.0';
+        const URN_PREFIX = 'urn:air:';
+        const LLMS_TXT_MEDIA_TYPE = 'text/plain';
+        const LLMS_TXT_REPRESENTATIVE_QUERIES = ['What is this website about?', 'Which pages on this site are the most important?', 'Summarize the content this site offers.'];
+        const AGENT_SKILLS_SLUG = 'agent-skills';
+        const AGENT_SKILLS_REPRESENTATIVE_QUERIES = ['What actions can an agent perform on this site?', 'Which tools does this site expose to AI agents?', 'What input does each site skill require?'];
+        public function __construct(?\Elementor\Modules\Agents\Module $module = null)
+        {
+        }
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        public function get_slug_aliases(): array
+        {
+        }
+        public function is_applicable(): bool
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+        public static function build_identifier(string $kind, string $name): string
+        {
+        }
+    }
+    /**
+     * ARD (Agentic Resource Discovery) manifest — /.well-known/agent.json
+     *
+     * Top-level capability index for AI agents. Advertises every agent-facing
+     * surface this site exposes: MCP server, llms.txt, API catalog, skills index,
+     * and auth endpoints.
+     *
+     * An agent that fetches /.well-known/agent.json learns everything it needs to
+     * discover and use the site without manual configuration — this is the document
+     * it should fetch first.
+     *
+     * Always applicable — if any agent feature is active, this document is useful.
+     */
+    class Ard_Manifest extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        public function __construct(?\Elementor\Modules\Agents\Module $module = null)
+        {
+        }
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        public function get_slug_aliases(): array
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+    }
+    /**
+     * Auth.md — /.well-known/auth.md
+     *
+     * Human- and machine-readable Markdown describing how agents authenticate:
+     * which methods are accepted and how to obtain credentials.
+     *
+     * MCP endpoint, server card, and protected-resource URLs are included only
+     * when `elementor/agents/link_headers/emit_mcp_card` is true, matching
+     * Link headers and Oauth_Protected_Resource.
+     *
+     * Content type: text/markdown
+     *
+     * Applicable whenever this module is active (always in MVP).
+     */
+    class Auth_Md extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        public function get_slug_aliases(): array
+        {
+        }
+        public function get_content_type(): string
+        {
+        }
+        protected function generate_content(): string
+        {
+        }
+    }
+    /**
+     * MCP server card — /.well-known/mcp/server-card.json
+     *
+     * MCP registry server.json document pointing agents at the site's MCP server.
+     *
+     * Applicable only while the MCP server is advertised, matching the
+     * rel="mcp-server-card" Link header.
+     */
+    class Mcp_Server_Card extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        public function get_slug_aliases(): array
+        {
+        }
+        public function is_applicable(): bool
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+    }
+    /**
+     * OAuth Authorization Server Metadata — /.well-known/oauth-authorization-server
+     * (RFC 8414)
+     *
+     * Phase 1.1 feature. is_applicable() returns false until the OAuth module
+     * provides a real token endpoint, so this URL produces a clean 404 in MVP
+     * rather than a misleading stub.
+     *
+     * When the OAuth module activates:
+     *   add_filter( 'elementor/agents/oauth_authorization_server/is_applicable', '__return_true' );
+     *   add_filter( 'elementor/agents/oauth_authorization_server/token_endpoint', fn() => '...' );
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8414
+     */
+    class Oauth_Authorization_Server extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        /**
+         * Not applicable until the OAuth 2.1 module provides a real token endpoint.
+         */
+        public function is_applicable(): bool
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+    }
+    /**
+     * OAuth Protected Resource Metadata — /.well-known/oauth-protected-resource
+     * (RFC 9728)
+     *
+     * Tells agents and OAuth clients that this resource server requires a bearer
+     * token and where to obtain one. This is the first document an OAuth 2.1
+     * client reads when it encounters a 401 from the MCP endpoint.
+     *
+     * For MVP (Application Passwords) the document is accurate: it names the auth
+     * method and points at the documentation. When OAuth 2.1 lands (Phase 1.1)
+     * authorization_servers and scopes_supported expand via filter without changing
+     * the document location or shape.
+     *
+     * Applicable when the MCP server component is active.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc9728
+     */
+    class Oauth_Protected_Resource extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        /**
+         * Applicable only when the MCP server is active — that is the resource
+         * this document describes.
+         */
+        public function is_applicable(): bool
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+    }
+    /**
+     * WebMCP Manifest — /.well-known/webmcp.json
+     *
+     * Describes the in-browser tool layer for browser-based agents such as
+     * Claude in Chrome. Phase 1.1 feature — is_applicable() returns false until
+     * the WebMCP module activates via filter. The router produces a clean 404
+     * rather than an empty stub.
+     *
+     * When the WebMCP module activates:
+     *   add_filter( 'elementor/agents/webmcp/is_applicable', '__return_true' );
+     *   add_filter( 'elementor/agents/webmcp_manifest', function( $manifest ) {
+     *       $manifest['tools'][] = [ 'id' => 'my-tool', ... ];
+     *       return $manifest;
+     *   } );
+     */
+    class Webmcp_Manifest extends \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint
+    {
+        public function get_id(): string
+        {
+        }
+        public function get_well_known_slug(): string
+        {
+        }
+        public function get_slug_aliases(): array
+        {
+        }
+        /**
+         * Not applicable until the WebMCP module activates.
+         */
+        public function is_applicable(): bool
+        {
+        }
+        protected function generate_content(): array
+        {
+        }
+    }
+    /**
+     * Central router for all /.well-known/ endpoints.
+     *
+     * Hooks template_redirect at priority 1, consistent with the module's
+     * existing llms.txt handler. Endpoints self-register via register_endpoint().
+     *
+     * The router checks both is_enabled() (user preference seam on Feature_Component)
+     * and is_applicable() (hard dependency gate on Abstract_Well_Known_Endpoint)
+     * before serving. When neither gate passes, the request falls through to
+     * WordPress's normal 404 path — no stub document is ever served for a
+     * feature that is not active or not yet applicable.
+     *
+     * Cache invalidation: listens to elementor/agents/llms_txt/cache_invalidated,
+     * which fires on post save, theme switch, plugin activate/deactivate, and
+     * Elementor cache clear — covering every scenario that could change a well-known
+     * document's content.
+     */
+    class Well_Known_Router
+    {
+        const WELL_KNOWN_PREFIX = '/.well-known/';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings)
+        {
+        }
+        /**
+         * Wire the router into WordPress.
+         * Called once by Module after the router is instantiated.
+         */
+        public function init(): void
+        {
+        }
+        /**
+         * Register an endpoint.
+         *
+         * Called for every well-known component in Module's registration pass.
+         * Endpoints that are disabled or not-applicable are still registered so
+         * get_all_endpoints() is always complete (e.g. for a future settings UI).
+         */
+        public function register_endpoint(\Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint $endpoint): void
+        {
+        }
+        /**
+         * Template_redirect handler.
+         * Intercepts /.well-known/* requests and dispatches to the matching endpoint.
+         */
+        public function maybe_handle(): void
+        {
+        }
+        /**
+         * Flush cached responses for every registered endpoint.
+         * Hooked into elementor/agents/llms_txt/cache_invalidated.
+         */
+        public function flush_all_caches(): void
+        {
+        }
+        /**
+         * Return all registered endpoints regardless of enabled/applicable state.
+         *
+         * @return \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint[]
+         */
+        public function get_all_endpoints(): array
+        {
+        }
+        /**
+         * Return only the endpoints that are currently active (enabled AND applicable).
+         * Used by Ard_Manifest to enumerate live capabilities.
+         *
+         * @return \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint[]
+         */
+        public function get_active_endpoints(): array
+        {
+        }
+        /**
+         * Return each endpoint once (aliases dropped) when it is relevant to this site,
+         * regardless of whether the admin has switched discovery on.
+         *
+         * @return \Elementor\Modules\Agents\Components\Discovery\Well_Known\Abstract_Well_Known_Endpoint[] Keyed by canonical slug.
+         */
+        public function get_applicable_endpoints(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Readability {
+    /**
+     * Orchestrates the content-extractor chain.
+     *
+     * Extractors are walked in ascending priority order.  The first extractor
+     * whose `can_handle()` returns true AND whose result contains at least
+     * {@see Content_Extractor::MIN_CONTENT_CHARS} non-whitespace characters is
+     * used.  Extraction falls through to the next extractor on an empty or
+     * below-threshold result.
+     *
+     * Third-party extractors may be injected via the
+     * `elementor/agents/markdown/extractors` filter.
+     *
+     * Scope can be narrowed to Elementor-built content only via the
+     * `elementor/agents/markdown/coverage` filter (values: `all`, `elementor_only`).
+     */
+    class Content_Extractor
+    {
+        /**
+         * Minimum number of non-whitespace characters an extraction must contain
+         * before it is accepted as a valid result.
+         */
+        const MIN_CONTENT_CHARS = 20;
+        /**
+         * Constructor — registers the built-in extractors and applies the
+         * third-party injection filter.
+         */
+        public function __construct()
+        {
+        }
+        /**
+         * Run the extractor chain once and return both the winning extractor ID
+         * and the extracted body markdown.
+         *
+         * @param \WP_Post $post
+         * @return array{id: string, body: string}
+         */
+        public function extract_with_id(\WP_Post $post): array
+        {
+        }
+        /**
+         * Extract body markdown from a post using the extractor chain.
+         *
+         * Returns only body content — no frontmatter.
+         *
+         * @param \WP_Post $post
+         * @return string Body markdown, or '' when no extractor produces content.
+         */
+        public function extract(\WP_Post $post): string
+        {
+        }
+        /**
+         * Return the ID of the extractor that would produce content for the post.
+         *
+         * When both the extractor ID and body are needed, prefer `extract_with_id()`.
+         *
+         * @param \WP_Post $post
+         * @return string Extractor ID, or '' when no extractor produces content.
+         */
+        public function get_extractor_id(\WP_Post $post): string
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Readability\Extractors {
+    /**
+     * Contract for all content extractors in the readability chain.
+     *
+     * Each extractor is responsible for a single content source (Elementor,
+     * block editor, classic editor, or full rendered template).  The chain
+     * walks extractors in ascending priority order and uses the first one
+     * whose `can_handle()` returns true and whose `extract()` result
+     * contains enough non-whitespace characters.
+     */
+    interface Extractor_Interface
+    {
+        /**
+         * Return true when this extractor is capable of handling the given post.
+         *
+         * @param \WP_Post $post
+         * @return bool
+         */
+        public function can_handle(\WP_Post $post): bool;
+        /**
+         * Extract body markdown from the post.
+         *
+         * Returns only the body content — no frontmatter, no YAML delimiters.
+         * Returns an empty string when extraction fails or produces no content.
+         *
+         * @param \WP_Post $post
+         * @return string Body markdown.
+         */
+        public function extract(\WP_Post $post): string;
+        /**
+         * Return a short machine-readable identifier for this extractor.
+         *
+         * Used for cache-provenance recording via Frontmatter_Builder::build().
+         *
+         * @return string
+         */
+        public function get_id(): string;
+        /**
+         * Return the priority used to order extractors in the chain.
+         *
+         * Lower numbers run first.
+         *
+         * @return int
+         */
+        public function get_priority(): int;
+    }
+    /**
+     * Extracts markdown from posts written with the WordPress block editor.
+     *
+     * Walks the parsed block tree recursively and converts each known core block
+     * to its markdown equivalent.  Unrecognised or dynamic blocks (e.g. containers
+     * such as `core/group` or `core/columns`) are rendered via `render_block()`
+     * and then converted through `Html_To_Markdown`; their inner blocks are only
+     * walked separately when that rendered markdown is empty, to avoid duplicating
+     * content that `render_block()` already includes.
+     *
+     * Priority: 20 (runs after Elementor_Extractor).
+     */
+    class Block_Extractor implements \Elementor\Modules\Agents\Components\Readability\Extractors\Extractor_Interface
+    {
+        /**
+         * Return true when the post content contains at least one block.
+         *
+         * @param \WP_Post $post
+         * @return bool
+         */
+        public function can_handle(\WP_Post $post): bool
+        {
+        }
+        /**
+         * Parse the block tree and convert it to markdown.
+         *
+         * @param \WP_Post $post
+         * @return string Body markdown, or '' on failure.
+         */
+        public function extract(\WP_Post $post): string
+        {
+        }
+        /**
+         * @return string
+         */
+        public function get_id(): string
+        {
+        }
+        /**
+         * @return int
+         */
+        public function get_priority(): int
+        {
+        }
+    }
+    /**
+     * Last-resort extractor for any post with `post_content`.
+     *
+     * Applies the standard `the_content` filter pipeline to the raw post content
+     * (which expands shortcodes, oEmbeds, etc.) and then converts the resulting
+     * HTML to markdown via `Html_To_Markdown`.
+     *
+     * Priority: 30 (runs after Block_Extractor).
+     */
+    class Classic_Extractor implements \Elementor\Modules\Agents\Components\Readability\Extractors\Extractor_Interface
+    {
+        /**
+         * Always returns true — this extractor handles any post type.
+         *
+         * @param \WP_Post $post
+         * @return bool
+         */
+        public function can_handle(\WP_Post $post): bool
+        {
+        }
+        /**
+         * Apply `the_content` filters and convert the resulting HTML to markdown.
+         *
+         * @param \WP_Post $post
+         * @return string Body markdown, or '' on failure.
+         */
+        public function extract(\WP_Post $post): string
+        {
+        }
+        /**
+         * @return string
+         */
+        public function get_id(): string
+        {
+        }
+        /**
+         * @return int
+         */
+        public function get_priority(): int
+        {
+        }
+    }
+    /**
+     * Extracts markdown from posts built with the Elementor editor.
+     *
+     * Uses `Markdown_Renderer::render_elements_data()` wrapped inside
+     * `Module::execute_while_rendering_markdown()` so that widget output
+     * skips CSS enqueueing and document-cache side effects.
+     *
+     * Priority: 10 (runs before all other extractors).
+     */
+    class Elementor_Extractor implements \Elementor\Modules\Agents\Components\Readability\Extractors\Extractor_Interface
+    {
+        /**
+         * Return true when the post was built with Elementor.
+         *
+         * @param \WP_Post $post
+         * @return bool
+         */
+        public function can_handle(\WP_Post $post): bool
+        {
+        }
+        /**
+         * Render Elementor element data to markdown.
+         *
+         * @param \WP_Post $post
+         * @return string Body markdown, or '' on failure.
+         */
+        public function extract(\WP_Post $post): string
+        {
+        }
+        /**
+         * @return string
+         */
+        public function get_id(): string
+        {
+        }
+        /**
+         * @return int
+         */
+        public function get_priority(): int
+        {
+        }
+    }
+    /**
+     * Slowest-path extractor: captures the fully rendered page template.
+     *
+     * Disabled by default.  Enable via:
+     *   add_filter( 'elementor/agents/markdown/enable_rendered_fallback', '__return_true' );
+     *
+     * After capturing the template output this extractor strips navigation,
+     * header, footer, aside, script, and style elements before converting the
+     * remaining HTML to markdown.  This is the most faithful representation of
+     * what a visitor sees but is significantly slower than the other extractors.
+     *
+     * Priority: 40 (runs last).
+     */
+    class Rendered_Extractor implements \Elementor\Modules\Agents\Components\Readability\Extractors\Extractor_Interface
+    {
+        /**
+         * Return true only when the rendered-fallback filter is enabled.
+         *
+         * @param \WP_Post $post
+         * @return bool
+         */
+        public function can_handle(\WP_Post $post): bool
+        {
+        }
+        /**
+         * Capture the page template output, strip chrome elements, and convert to markdown.
+         *
+         * @param \WP_Post $post
+         * @return string Body markdown, or '' on failure.
+         */
+        public function extract(\WP_Post $post): string
+        {
+        }
+        /**
+         * @return string
+         */
+        public function get_id(): string
+        {
+        }
+        /**
+         * @return int
+         */
+        public function get_priority(): int
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Readability {
+    /**
+     * Builds a YAML frontmatter block for a given post.
+     *
+     * All user-supplied string values are passed through `sanitize_metadata()`
+     * (strips HTML tags, zero-width characters, and control characters, then
+     * normalises whitespace) before being embedded in the YAML output.
+     *
+     * String values embedded in double-quoted YAML scalars are escaped via
+     * `escape_yaml_string()`.
+     */
+    class Frontmatter_Builder
+    {
+        /**
+         * Build the full YAML frontmatter block, including `---` delimiters.
+         *
+         * @param \WP_Post $post         The post to describe.
+         * @param string   $extractor_id Optional extractor identifier for provenance.
+         * @return string YAML frontmatter enclosed in `---` fences.
+         */
+        public function build(\WP_Post $post, string $extractor_id = ''): string
+        {
+        }
+    }
+    /**
+     * Handles the `.md` path endpoint for the Agents module.
+     *
+     * Intercepts requests of the form `/{slug}.md`, `/{post-type}/{slug}.md`,
+     * and `/index.md`, resolves the target post, and serves a markdown response
+     * composed of YAML front matter followed by extracted body content.
+     *
+     * Also serves as a fallback for `?format=markdown` / `Accept: text/markdown`
+     * requests that the markdown-render module bailed on (non-Elementor pages),
+     * and adds missing response headers to pages served by markdown-render.
+     */
+    class Markdown_Endpoint extends \Elementor\Modules\Agents\Classes\Feature_Component
+    {
+        /**
+         * Stable string identifier for this component.
+         */
+        public function get_id(): string
+        {
+        }
+        /**
+         * Layer this component belongs to.
+         */
+        public function get_layer(): string
+        {
+        }
+        public function get_required_modules(): array
+        {
+        }
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Markdown_Manual_Content $manual_content)
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Registration
+        // -------------------------------------------------------------------------
+        /**
+         * Wire all hooks.
+         *
+         * Called by the component architecture once it is ready. Not invoked
+         * automatically — a follow-up PR will call this from module.php.
+         */
+        public function register(): void
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Hooks
+        // -------------------------------------------------------------------------
+        /**
+         * Detect a `.md` suffix in the request path, resolve the matching post,
+         * and store it for the `template_redirect` handler.
+         *
+         * Fires at `parse_request` priority 1 — before WordPress has committed to
+         * a 404 response for an unknown path.
+         *
+         * @param \WP $wp Current WordPress environment instance.
+         */
+        public function on_parse_request(\WP $wp): void
+        {
+        }
+        /**
+         * If a `.md` path was resolved, serve the markdown response and exit.
+         *
+         * Fires at `template_redirect` priority 1 — before markdown-render's own
+         * `template_redirect` at priority 1 runs for the same request (WordPress
+         * calls multiple callbacks at the same priority in registration order, but
+         * this class is registered after markdown-render so we need priority 1 here
+         * to run in the same slot; in practice the `.md` path won't satisfy
+         * markdown-render's `is_singular()` check, so there is no conflict).
+         */
+        public function on_md_path_redirect(): void
+        {
+        }
+        /**
+         * Fallback handler for `?format=markdown` or `Accept: text/markdown`
+         * requests on non-Elementor pages.
+         *
+         * The markdown-render module fires at `template_redirect` priority 1 and
+         * bails (returns without exiting) when the page is not built with Elementor.
+         * This handler runs at priority 2 to catch those cases.
+         *
+         * Fires at `template_redirect` priority 2.
+         */
+        public function on_markdown_request_fallback(): void
+        {
+        }
+        /**
+         * Keep markdown-render from serving posts the Agent Ready settings exclude
+         * or that an SEO plugin marks noindex, so the request falls through to the
+         * regular HTML page.
+         *
+         * Does not repeat the publish-status or password checks: markdown-render
+         * already does those, and applying them here would block editor previews
+         * of drafts.
+         *
+         * Fires on the `elementor/markdown/should_serve` filter.
+         *
+         * @param bool     $should_serve Whether markdown-render should attempt to serve.
+         * @param \WP_Post $post         The current post.
+         */
+        public function filter_should_serve($should_serve, \WP_Post $post): bool
+        {
+        }
+        /**
+         * Add the three response headers that markdown-render does not emit but
+         * that agents and crawlers expect on `.md` / markdown responses.
+         *
+         * Fires on the `elementor/markdown/headers` action, which is triggered by
+         * markdown-render just before it sends its own headers.
+         *
+         * @param int $post_id The post being served.
+         */
+        public function on_markdown_headers(int $post_id): void
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Core serving logic
+        // -------------------------------------------------------------------------
+        /**
+         * Build and emit a complete markdown response for the given post, then exit.
+         *
+         * Performs a basic content-scope check (published, publicly viewable, not
+         * password-protected) before generating output. A dedicated `Content_Scope`
+         * class will replace this inline check in a later PR.
+         *
+         * @param \WP_Post $post The post to serve.
+         */
+        public function serve_markdown(\WP_Post $post): void
+        {
+        }
+        /**
+         * Build the markdown document served for a post, without sending it.
+         *
+         * @param \WP_Post $post The post to render.
+         */
+        public function build_markdown(\WP_Post $post): string
+        {
+        }
+        /**
+         * @param \WP_Post $post
+         * @return bool
+         */
+        public function is_markdown_access_allowed(\WP_Post $post): bool
+        {
+        }
+        public function has_manual_override(\WP_Post $post): bool
+        {
+        }
+        public function is_included_by_settings(\WP_Post $post): bool
+        {
+        }
+        /**
+         * Emit all required response headers for a markdown document.
+         *
+         * @param int $post_id The post ID whose canonical URL is included in the
+         *                     Link header.
+         */
+        public function send_headers(int $post_id): void
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public function build_response_headers(int $post_id): array
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public function build_base_markdown_headers(): array
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public function build_markdown_hook_headers(int $post_id): array
+        {
+        }
+        public function is_markdown_request(): bool
+        {
+        }
+    }
+    class Markdown_Not_Found extends \Elementor\Modules\Agents\Classes\Feature_Component
+    {
+        const STATUS_NOT_FOUND = 404;
+        const AFTER_CANONICAL_REDIRECT_PRIORITY = 11;
+        const MARKDOWN_PATH_SUFFIX = '.md';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Components\Readability\Markdown_Endpoint $markdown_endpoint, \Elementor\Modules\Agents\Module $module)
+        {
+        }
+        public function get_id(): string
+        {
+        }
+        public function get_layer(): string
+        {
+        }
+        public function get_required_modules(): array
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function on_template_redirect(): void
+        {
+        }
+        public function should_serve_not_found(): bool
+        {
+        }
+        public function build_markdown(): string
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public function build_response_headers(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Webmcp {
+    /**
+     * Reads business details from the Schema.org JSON-LD of the real home page.
+     *
+     * The page is only fetched from cron, so a public agent call never waits on a
+     * loopback request. Stale data keeps being served while cron refreshes it; only
+     * a cache that was never filled returns null, meaning "unknown yet", never an
+     * empty result. A page without business schema is cached as an empty result for
+     * a shorter time, while a failed fetch keeps the previous data and is retried soon.
+     */
+    class Business_Info_Extractor
+    {
+        const TRANSIENT = 'elementor_agents_webmcp_business_info';
+        const FRESH_TRANSIENT = 'elementor_agents_webmcp_business_info_fresh';
+        const CRON_HOOK = 'elementor/agents/webmcp/refresh_business_info';
+        const DATA_TTL = WEEK_IN_SECONDS;
+        const POSITIVE_TTL = DAY_IN_SECONDS;
+        const NEGATIVE_TTL = HOUR_IN_SECONDS;
+        const FAILURE_RETRY_TTL = 5 * MINUTE_IN_SECONDS;
+        const REFRESH_DELAY = 30;
+        const REQUEST_TIMEOUT = 5;
+        const MAX_REDIRECTS = 3;
+        const MAX_RESPONSE_BYTES = 1048576;
+        const HTTP_OK = 200;
+        public function __construct(\Elementor\Modules\Agents\Components\Webmcp\Business_Schema_Parser $parser)
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function get_or_refresh(): ?array
+        {
+        }
+        public function refresh(): array
+        {
+        }
+        public function schedule_refresh(): void
+        {
+        }
+        /**
+         * Runs the refresh in a separate cron request, so the current request never waits on the fetch.
+         * Without cron nothing would ever fill an empty cache, so an admin request fills it once itself.
+         */
+        public function warm(): void
+        {
+        }
+        public function clear(): void
+        {
+        }
+    }
+    class Business_Schema_Parser
+    {
+        const JSON_LD_PATTERN = '#<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>#is';
+        const STREET_ADDRESS_FIELD = 'streetAddress';
+        const ADDRESS_FIELDS = [self::STREET_ADDRESS_FIELD, 'addressLocality', 'addressRegion', 'postalCode', 'addressCountry'];
+        const CONTACT_FIELDS = ['telephone', 'email', 'address', 'openingHours', 'openingHoursSpecification', 'sameAs'];
+        const MAX_TEXT_LENGTH = 300;
+        const MAX_SOCIAL_PROFILES = 10;
+        const MAX_OPENING_HOURS = 14;
+        public function __construct(\Elementor\Modules\Agents\Prompt_Injection_Sanitizer $sanitizer)
+        {
+        }
+        public function parse(string $html): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Webmcp\Tools {
+    abstract class Abstract_Webmcp_Tool
+    {
+        const CATEGORY = 'elementor-webmcp';
+        const ERROR_NOT_FOUND = 'webmcp_not_found';
+        const ERROR_UNAVAILABLE = 'webmcp_unavailable';
+        abstract public function get_slug(): string;
+        abstract public function get_label(): string;
+        abstract public function get_description(): string;
+        abstract public function get_admin_description(): string;
+        abstract public function get_input_schema(): array;
+        /**
+         * @param mixed $input Validated input.
+         * @return array|\WP_Error
+         */
+        abstract public function execute($input = null);
+        abstract public function is_relevant(): bool;
+        public function get_ability_name(): string
+        {
+        }
+        public function register(): void
+        {
+        }
+    }
+    class Get_Site_Structure extends \Elementor\Modules\Agents\Components\Webmcp\Tools\Abstract_Webmcp_Tool
+    {
+        const MAX_MENU_ITEMS = 50;
+        const MAX_FALLBACK_PAGES = 20;
+        const ALLOWED_URL_PROTOCOLS = ['http', 'https'];
+        const UTILITY_PAGE_SLUGS = ['terms' => ['terms', 'terms-and-conditions', 'terms-of-service', 'terms-of-use'], 'contact' => ['contact', 'contact-us']];
+        public function __construct(\Elementor\Modules\Agents\Content_Generator $generator, \Elementor\Modules\Agents\Prompt_Injection_Sanitizer $sanitizer)
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        public function get_admin_description(): string
+        {
+        }
+        public function get_input_schema(): array
+        {
+        }
+        public function is_relevant(): bool
+        {
+        }
+        public function execute($input = null)
+        {
+        }
+    }
+    class Query_Business_Info extends \Elementor\Modules\Agents\Components\Webmcp\Tools\Abstract_Webmcp_Tool
+    {
+        const STRUCTURED_KEYS = ['telephone', 'email', 'address', 'opening_hours', 'social_profiles'];
+        const SOURCE_MANUAL = 'manual';
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Components\Webmcp\Business_Info_Extractor $extractor, \Elementor\Modules\Agents\Prompt_Injection_Sanitizer $sanitizer)
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        public function get_admin_description(): string
+        {
+        }
+        public function get_input_schema(): array
+        {
+        }
+        public function is_relevant(): bool
+        {
+        }
+        public function execute($input = null)
+        {
+        }
+    }
+    class Read_Page_Content extends \Elementor\Modules\Agents\Components\Webmcp\Tools\Abstract_Webmcp_Tool
+    {
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Components\Readability\Markdown_Endpoint $markdown_endpoint, \Elementor\Modules\Agents\Prompt_Injection_Sanitizer $sanitizer)
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        public function get_admin_description(): string
+        {
+        }
+        public function get_input_schema(): array
+        {
+        }
+        public function is_relevant(): bool
+        {
+        }
+        public function execute($input = null)
+        {
+        }
+    }
+    class Search_Site_Content extends \Elementor\Modules\Agents\Components\Webmcp\Tools\Abstract_Webmcp_Tool
+    {
+        const MAX_QUERY_LENGTH = 200;
+        const DEFAULT_LIMIT = 10;
+        const MAX_LIMIT = 20;
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Classes\Markdown_Content_Catalog $catalog, \Elementor\Modules\Agents\Content_Generator $generator, \Elementor\Modules\Agents\Prompt_Injection_Sanitizer $sanitizer)
+        {
+        }
+        public function get_slug(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        public function get_admin_description(): string
+        {
+        }
+        public function get_input_schema(): array
+        {
+        }
+        public function is_relevant(): bool
+        {
+        }
+        public function execute($input = null)
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents\Components\Webmcp {
+    class Webmcp_Browser_Tools extends \Elementor\Modules\Agents\Classes\Feature_Component
+    {
+        const SCRIPT_HANDLE = 'e-agents-webmcp-tools';
+        const SCRIPT_FILE = 'agents-webmcp-tools';
+        const CONFIG_OBJECT_NAME = 'elementorAgentsWebmcpConfig';
+        const RELEVANT_TOOLS_TRANSIENT = 'elementor_agents_webmcp_relevant_tools';
+        const RELEVANT_TOOLS_TTL = HOUR_IN_SECONDS;
+        /**
+         * @param \Elementor\Modules\Agents\Agent_Ready_Settings    $settings
+         * @param \Elementor\Modules\Agents\Components\Webmcp\Business_Info_Extractor $business_info_extractor
+         * @param \Elementor\Modules\Agents\Components\Webmcp\Tools\Abstract_Webmcp_Tool[]  $core_tools
+         */
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings, \Elementor\Modules\Agents\Components\Webmcp\Business_Info_Extractor $business_info_extractor, array $core_tools)
+        {
+        }
+        public function get_id(): string
+        {
+        }
+        public function get_layer(): string
+        {
+        }
+        public static function is_available(): bool
+        {
+        }
+        public function is_enabled(): bool
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function register_category(): void
+        {
+        }
+        public function register_core_abilities(): void
+        {
+        }
+        /**
+         * @return \WP_Ability[]
+         */
+        public function get_tools(): array
+        {
+        }
+        /**
+         * @return array<string, \WP_Ability> Keyed by browser tool name.
+         */
+        public function get_relevant_tools(): array
+        {
+        }
+        public function is_tool_relevant(\WP_Ability $ability): bool
+        {
+        }
+        public static function to_tool_name(string $ability_name): string
+        {
+        }
+        public function get_tool_descriptors(): array
+        {
+        }
+        public function get_cached_tool_descriptors(): array
+        {
+        }
+        /**
+         * Relevance checks are cached because they run on every front-end view and every public tool call.
+         * Only tool names are cached, so descriptions stay in the request locale.
+         *
+         * @return array<string, \WP_Ability> Keyed by browser tool name.
+         */
+        public function get_cached_relevant_tools(): array
+        {
+        }
+        public function flush_relevant_tools_cache(): void
+        {
+        }
+        public function warm_business_info(): void
+        {
+        }
+        public function sync_business_info_with_settings(): void
+        {
+        }
+        public function get_admin_tools(): array
+        {
+        }
+        public function add_manifest_tools($manifest): array
+        {
+        }
+        public function enqueue_frontend_script(): void
+        {
+        }
+    }
+    class Webmcp_Run_Route
+    {
+        const REST_NAMESPACE = 'elementor/v1';
+        const REST_BASE = 'agents/webmcp/run';
+        const ROUTE = self::REST_NAMESPACE . '/' . self::REST_BASE;
+        const STATUS_BAD_REQUEST = 400;
+        const STATUS_NOT_FOUND = 404;
+        const STATUS_SERVER_ERROR = 500;
+        const STATUS_SERVICE_UNAVAILABLE = 503;
+        const ERROR_STATUS_MAP = ['ability_invalid_input' => self::STATUS_BAD_REQUEST, \Elementor\Modules\Agents\Components\Webmcp\Tools\Abstract_Webmcp_Tool::ERROR_NOT_FOUND => self::STATUS_NOT_FOUND, \Elementor\Modules\Agents\Components\Webmcp\Tools\Abstract_Webmcp_Tool::ERROR_UNAVAILABLE => self::STATUS_SERVICE_UNAVAILABLE];
+        public function __construct(\Elementor\Modules\Agents\Components\Webmcp\Webmcp_Browser_Tools $browser_tools)
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function register_route(): void
+        {
+        }
+        /**
+         * @return \WP_REST_Response|\WP_Error
+         */
+        public function handle(\WP_REST_Request $request)
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Agents {
+    /**
+     * Generates llms.txt and llms-full.txt content entirely from the WordPress
+     * database — no AI, no external calls.
+     *
+     * Both files conform to the llmstxt.org spec:
+     *   # Site Name
+     *   > intro / summary (blockquote)
+     *   ## Section
+     *   - [Title](URL): description
+     *
+     * llms-full.txt additionally inlines the full content of each page/post,
+     * size-capped at ~500 KB target / 1 MB hard ceiling.
+     */
+    class Content_Generator
+    {
+        /** Target byte size for llms-full.txt before we start dropping content. */
+        const LLMS_FULL_TARGET_SIZE = 512000;
+        // 500 KB
+        /** Hard byte ceiling for llms-full.txt — we never exceed this. */
+        const LLMS_FULL_HARD_CAP = 1048576;
+        // 1 MB
+        /**
+         * Maximum number of posts fetched per post type.
+         * Keeps single-site queries bounded on large sites.
+         */
+        const MAX_POSTS_PER_TYPE = 500;
+        /**
+         * Default number of posts inlined per post type in llms-full.txt.
+         * Keeps the inline-content loop bounded so the request cannot time out.
+         * Overridable per post type via the `elementor/agents/llms_full/posts_per_type` filter.
+         */
+        const LLMS_FULL_POSTS_PER_TYPE = 20;
+        /**
+         * Post-meta key for the per-post inline-content cache (used in llms-full.txt).
+         * Bump INLINE_CACHE_VERSION to silently invalidate all cached entries.
+         */
+        const INLINE_META_KEY = '_elementor_agents_inline_cache';
+        const INLINE_CACHE_VERSION = 1;
+        const INLINE_CACHE_GEN_OPTION = 'elementor_agents_inline_cache_gen';
+        const MCP_SECTION_TITLE = 'MCP Server';
+        const API_SECTION_TITLE = 'API';
+        /** Post types that should never appear in the output. */
+        const EXCLUDED_POST_TYPES = ['attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset', 'oembed_cache', 'user_request', 'wp_block', 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation', 'elementor_library'];
+        public function __construct(\Elementor\Modules\Agents\Prompt_Injection_Sanitizer $sanitizer)
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Public API
+        // -------------------------------------------------------------------------
+        /**
+         * Generate the full llms.txt content.
+         *
+         * @param array{intro?: string, optional?: string} $overrides
+         *   'intro'    – user-supplied intro text (replaces the auto-generated one).
+         *   'optional' – extra section appended after all content sections.
+         * @param string[]|null                            $post_types Post types to include; null includes every available type.
+         * @param int[]                                    $excluded_post_ids Posts to leave out.
+         * @return string
+         */
+        public function generate_llms_txt(array $overrides = [], ?array $post_types = null, array $excluded_post_ids = []): string
+        {
+        }
+        /**
+         * Generate the full llms-full.txt content (links + inlined page/post content).
+         *
+         * WooCommerce products are linked but their content is not inlined.
+         * Total output is capped at LLMS_FULL_HARD_CAP bytes; pages and posts are
+         * prioritised over WooCommerce catalog data.
+         *
+         * @param array{intro?: string, optional?: string} $overrides
+         * @param string[]|null                            $post_types Post types to include; null includes every available type.
+         * @param int[]                                    $excluded_post_ids Posts to leave out.
+         * @return string
+         */
+        public function generate_llms_full_txt(array $overrides = [], ?array $post_types = null, array $excluded_post_ids = []): string
+        {
+        }
+        /**
+         * Return an array of human-readable warnings about missing requirements
+         * that would improve the generated output quality.
+         *
+         * @return string[]
+         */
+        public function get_missing_requirements(): array
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Content section builders
+        // -------------------------------------------------------------------------
+        /**
+         * Post types that can appear in llms.txt, in output order, keyed by slug.
+         *
+         * Pages first, then posts, public custom post types, and WooCommerce
+         * products last (links only in llms-full.txt).
+         *
+         * @return array<string, string> Post type slug => plural label.
+         */
+        public function get_available_post_types(): array
+        {
+        }
+        /**
+         * Delete the cached inline content for a single post.
+         * Called by Module when the post is saved, trashed, or permanently deleted.
+         *
+         * @param int $post_id
+         */
+        public function clear_post_cache(int $post_id): void
+        {
+        }
+        /**
+         * Sanitize admin-editable override text before persistence.
+         */
+        public function prepare_override_text(string $text): string
+        {
+        }
+        /**
+         * Sanitize admin-edited markdown without altering its structure: indentation,
+         * hard line breaks, headings and percent-encoded URLs must survive a save.
+         */
+        public function prepare_markdown_override_text(string $text): string
+        {
+        }
+        /**
+         * Delete the cached inline content for every post at once.
+         * Used when a global invalidation is needed (e.g. theme switch, plugin activation).
+         */
+        public function clear_all_post_caches(): void
+        {
+        }
+    }
+    /**
+     * Transient-based cache for the generated llms.txt and llms-full.txt content.
+     *
+     * Cache entries are automatically invalidated whenever any post is
+     * saved/published/trashed, or when site options that affect the output change.
+     * A manual regenerate action also clears both entries.
+     */
+    class Llms_Cache
+    {
+        const TRANSIENT_LLMS = 'elementor_agents_llms_txt';
+        const TRANSIENT_LLMS_FULL = 'elementor_agents_llms_full_txt';
+        const TRANSIENT_MODIFIED = 'elementor_agents_llms_modified';
+        /** Default TTL: 1 hour (3600 s). Long enough to be useful, short enough to self-heal. */
+        const DEFAULT_TTL = 3600;
+        /**
+         * Retrieve cached llms.txt content.
+         *
+         * @return string|false Cached string, or false on cache miss.
+         */
+        public function get_llms()
+        {
+        }
+        /**
+         * Retrieve cached llms-full.txt content.
+         *
+         * @return string|false Cached string, or false on cache miss.
+         */
+        public function get_llms_full()
+        {
+        }
+        /**
+         * Store generated llms.txt content in the cache.
+         *
+         * @param string $content Generated content.
+         */
+        public function set_llms(string $content): void
+        {
+        }
+        /**
+         * Store generated llms-full.txt content in the cache.
+         *
+         * @param string $content Generated content.
+         */
+        public function set_llms_full(string $content): void
+        {
+        }
+        /**
+         * Return the Unix timestamp of the last cache write (used for Last-Modified headers).
+         *
+         * @return int Timestamp, or 0 if the cache has never been populated.
+         */
+        public function get_modified_time(): int
+        {
+        }
+        /**
+         * Invalidate both cache entries.
+         *
+         * Called on post save/publish/trash and on manual regenerate.
+         */
+        public function invalidate(): void
+        {
+        }
+    }
+    /**
+     * The llms.txt content an admin edited by hand.
+     *
+     * Stored in a dedicated, non-autoloaded option rather than a transient:
+     * unlike generated content it cannot be rebuilt, and transients may be
+     * evicted by a persistent object cache or wiped by cleanup tools.
+     */
+    class Llms_Manual_Content
+    {
+        const OPTION = 'elementor_agent_ready_llms_txt_content';
+        public function __construct(\Elementor\Modules\Agents\Content_Generator $generator)
+        {
+        }
+        public function get_content(): string
+        {
+        }
+        public function get_modified_at(): int
+        {
+        }
+        /**
+         * @throws \InvalidArgumentException When the content is empty or exceeds the size cap.
+         */
+        public function save(string $content): void
+        {
+        }
+        public function delete(): void
+        {
+        }
+    }
+    /**
+     * The markdown version of a single post that an admin edited by hand.
+     *
+     * Stored as post meta so the override follows the post: it survives slug
+     * changes and is removed by WordPress when the post is deleted.
+     */
+    class Markdown_Manual_Content
+    {
+        const META_KEY = '_elementor_agent_ready_markdown_content';
+        public function __construct(\Elementor\Modules\Agents\Content_Generator $generator)
+        {
+        }
+        public function has_override(int $post_id): bool
+        {
+        }
+        public function get_content(int $post_id): string
+        {
+        }
+        /**
+         * @throws \InvalidArgumentException When the content is empty or exceeds the size cap.
+         */
+        public function save(int $post_id, string $content): void
+        {
+        }
+        public function delete(int $post_id): void
+        {
+        }
+    }
+    class Module extends \Elementor\Core\Base\Module
+    {
+        /** Default HTTP max-age for the served response (5 minutes). */
+        const DEFAULT_CACHE_MAX_AGE = 300;
+        const PAGE_ID = 'elementor-agents-ready';
+        const AGENT_ACCESS_PAGE_ID = 'elementor-agent-access';
+        const MOUNT_ID = 'e-agents-ready';
+        const SCANNER_MOUNT_ID = 'e-agents-ready-scanner';
+        const SCRIPT_HANDLE = 'e-agents-ready-app';
+        const CONFIG_OBJECT_NAME = 'elementorAgentsReadyConfig';
+        const DASHBOARD_TRACKING_SCRIPT_HANDLE = 'e-agents-dashboard-widget';
+        const DASHBOARD_HOOK_SUFFIX = 'index.php';
+        const AJAX_ACTIVATE_ACTION = 'agents_ready_activate';
+        const EDITOR_ONE_MENU_REGISTER_PRIORITY = 12;
+        const LLMS_FILENAME = 'llms.txt';
+        /**
+         * Option name that records whether, at the time the feature was first
+         * activated, a physical llms.txt already existed in the web root.
+         * Value: 'keep' | 'replace' | '' (not decided yet).
+         */
+        const OPTION_EXISTING_FILE_DECISION = 'elementor_agents_llms_existing_file_decision';
+        /**
+         * Option name that stores per-file overrides the admin can edit:
+         * 'intro' and 'optional' keys.
+         */
+        const OPTION_OVERRIDES = 'elementor_agents_llms_overrides';
+        public function get_name()
         {
         }
         public function __construct()
         {
         }
+        // -------------------------------------------------------------------------
+        // Editor One menu
+        // -------------------------------------------------------------------------
         /**
-         * @param \Elementor\Core\Kits\Documents\Kit $kit
+         * Register the Readiness Score and Agent Access items in Editor One.
+         *
+         * @param \Elementor\Modules\EditorOne\Classes\Menu_Data_Provider $menu_data_provider Editor One menu registry.
          */
-        public function register_kit_tabs($kit)
+        public function register_editor_one_menu(\Elementor\Modules\EditorOne\Classes\Menu_Data_Provider $menu_data_provider): void
         {
         }
+        public function register_admin_notices(array $notices): array
+        {
+        }
+        public function enqueue_assets_for_editor_one_menu(array $hooks): void
+        {
+        }
+        public function enqueue_assets(): void
+        {
+        }
+        public function enqueue_dashboard_tracking(string $hook_suffix): void
+        {
+        }
+        public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax): void
+        {
+        }
+        public function ajax_activate(): void
+        {
+        }
+        /**
+         * @return array{
+         *     activated: bool,
+         *     enabledModules: string[],
+         *     skippedModules: array<string, array{code: string, message: string}>
+         * }
+         */
+        public function activate_agent_ready(): array
+        {
+        }
+        public function get_scanner_orchestrator(): \Elementor\Modules\Agents\Classes\Scanner_Orchestrator
+        {
+        }
+        /**
+         * Reset the physical file cache. Used by tests and on blog switch.
+         */
+        public static function reset_physical_file_cache(): void
+        {
+        }
+        /**
+         * Reset the SEO detector cache. Used by tests and on blog switch.
+         */
+        public static function reset_seo_detector_cache(): void
+        {
+        }
+        /**
+         * Check whether llms.txt should be advertised in discovery mechanisms.
+         *
+         * Returns true only when Elementor's llms.txt is actually served.
+         * Returns false when:
+         *  - The feature is not activated
+         *  - The feature is disabled
+         *  - A physical file exists (even if admin chose 'replace', the web server
+         *    serves the static file before WordPress runs)
+         *  - An SEO plugin owns llms.txt
+         *
+         * This is the single source of truth for both serving and advertising.
+         * Not memoized to avoid leaking state between tests and across settings changes.
+         */
+        public function should_advertise_llms_txt(): bool
+        {
+        }
+        /**
+         * Check whether llms-full.txt should be advertised in discovery mechanisms.
+         *
+         * Llms-full.txt is always served by WordPress (no web server file concern),
+         * but we check if a physical file exists to avoid conflicts.
+         *
+         * @return bool
+         */
+        public function should_advertise_llms_full_txt(): bool
+        {
+        }
+        /**
+         * Check whether a physical llms-full.txt file exists.
+         *
+         * Uses the same per-blog cache as has_physical_llms_file.
+         *
+         * @return bool
+         */
+        public static function has_physical_llms_full_file(): bool
+        {
+        }
+        /**
+         * Check whether an SEO plugin is generating llms.txt.
+         *
+         * @return bool
+         */
+        public function seo_plugin_generates_llms_txt(): bool
+        {
+        }
+        /**
+         * Serve llms.txt when the request path matches.
+         */
         public function maybe_serve_llms_txt()
         {
         }
+        public function maybe_serve_llms_full_txt()
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Content retrieval (cache-aware)
+        // -------------------------------------------------------------------------
         /**
-         * The served content is derived from kit settings, so a kit save is the only way it can change.
+         * Return the generated llms.txt string, served from cache when available.
+         */
+        public function get_generated_llms_txt(): string
+        {
+        }
+        /**
+         * Return the generated llms-full.txt string, served from cache when available.
+         */
+        public function get_generated_llms_full_txt(): string
+        {
+        }
+        /**
+         * Return any human-readable warnings about missing site configuration that
+         * would improve the generated output quality.
+         *
+         * @return string[]
+         */
+        public function get_missing_requirements(): array
+        {
+        }
+        /**
+         * Stub for backward compatibility.
+         *
+         * @deprecated 4.4.0 Use get_generated_llms_txt() instead.
+         * @return string Always returns an empty string.
+         */
+        public function get_llms_txt_content(): string
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Cache invalidation
+        // -------------------------------------------------------------------------
+        /**
+         * Invalidate cache when any post is saved (including auto-drafts on publish).
+         *
+         * We only invalidate for post types that actually appear in the output,
+         * skipping revisions, attachments, etc., for performance.
+         *
+         * @param int      $post_id
+         * @param \WP_Post $post
+         */
+        public function on_post_change(int $post_id, \WP_Post $post)
+        {
+        }
+        /**
+         * Invalidate cache when a post is trashed, untrashed, or permanently deleted.
+         *
+         * @param int $post_id
+         */
+        public function on_post_state_change(int $post_id)
+        {
+        }
+        /**
+         * Invalidate cache on Elementor document saves (handles kit saves too).
+         *
+         * @param mixed $document
+         */
+        public function on_elementor_document_save($document)
+        {
+        }
+        /**
+         * Kept for backward compatibility (old hook name used in tests).
          *
          * @param mixed $document
          */
         public function maybe_invalidate_llms_txt_cache($document)
         {
         }
-        public function get_llms_txt_content(): string
+        /**
+         * Full invalidation: clears every post's inline-content meta cache AND the
+         * assembled-output transients.
+         *
+         * Triggered by events that can affect the rendered output of every post at
+         * once — theme switch, plugin (de)activation, Elementor cache clear.
+         */
+        public function on_global_change(): void
+        {
+        }
+        /**
+         * Invalidate cache when Agent Ready settings are added via add_option.
+         * Handles add_option_{$option} hook (2 args: $option, $value).
+         */
+        public function on_settings_add(string $option, $value): void
+        {
+        }
+        /**
+         * Invalidate cache when Agent Ready settings are updated via update_option.
+         * Handles update_option_{$option} hook (3 args: $old_value, $value, $option).
+         */
+        public function on_settings_update($old_value, $new_value, string $option): void
+        {
+        }
+        /**
+         * Flush well-known endpoint caches when SEO plugin options change.
+         */
+        public function on_seo_plugin_option_change(): void
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Existing-file detection
+        // -------------------------------------------------------------------------
+        /**
+         * On the first admin page-load after the feature is activated, check whether
+         * a physical /llms.txt already exists in the WordPress root. If it does, we
+         * store a flag so the admin UI can prompt the user to decide what to do.
+         */
+        public function maybe_detect_existing_file()
+        {
+        }
+        /**
+         * A real file in the site root is served by the web server before WordPress
+         * runs, so when one exists the module must stay out of the way.
+         *
+         * Uses a derived home path that works on subdirectory installs, since
+         * get_home_path() can fall back to ABSPATH incorrectly on the front end
+         * when WP is in its own directory.
+         *
+         * Result is memoized per-blog to avoid repeated file_exists() calls.
+         */
+        public static function has_physical_llms_file(): bool
+        {
+        }
+        public static function delete_physical_llms_file(): bool
+        {
+        }
+        /**
+         * Get the root directory where llms.txt would be served from.
+         *
+         * Derives the path by subtracting the site path from ABSPATH, since
+         * get_home_path() can return ABSPATH on the front end for subdirectory
+         * installs, which is incorrect when WP is in its own directory.
+         *
+         * @return string Path with trailing slash.
+         */
+        public static function get_llms_file_root_path(): string
+        {
+        }
+        /**
+         * Record the admin's decision about the pre-existing /llms.txt file.
+         *
+         * @param string $decision 'keep' | 'replace'
+         */
+        public function set_existing_file_decision(string $decision): void
+        {
+        }
+        /**
+         * Return true if a physical /llms.txt was detected and the admin has not yet
+         * made a decision about it.
+         */
+        public function has_pending_existing_file_conflict(): bool
+        {
+        }
+        // -------------------------------------------------------------------------
+        // Overrides (user-editable intro / optional section)
+        // -------------------------------------------------------------------------
+        /**
+         * Return the stored generator overrides (intro + optional section).
+         *
+         * @return array{intro: string, optional: string}
+         */
+        public function get_overrides(): array
+        {
+        }
+        /**
+         * Persist the user-editable overrides and invalidate the cache.
+         *
+         * @param array{intro?: string, optional?: string} $overrides
+         */
+        public function save_overrides(array $overrides): void
+        {
+        }
+        /**
+         * Return the feature registry so external code can query registered components.
+         */
+        public function get_feature_registry(): \Elementor\Modules\Agents\Classes\Feature_Registry
+        {
+        }
+        public function is_browser_tools_module_active(): bool
+        {
+        }
+    }
+    /**
+     * Sanitizes auto-pulled text (excerpts, descriptions) before it is written into
+     * either llms.txt or llms-full.txt.
+     *
+     * The goal is to keep the text readable by humans while neutralising patterns
+     * that look like instructions aimed at an AI system, so the output stays
+     * informative but not actionable as a prompt-injection vector.
+     */
+    class Prompt_Injection_Sanitizer
+    {
+        /**
+         * Sanitize a string of text that will be embedded in an llms.txt file.
+         *
+         * The text is passed through each pattern in sequence. Only the suspicious
+         * command-like fragments are removed or replaced; the surrounding readable
+         * content is preserved. When any pattern actually matched, a plain-language
+         * note is appended so it is visible that content was removed, rather than
+         * silently rewriting the text.
+         *
+         * @param string $text Raw excerpt or description.
+         * @return string Sanitized text safe to embed in the llms file.
+         */
+        public function sanitize(string $text): string
+        {
+        }
+    }
+    /**
+     * Manages the Elementor Agent Ready block in WordPress's virtual robots.txt.
+     *
+     * Adds an Allow rule and a Content-Signal line for every bot the site owner
+     * manages in the Bot access control module. Bots outside that list get no
+     * stanza and fall back to the site's `User-agent: *` rules.
+     *
+     * The rules are wrapped in a delimited block so they can be identified and
+     * replaced idempotently:
+     *
+     *   # BEGIN Elementor Agent Ready
+     *   ...rules...
+     *   # END Elementor Agent Ready
+     *
+     * Important: if a *physical* robots.txt exists in the web root, WordPress does
+     * not invoke the `robots_txt` filter — the physical file is served directly.
+     * In that case our managed block has no effect and the filter is never added.
+     * The admin UI can surface this as a warning via get_status().
+     */
+    class Robots_Txt_Handler
+    {
+        const BLOCK_BEGIN = '# BEGIN Elementor Agent Ready';
+        const BLOCK_END = '# END Elementor Agent Ready';
+        const SITE_WIDE_CONTENT_SIGNAL = [\Elementor\Modules\Agents\Agent_Ready_Settings::BOT_PERMISSION_SEARCH => true, \Elementor\Modules\Agents\Agent_Ready_Settings::BOT_PERMISSION_AI_INPUT => true, \Elementor\Modules\Agents\Agent_Ready_Settings::BOT_PERMISSION_AI_TRAIN => false];
+        const CONTENT_SIGNAL_KEYS = [\Elementor\Modules\Agents\Agent_Ready_Settings::BOT_PERMISSION_SEARCH => 'search', \Elementor\Modules\Agents\Agent_Ready_Settings::BOT_PERMISSION_AI_INPUT => 'ai-input', \Elementor\Modules\Agents\Agent_Ready_Settings::BOT_PERMISSION_AI_TRAIN => 'ai-train'];
+        public function __construct(\Elementor\Modules\Agents\Agent_Ready_Settings $settings)
+        {
+        }
+        /**
+         * Register hooks.
+         *
+         * Skips adding the filter entirely when a physical robots.txt file is
+         * present, because WordPress will not invoke `robots_txt` in that case.
+         *
+         * @return void
+         */
+        public function register(): void
+        {
+        }
+        /**
+         * Append, replace, or remove the Elementor Agent Ready block in the robots.txt output.
+         *
+         * @param string $output Robots.txt content built by WordPress so far.
+         * @param bool   $public Whether the site is public (discourage search engines is off).
+         * @return string
+         */
+        public function add_rules(string $output, bool $public): string
+        {
+        }
+        /**
+         * Check whether a physical robots.txt file exists in the web root.
+         *
+         * When this returns true the WordPress `robots_txt` filter is not fired and
+         * the managed block cannot be injected via the filter.
+         *
+         * @return bool
+         */
+        public function has_physical_robots_txt(): bool
+        {
+        }
+        /**
+         * Return handler status flags for use by the admin UI.
+         *
+         * @return array{ physical_file_exists: bool }
+         */
+        public function get_status(): array
         {
         }
     }
@@ -38143,7 +41246,11 @@ namespace Elementor\Modules\AtomicWidgets\Styles\CacheValidity {
     class Cache_Validity_Item
     {
         const CACHE_KEY_PREFIX = 'elementor_atomic_cache_validity__';
+        const RUNTIME_CACHE_GROUP = 'elementor_atomic_cache_validity';
         public function __construct(string $root)
+        {
+        }
+        public static function forget_runtime_data(string $option): void
         {
         }
         public function get(array $keys): ?array
@@ -38429,6 +41536,9 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         public function get_type(): string
         {
         }
+        public function set_promotion(array $promotion): self
+        {
+        }
         public function get_props(): array
         {
         }
@@ -38439,6 +41549,9 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
         public function set_placeholder(string $placeholder): self
+        {
+        }
+        public function set_promotion(array $promotion): self
         {
         }
         public function get_props(): array
@@ -38457,6 +41570,33 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
         public function set_query_config($config): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+    class Notice_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function set_notice_type(string $notice_type): self
+        {
+        }
+        public function set_heading(string $heading): self
+        {
+        }
+        public function set_content(string $content): self
+        {
+        }
+        public function set_dismissible(string $dismissible): self
+        {
+        }
+        public function set_button_text(string $button_text): self
+        {
+        }
+        public function set_button_url(string $button_url): self
         {
         }
         public function get_props(): array
@@ -38544,6 +41684,24 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
         {
         }
     }
+    class Query_Select_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function set_query_options(array $query_options): self
+        {
+        }
+        public function set_placeholder(string $placeholder): self
+        {
+        }
+        public function set_min_input_length(int $min_input_length): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
     class Repeatable_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
     {
         public function get_type(): string
@@ -38613,9 +41771,6 @@ namespace Elementor\Modules\AtomicWidgets\Controls\Types {
     class Svg_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
     {
         public function get_type(): string
-        {
-        }
-        public function set_show_icon_library(bool $show_icon_library): self
         {
         }
         public function get_props(): array
@@ -39565,6 +42720,15 @@ namespace Elementor\Modules\AtomicWidgets\CssConverter {
          * (even count → backslash itself escaped → the following char is NOT escaped).
          */
         private function is_escaped(string $css, int $pos): bool
+        {
+        }
+        /**
+         * @param string   $css
+         * @param int      $start
+         * @param int      $len
+         * @param string[] $needles Single characters.
+         */
+        private function find_unquoted(string $css, int $start, int $len, array $needles): ?int
         {
         }
         private function find_block_end(string $css, int $start, int $len): ?int
@@ -40569,6 +43733,17 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         final public function get_data_for_save()
         {
         }
+        /**
+         * Called by the export flows (kit export, template file export) through `Document::process_element_import_export()`,
+         * and by `Source_Cloud` for atomic elements when saving cloud templates.
+         *
+         * @param array $element_data
+         *
+         * @return array Element data without the values of non-exportable props.
+         */
+        public function on_export($element_data)
+        {
+        }
         private function set_data_field_for_save(array &$data, string $key, $value): void
         {
         }
@@ -40597,6 +43772,12 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         {
         }
         protected function parse_editor_settings(array $data): array
+        {
+        }
+        private function get_editor_settings_whitelist(): array
+        {
+        }
+        private function sanitize_whitelisted_editor_setting($value, string $type)
         {
         }
         public static function get_props_schema(): array
@@ -40922,6 +44103,9 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion\Atomic_Accor
         public static function get_computed_html_tag(array $settings): string
         {
         }
+        protected function define_atomic_style_states(): array
+        {
+        }
         protected function define_base_styles(): array
         {
         }
@@ -40939,6 +44123,20 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion\Atomic_Accor
          * Controls child.
          */
         protected function define_children_dependencies(): array
+        {
+        }
+        /**
+         * Documents saved while this change was in progress can still point the open slot at the
+         * bundled upward chevron, which this plugin no longer ships. Point those at the closed
+         * chevron. An uploaded file with the same name is left alone.
+         *
+         * @param mixed $elements
+         * @return mixed
+         */
+        public static function replace_saved_upward_chevron($elements)
+        {
+        }
+        protected function build_template_context(): array
         {
         }
         protected function get_templates(): array
@@ -41018,6 +44216,24 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion\Atomic_Accor
         {
         }
         protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion\Atomic_Accordion_Item_Icon_Open {
+    class Atomic_Accordion_Item_Icon_Open extends \Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion\Atomic_Accordion_Item_Icon\Atomic_Accordion_Item_Icon
+    {
+        public static $widget_description = 'The open-state indicator slot of an accordion item header. Shown only while the item is open, and only when the accordion uses a different icon for that state. Holds an e-svg (the same chevron as the closed icon) by default, so Open angle turns it the same way; the contents can be replaced with an SVG, text, or both.';
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_keywords()
         {
         }
     }
@@ -41138,22 +44354,10 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion\Atomic_Accor
         protected function get_templates(): array
         {
         }
-        /**
-         * Resolves this item's position among its siblings, and the `open`/`name` attributes that
-         * depend on it, via the accordion's render context.
-         *
-         * `Render_Context::get()` returns `[]` when this item renders outside a parent
-         * `Atomic_Accordion` pass (e.g. the editor's `Render_Element_Action` re-rendering a single
-         * element), so `get-item-index`, `default-state`, `max-expanded` and `accordion-id` may all be
-         * absent. Rather than special-case that, the fallbacks below (`null`/`[]`) simply propagate
-         * through the same expressions used in the normal case: `item_index` stays `null` so it can
-         * never equal `0` and `is_open` resolves `false`, and `accordion_id` stays `null` so
-         * `group_name` resolves `false`/absent regardless of `max_expanded`. A parentless item
-         * therefore renders collapsed and without a `name` — it has no accordion identity to be
-         * exclusive within, so asserting `open` or a `name` would be guessing.
-         *
-         * @return array
-         */
+        /** Exposes `is_open` to the accordion item header Twig template. */
+        protected function define_render_context(): array
+        {
+        }
         protected function build_template_context(): array
         {
         }
@@ -41168,8 +44372,14 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion {
         const ELEMENT_TYPE_HEADER = 'e-accordion-item-header';
         const ELEMENT_TYPE_TITLE = 'e-accordion-item-title';
         const ELEMENT_TYPE_ICON = 'e-accordion-item-icon';
+        const ELEMENT_TYPE_ICON_OPEN = 'e-accordion-item-icon-open';
         const ELEMENT_TYPE_CONTENT = 'e-accordion-item-content';
         const DEFAULT_ITEM_COUNT = 2;
+        const ICON_ROTATION_DEFAULT = 180;
+        const ICON_CLOSED_ROTATION_DEFAULT = 0;
+        const ICON_ROTATION_MIN = -360;
+        const ICON_ROTATION_MAX = 360;
+        const SHOW_ICON_IS_ON_TERM = ['operator' => 'ne', 'path' => ['show_icon'], 'value' => false, 'effect' => 'hide'];
         public static $widget_description = 'Create collapsible content sections using native <details>/<summary> semantics, with no JavaScript needed for the toggle. Structure: e-accordion contains e-accordion-item elements; each item contains an e-accordion-item-header (holding e-accordion-item-title and an optional e-accordion-item-icon) and an e-accordion-item-content that accepts any element.';
         public function __construct($data = [], $args = null)
         {
@@ -41236,9 +44446,9 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Accordion {
         {
         }
         /**
-         * Editor-only: auto-opens the item containing the descendant the editor just selected
-         * (`handlers/editor-accordion-state.js`). Nothing is added on the frontend - the toggle itself
-         * stays native, no JS involved.
+         * The accordion toggle stays native (`<details>` / `<summary>`). Scripts only mirror open state
+         * for editor preview (`handlers/editor-accordion-state.js`) and keep `e--selected` on headers in
+         * sync with `open` for Style-tab Selected variants (`handlers/accordion-selected-state.js`).
          *
          * @return array
          */
@@ -41604,6 +44814,16 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Base {
         public function get_initial_config()
         {
         }
+        /**
+         * Static, element-level values exposed to the Twig template on both the frontend and the editor canvas.
+         * Must not depend on element settings, since the editor receives it once per page load.
+         * Values are sent to every user who can open the editor: only return data that is already public
+         * in the rendered frontend (e.g. a browser API key), never server-side secrets.
+         * Core context keys (id, settings, type, ...) take precedence over these.
+         */
+        protected function get_template_extra_context(): array
+        {
+        }
         protected function transform_link_for_render(array $parsed): array
         {
         }
@@ -41668,9 +44888,7 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Promotions {
         {
         }
     }
-}
-namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Collection_Loop {
-    class Collection_Loop_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    abstract class Atomic_Pro_Promotion_Element_Base extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
         use \Elementor\Modules\AtomicWidgets\Elements\Promotions\Preserves_Children_Subtree;
@@ -41678,6 +44896,33 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Collection_Loop {
         public function __construct($data = [], $args = null)
         {
         }
+        protected function register_pro_promotion_meta(): void
+        {
+        }
+        protected function uses_compound_container_meta(): bool
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function should_show_in_panel()
+        {
+        }
+        protected function should_print_empty()
+        {
+        }
+        public function print_content()
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Carousel {
+    class Carousel_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Promotions\Atomic_Pro_Promotion_Element_Base
+    {
+        const MODAL_UPGRADE_URL = 'https://go.elementor.com/go-pro-carousel-modal/';
         public static function get_type()
         {
         }
@@ -41696,19 +44941,33 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Collection_Loop {
         protected static function define_props_schema(): array
         {
         }
-        protected function define_atomic_controls(): array
+        protected function get_templates(): array
         {
         }
-        protected function define_base_styles(): array
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Collection_Loop {
+    class Collection_Loop_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Promotions\Atomic_Pro_Promotion_Element_Base
+    {
+        protected function uses_compound_container_meta(): bool
         {
         }
-        protected function should_show_in_panel()
+        public static function get_type()
         {
         }
-        protected function should_print_empty()
+        public static function get_element_type(): string
         {
         }
-        public function print_content()
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        public static function get_computed_html_tag(array $settings): string
+        {
+        }
+        protected static function define_props_schema(): array
         {
         }
         protected function get_templates(): array
@@ -41759,14 +45018,8 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Divider {
     }
 }
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
-    class Atomic_Form_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    class Atomic_Form_Promotion extends \Elementor\Modules\AtomicWidgets\Elements\Promotions\Atomic_Pro_Promotion_Element_Base
     {
-        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
-        use \Elementor\Modules\AtomicWidgets\Elements\Promotions\Preserves_Children_Subtree;
-        const BASE_STYLE_KEY = 'base';
-        public function __construct($data = [], $args = null)
-        {
-        }
         public static function get_type()
         {
         }
@@ -41785,21 +45038,6 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
         protected static function define_props_schema(): array
         {
         }
-        protected function define_atomic_controls(): array
-        {
-        }
-        protected function define_base_styles(): array
-        {
-        }
-        protected function should_show_in_panel()
-        {
-        }
-        protected function should_print_empty()
-        {
-        }
-        public function print_content()
-        {
-        }
         protected function get_templates(): array
         {
         }
@@ -41808,10 +45046,12 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
         const BASE_STYLE_KEY = 'base';
-        public static $widget_description = 'A form container that holds form field widgets (labels, inputs, textareas, checkboxes, submit button) and status messages.';
+        public static $widget_description = 'A form container that holds form field widgets (labels, inputs, textareas, checkboxes, hidden fields, honeypot, Score-based reCAPTCHA, submit button) and status messages. On submit, runs the actions listed in actions-after-submit: email, collect-submissions, webhook, and redirect. Each action reads its own settings prop (email, webhook_url, redirect_url).';
         public const ACTION_EMAIL = 'email';
         public const ACTION_COLLECT_SUBMISSIONS = 'collect-submissions';
         public const ACTION_WEBHOOK = 'webhook';
+        public const ACTION_REDIRECT = 'redirect';
+        public const WEBMCP_EXPOSE = 'webmcp-expose';
         public const METADATA_REMOTE_IP = 'remote_ip';
         public const METADATA_USER_AGENT = 'user_agent';
         public function __construct($data = [], $args = null)
@@ -41866,6 +45106,9 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
         {
         }
         protected function build_template_context(): array
+        {
+        }
+        protected function define_render_context(): array
         {
         }
         public static function is_instance_form($instance): bool
@@ -41980,6 +45223,12 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form\Form_Success_Mess
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
     class Webmcp_Utils
     {
+        public static function resolve_tool_name(string $tool_name, string $form_name, string $element_id = ''): string
+        {
+        }
+        public static function resolve_tool_description(string $tool_description, string $form_name): string
+        {
+        }
         public static function build_tool_name(string $form_name, string $element_id = ''): string
         {
         }
@@ -41988,10 +45237,118 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Form {
         }
     }
 }
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Map {
+    /**
+     * Provider-agnostic map element. Owns the shared data schema (`location`, `zoom`), controls,
+     * base styles, iframe markup and accessibility; the provider only builds the embed URL.
+     */
+    abstract class Atomic_Map_Base extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template {
+            get_shared_templates as private get_default_shared_templates;
+        }
+        const BASE_TEMPLATE_KEY = 'elementor/elements/atomic-map';
+        const DEFAULT_ZOOM = 10;
+        abstract public static function get_provider_key(): string;
+        public static function has_provider(): bool
+        {
+        }
+        public static function get_provider(): \Elementor\Modules\AtomicWidgets\Elements\Atomic_Map\Map_Provider_Base
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        public static function get_computed_html_tag(array $settings): string
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function get_shared_templates(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function get_template_extra_context(): array
+        {
+        }
+        public function render_markdown(): string
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Google_Maps {
+    class Atomic_Google_Maps extends \Elementor\Modules\AtomicWidgets\Elements\Atomic_Map\Atomic_Map_Base
+    {
+        public static $widget_description = 'Embeds a Google Map at a specified address and zoom level.';
+        public static function get_element_type(): string
+        {
+        }
+        public static function get_provider_key(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Promotions {
+    trait Has_Ally_Promotion_Notice
+    {
+        private static function get_ally_notice_hint_key(): string
+        {
+        }
+        private static function get_ally_notice_plugin_slug(): string
+        {
+        }
+        private static function get_ally_notice_prop_key(): string
+        {
+        }
+        private static function get_ally_notice_campaign_name(): string
+        {
+        }
+        protected static function get_ally_promotion_notice_prop_schema(): array
+        {
+        }
+        protected function get_ally_promotion_trigger(): ?array
+        {
+        }
+        protected function get_ally_promotion_notice_control(): ?\Elementor\Modules\AtomicWidgets\Controls\Types\Notice_Control
+        {
+        }
+        private function should_display_ally_promotion(): bool
+        {
+        }
+        private function get_ally_promotion_notice_data(): array
+        {
+        }
+        private function get_ally_promotion_notice_url(string $url, string $campaign, string $source, string $medium): string
+        {
+        }
+    }
+}
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Heading {
     class Atomic_Heading extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \Elementor\Modules\AtomicWidgets\Elements\Promotions\Has_Ally_Promotion_Notice;
         const LINK_BASE_STYLE_KEY = 'link-base';
         public static $widget_description = 'Display a heading with customizable tag, styles, and link options.';
         public static function get_element_type(): string
@@ -42032,10 +45389,46 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Heading {
         }
     }
 }
+namespace Elementor\Modules\AtomicWidgets\Elements\Promotions {
+    trait Has_Io_Promotion_Notice
+    {
+        private static function get_io_notice_hint_key(): string
+        {
+        }
+        private static function get_io_notice_plugin_slug(): string
+        {
+        }
+        private static function get_io_notice_prop_key(): string
+        {
+        }
+        private static function get_io_notice_campaign_name(): string
+        {
+        }
+        protected static function get_io_promotion_notice_prop_schema(): array
+        {
+        }
+        protected function get_io_promotion_trigger(): ?array
+        {
+        }
+        protected function get_io_promotion_notice_control(): ?\Elementor\Modules\AtomicWidgets\Controls\Types\Notice_Control
+        {
+        }
+        private function should_display_io_promotion(): bool
+        {
+        }
+        private function get_io_promotion_notice_data(): array
+        {
+        }
+        private function get_io_promotion_notice_url(string $url, string $campaign, string $source, string $medium): string
+        {
+        }
+    }
+}
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Image {
     class Atomic_Image extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \Elementor\Modules\AtomicWidgets\Elements\Promotions\Has_Io_Promotion_Notice;
         public static $widget_description = 'Display an image with customizable styles and link options.';
         const LINK_BASE_STYLE_KEY = 'link-base';
         const BASE_STYLE_KEY = 'base';
@@ -42126,7 +45519,10 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_List\Atomic_List_Item_
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
         const BASE_STYLE_KEY = 'base';
-        public static $widget_description = 'A locked marker slot for a list item.';
+        const MARKER_SVG_SIZE = '0.6em';
+        const ICON_LIBRARY = 'fa-solid';
+        const ICON_NAME = 'circle';
+        public static $widget_description = 'A locked marker slot for a list item. Holds an e-svg bullet by default; the SVG can be replaced.';
         public function __construct($data = [], $args = null)
         {
         }
@@ -42248,42 +45644,6 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_List\Atomic_List_Item 
         }
     }
 }
-namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_List {
-    class Atomic_List extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
-    {
-        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
-        public function __construct($data = [], $args = null)
-        {
-        }
-        public static function get_type()
-        {
-        }
-        public static function get_element_type(): string
-        {
-        }
-        public function get_title()
-        {
-        }
-        public function get_icon()
-        {
-        }
-        public static function get_computed_html_tag(array $settings): string
-        {
-        }
-        protected static function define_props_schema(): array
-        {
-        }
-        protected function define_atomic_controls(): array
-        {
-        }
-        protected function define_allowed_child_types()
-        {
-        }
-        protected function get_templates(): array
-        {
-        }
-    }
-}
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_List\Atomic_List {
     class Atomic_List extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
     {
@@ -42337,10 +45697,102 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_List\Atomic_List {
         }
     }
 }
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Map {
+    /**
+     * A map provider (Google Maps, OpenStreetMap, Mapbox, ...) plugged into `Atomic_Map_Base`.
+     *
+     * The provider template is the element's main template. It must compute `embed_src`
+     * (and optionally `allow_fullscreen`) and then include `Atomic_Map_Base::BASE_TEMPLATE_KEY`.
+     *
+     * Provider-specific prop keys must be prefixed with the provider key (e.g. `google_map_type`),
+     * so they never collide with shared props that `Atomic_Map_Base` may add later.
+     */
+    abstract class Map_Provider_Base
+    {
+        abstract public function get_key(): string;
+        abstract public function get_label(): string;
+        /**
+         * @return array<string, string> Single `[ template_key => absolute_path ]` entry.
+         */
+        abstract public function get_templates(): array;
+        abstract public function get_external_url(string $location): string;
+        /**
+         * Static values available to the provider template under `provider.*`.
+         * Exposed to the editor, so it must not contain secrets beyond what ends up in the embed URL anyway.
+         */
+        public function get_template_context(): array
+        {
+        }
+        public function define_props_schema(): array
+        {
+        }
+        public function define_controls(): array
+        {
+        }
+        public function get_keywords(): array
+        {
+        }
+    }
+    class Map_Providers_Registry
+    {
+        public static function instance(): self
+        {
+        }
+        public static function reset(): void
+        {
+        }
+        public function register(\Elementor\Modules\AtomicWidgets\Elements\Atomic_Map\Map_Provider_Base $provider): self
+        {
+        }
+        public function get(string $key): ?\Elementor\Modules\AtomicWidgets\Elements\Atomic_Map\Map_Provider_Base
+        {
+        }
+        /**
+         * @return array<string, Map_Provider_Base>
+         */
+        public function all(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Map\Providers\Google {
+    class Google_Maps_Provider extends \Elementor\Modules\AtomicWidgets\Elements\Atomic_Map\Map_Provider_Base
+    {
+        const KEY = 'google';
+        const API_KEY_OPTION = 'elementor_google_maps_api_key';
+        const API_KEY_NOTICE_PROP = '_google_api_key_notice';
+        const API_KEY_NOTICE_HINT = 'google_maps_api_key_atomic_notice';
+        public function get_key(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_templates(): array
+        {
+        }
+        public function get_external_url(string $location): string
+        {
+        }
+        public function get_template_context(): array
+        {
+        }
+        public function get_keywords(): array
+        {
+        }
+        public function define_props_schema(): array
+        {
+        }
+        public function define_controls(): array
+        {
+        }
+    }
+}
 namespace Elementor\Modules\AtomicWidgets\Elements\Atomic_Paragraph {
     class Atomic_Paragraph extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \Elementor\Modules\AtomicWidgets\Elements\Promotions\Has_Ally_Promotion_Notice;
         const LINK_BASE_STYLE_KEY = 'link-base';
         public static $widget_description = 'Display a paragraph with customizable tag, styles, and link options.';
         public static function get_element_type(): string
@@ -42940,7 +46392,7 @@ namespace Elementor\Modules\AtomicWidgets\Elements\Flexbox {
         public static function get_type()
         {
         }
-        public static $widget_description = 'A container (div) with flex display and flex-direction row by default.';
+        public static $widget_description = 'A container (div) with flex display and flex-direction row by default. Set flex-direction to column for stacked content (heading and paragraph, footer columns), or children render side-by-side.';
         public static function get_element_type(): string
         {
         }
@@ -43092,6 +46544,18 @@ namespace Elementor\Modules\AtomicWidgets\Elements\TemplateRenderer {
     }
     class Template_Renderer
     {
+        /**
+         * Element ids are concatenated into Alpine expressions. A hyphen is subtraction
+         * there, so only an identifier character set is returned. Anything else is
+         * dropped and the template renders an empty object instead of the id.
+         *
+         * @param mixed  $value
+         * @param string $charset
+         * @return string
+         */
+        public static function escape_js_identifier($value, $charset): string
+        {
+        }
         public static function instance(): self
         {
         }
@@ -43501,10 +46965,8 @@ namespace Elementor\Modules\AtomicWidgets {
     class Module extends \Elementor\Core\Base\Module
     {
         const EXPERIMENT_NAME = 'e_atomic_elements';
-        const EXPERIMENT_LIST = 'e_list';
         const EXPERIMENT_ICON_BUTTON = 'e_icon_button';
         const EXPERIMENT_ACCORDION = 'e_accordion';
-        const EXPERIMENT_ICON_LIBRARY = 'e_svg_library';
         const PACKAGES = ['editor-canvas', 'editor-controls', 'editor-editing-panel', 'editor-elements', 'editor-props', 'editor-styles', 'editor-styles-repository', 'editor-interactions', 'editor-templates', 'editor-design-system', 'editor-site-settings'];
         public function get_name()
         {
@@ -43533,9 +46995,6 @@ namespace Elementor\Modules\AtomicWidgets {
         public static function is_active(): bool
         {
         }
-        public static function is_svg_library_active(): bool
-        {
-        }
     }
 }
 namespace Elementor\Modules\AtomicWidgets\OptIn {
@@ -43546,6 +47005,12 @@ namespace Elementor\Modules\AtomicWidgets\OptIn {
         const OPT_IN_FEATURES = [self::EXPERIMENT_NAME, 'container', \Elementor\Modules\AtomicWidgets\Module::EXPERIMENT_NAME];
         const OPT_OUT_FEATURES = [self::EXPERIMENT_NAME, \Elementor\Modules\AtomicWidgets\Module::EXPERIMENT_NAME];
         public function init()
+        {
+        }
+        public function opt_out_v4()
+        {
+        }
+        public function opt_in_v4()
         {
         }
         public function ajax_opt_out_v4()
@@ -43969,6 +47434,9 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
         protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function sanitize_value($value)
         {
         }
     }
@@ -44541,6 +48009,8 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         public static function get_key(): string
         {
         }
+        const VALUE_DESCRIPTION = 'Icon selection value, copied verbatim from the `elementor/find-icons` tool, for example "fa-solid fa-cart-shopping". Never assemble or guess this string - an unknown icon renders the default icon.';
+        const LIBRARY_DESCRIPTION = 'Icon library key for the same icon, copied verbatim from the `elementor/find-icons` tool, for example "fa-solid". Must match the library the value was found in. Call `elementor/find-icons` for the libraries installed on this site.';
         protected function define_shape(): array
         {
         }
@@ -44728,6 +48198,59 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
     }
+    /**
+     * Marks props whose values must not leave the site (export, cloud templates) or reach AI agents.
+     *
+     * Applied on top-level props of an element's props schema using `Prop_Type::meta()`, e.g.
+     * `String_Prop_Type::make()->meta( Prop_Sensitivity::sensitive() )`.
+     */
+    class Prop_Sensitivity
+    {
+        const EXPORT_META_KEY = 'export';
+        const SENSITIVE_META_KEY = 'sensitive';
+        /**
+         * Return a tuple that removes the prop from the element settings on export (kit, template file and cloud template).
+         * The atomic equivalent of a V3 control registered with `'export' => false`.
+         *
+         * Only honored on top-level props of an element props schema (not on object shape fields or array items).
+         */
+        public static function not_exportable(): array
+        {
+        }
+        /**
+         * Return a tuple that marks the prop as a secret (e.g. an API key): it is not exportable,
+         * it is hidden from AI agents (not published in agent schemas, not writable and not readable by them),
+         * and it cannot be made overridable in components.
+         *
+         * Only honored on top-level props of an element props schema (not on object shape fields or array items).
+         */
+        public static function sensitive(): array
+        {
+        }
+        public static function is_sensitive($prop_type): bool
+        {
+        }
+        public static function is_exportable($prop_type): bool
+        {
+        }
+        /**
+         * @param array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type> $schema
+         *
+         * @return array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type> The schema without the sensitive props.
+         */
+        public static function without_sensitive_props(array $schema): array
+        {
+        }
+        /**
+         * @param array                    $settings Raw element settings.
+         * @param array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type> $schema   The element props schema.
+         *
+         * @return array The settings without the values of the non-exportable props.
+         */
+        public static function strip_non_exportable_settings(array $settings, array $schema): array
+        {
+        }
+    }
     class Query_Array_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
     {
         public static function get_key(): string
@@ -44764,6 +48287,40 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
         {
         }
         public function get_default()
+        {
+        }
+    }
+    class Responsive_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+        public static function create_from(\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Transformable_Prop_Type $inner): self
+        {
+        }
+        /**
+         * All canonical breakpoint keys, narrowest to widest (excluding implicit desktop root ordering quirks).
+         *
+         * @return string[]
+         */
+        public static function breakpoint_keys(): array
+        {
+        }
+        /**
+         * Inheritance chain from the requested breakpoint toward wider breakpoints, ending at desktop.
+         *
+         * @return string[]
+         */
+        public static function fallback_chain(string $breakpoint): array
+        {
+        }
+        /**
+         * Build a nested CSS `var()` fallback chain for a breakpoint-scoped custom property prefix.
+         */
+        public static function css_var_fallback_chain(string $css_var_prefix, string $breakpoint, string $literal_fallback): string
         {
         }
     }
@@ -45126,6 +48683,111 @@ namespace Elementor\Modules\AtomicWidgets\PropTypes {
     }
 }
 namespace Elementor\Modules\AtomicWidgets\PropsResolver {
+    class Font_Awesome_7_Icon_Resolver
+    {
+        const JSON_RELATIVE_PATH = 'lib/font-awesome-7/json/';
+        const JSON_BASE_PATH = ELEMENTOR_ASSETS_PATH . 'lib/font-awesome-7/json/';
+        const ALLOWED_JSON_FILES = ['solid', 'regular', 'brands'];
+        const LIBRARY_PREFIX = 'fa-';
+        const MAX_JSON_FILE_BYTES = 5 * 1024 * 1024;
+        const TUPLE_WIDTH = 0;
+        const TUPLE_HEIGHT = 1;
+        const TUPLE_ALIASES = 2;
+        const TUPLE_PATH = 4;
+        const TUPLE_MIN_LENGTH = 5;
+        public static function reset(): void
+        {
+        }
+        public static function is_supported_library(string $library): bool
+        {
+        }
+        const FILTER_TYPE_ALL = 'all';
+        const FILTER_TYPE_GROUP = 'group';
+        const FILTER_TYPE_ITEM = 'item';
+        public static function get_editor_config(): array
+        {
+        }
+        public static function resolve(string $value, string $library): ?array
+        {
+        }
+    }
+    class Icon_Catalog
+    {
+        const SEARCH_INDEX_FILE_NAME = 'search-index.json';
+        const VERSION_FILE_NAME = 'version.json';
+        const LICENSE_FREE = 'free';
+        const LICENSE_PRO = 'pro';
+        const MAX_FILE_BYTES = 5 * 1024 * 1024;
+        public static function reset(): void
+        {
+        }
+        /**
+         * @return array<int, array{name: string, library: string, value: string, label: string, aliases: string[], terms: string[], categories: string[], license: string}>
+         */
+        public static function get_entries(): array
+        {
+        }
+        public static function is_available(): bool
+        {
+        }
+        public static function get_version(): ?string
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public static function get_libraries(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public static function get_categories(): array
+        {
+        }
+    }
+    class Icon_Libraries
+    {
+        public static function get_custom_libraries(array $options = []): array
+        {
+        }
+        public static function resolve_library_values(string $library): array
+        {
+        }
+        public static function is_renderable_value(string $library, string $value): bool
+        {
+        }
+    }
+    class Icon_Search
+    {
+        const DEFAULT_PER_PAGE = 10;
+        const MAX_PER_PAGE = 25;
+        const MAX_QUERIES = 10;
+        const MAX_QUERY_LENGTH = 100;
+        const MATCHED_ON_NAME = 'name';
+        const MATCHED_ON_ALIAS = 'alias';
+        const MATCHED_ON_TERM = 'term';
+        const MATCHED_ON_CATEGORY = 'category';
+        const MATCHED_ON_LIBRARY = 'library';
+        const SCORE_EXACT_NAME = 100;
+        const SCORE_EXACT_ALIAS = 90;
+        const SCORE_NAME_WORD = 80;
+        const SCORE_EXACT_TERM = 70;
+        const SCORE_ALL_WORDS = 50;
+        const SCORE_SOME_WORDS = 30;
+        const SCORE_NAME_BONUS = 5;
+        const MAX_EXACT_WORD_BONUS = 4;
+        const MIN_WORD_LENGTH = 3;
+        const IGNORED_WORDS = ['and', 'button', 'for', 'icon', 'icons', 'image', 'logo', 'page', 'symbol', 'the', 'with'];
+        const SCORE_CATEGORY = 20;
+        const SCORE_BROWSE = 10;
+        public static function search(array $args): array
+        {
+        }
+        public static function is_searchable_query(string $query): bool
+        {
+        }
+    }
     abstract class Props_Resolver
     {
         protected static array $instances = [];
@@ -45282,6 +48944,14 @@ namespace Elementor\Modules\AtomicWidgets\PropsResolver\Transformers {
     class Icon_Transformer extends \Elementor\Modules\AtomicWidgets\PropsResolver\Transformer_Base
     {
         const SVG_INLINE_STYLES = 'width: 100%; height: 100%; overflow: unset;';
+        const FA7_SVG_INLINE_STYLES = 'width: 100%; height: 100%; overflow: visible;';
+        /**
+         * Font Awesome values that Core cannot resolve go through the `svg-html` filter before the default icon.
+         * Extensions check for this constant instead of comparing Core versions.
+         *
+         * @since 4.4.0
+         */
+        const RESOLVES_EXTENSION_FONT_AWESOME_ICONS = true;
         public function transform($value, \Elementor\Modules\AtomicWidgets\PropsResolver\Props_Resolver_Context $context)
         {
         }
@@ -45686,6 +49356,18 @@ namespace Elementor\Modules\AtomicWidgets\Styles {
         {
         }
         public function delete(string $handle): void
+        {
+        }
+    }
+    class Custom_Css_Sanitizer
+    {
+        public static function make(): self
+        {
+        }
+        public function sanitize_encoded($encoded): ?string
+        {
+        }
+        public function sanitize(string $css): string
         {
         }
     }
@@ -46115,6 +49797,26 @@ namespace Elementor\Modules\AtomicWidgets\Utils {
         {
         }
     }
+    class Custom_Attributes_Trust
+    {
+        const LAST_EDITOR_META_KEY = '_elementor_data_last_editor';
+        const UNFILTERED_CAPABILITY = 'unfiltered_html';
+        public static function register_hooks(): void
+        {
+        }
+        public static function record_last_editor($meta_id, $post_id, $meta_key): void
+        {
+        }
+        public static function can_current_user_save_unfiltered(): bool
+        {
+        }
+        public static function is_post_trusted(int $post_id): bool
+        {
+        }
+        public static function can_print_unfiltered_in_current_document(): bool
+        {
+        }
+    }
     class Element_Position
     {
         const KIND_LAST = 'last';
@@ -46250,6 +49952,7 @@ namespace Elementor\Modules\Audits {
     {
         const EXPERIMENT_NAME = 'e_page_audit';
         const REST_NAMESPACE = 'elementor/v1';
+        const REQUIRED_CAPABILITY = 'manage_options';
         const PACKAGES = ['editor-props', 'editor-styles', 'editor-elements', 'editor-floating-panels', 'editor-audits'];
         public function __construct()
         {
@@ -46261,6 +49964,9 @@ namespace Elementor\Modules\Audits {
         {
         }
         public static function is_active(): bool
+        {
+        }
+        public static function is_user_allowed(): bool
         {
         }
         public function register_data_controller(): void
@@ -47866,6 +51572,18 @@ namespace Elementor\Modules\Components\PropTypes {
         protected function validate_value($value): bool
         {
         }
+        /**
+         * Exposing a prop that has no value must persist `origin_value: null`. Editor versions that
+         * wrote an empty object instead left components permanently unsavable, so treat any empty
+         * `origin_value` as "no value".
+         *
+         * Rendering resolves props without validating them, so stored empty values reach
+         * `Overridable_Transformer` untouched until the document is next saved. Both paths share this
+         * helper so that "empty means no value" does not depend on whether a re-save has happened yet.
+         */
+        public static function normalize_origin_value($origin_value)
+        {
+        }
         protected function sanitize_value($value): ?array
         {
         }
@@ -47968,6 +51686,17 @@ namespace Elementor\Modules\Components\Transformers {
     }
 }
 namespace Elementor\Modules\Components\Utils {
+    /**
+     * Collects the ids of components directly referenced by `e-component` widgets
+     * anywhere in an elements tree. Used on export to describe how components nest
+     * so the importer can recreate them dependencies-first.
+     */
+    class Collect_Component_Dependencies
+    {
+        public static function from_elements(array $elements): array
+        {
+        }
+    }
     /**
      * Backward-compatibility alias.
      *
@@ -48349,6 +52078,13 @@ namespace Elementor\Modules\DefaultStyles {
         {
         }
     }
+    class Default_Styles_Sections
+    {
+        public const SECTION_PROPS = ['layout' => ['display', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 'align-self', 'gap', 'order', 'grid-column', 'grid-row', 'grid-auto-rows', 'grid-auto-columns'], 'spacing' => ['margin', 'padding'], 'size' => ['width', 'min-width', 'max-width', 'height', 'min-height', 'max-height', 'overflow', 'aspect-ratio', 'object-fit'], 'position' => ['position', 'z-index', 'scroll-margin-top'], 'typography' => ['font-family', 'font-weight', 'font-size', 'text-align', 'color', 'line-height', 'letter-spacing', 'word-spacing', 'column-count', 'text-decoration', 'text-transform', 'direction', 'font-style', 'stroke'], 'background' => ['background'], 'border' => ['border-radius', 'border-width', 'border-color', 'border-style'], 'effects' => ['mix-blend-mode', 'box-shadow', 'opacity', 'transform', 'filter', 'backdrop-filter', 'transform-origin', 'transition']];
+        public static function for_variants(array $variants): array
+        {
+        }
+    }
     class Default_Styles_Tag_Post_IDs
     {
         use \Elementor\Core\Kits\Concerns\Has_Kit_Dependency;
@@ -48403,6 +52139,7 @@ namespace Elementor\Modules\DefaultStyles\ImportExportCustomization\Runners {
     }
     class Import extends \Elementor\App\Modules\ImportExportCustomization\Runners\Import\Import_Runner_Base
     {
+        const EMPTY_RESULT = ['created' => [], 'replaced' => [], 'skipped' => [], 'failed' => []];
         public static function get_name(): string
         {
         }
@@ -48548,6 +52285,9 @@ namespace Elementor\Modules\DesignSystemSync\Classes {
         {
         }
         public function enqueue(): void
+        {
+        }
+        public function update()
         {
         }
         protected function parse_content(): string
@@ -48908,6 +52648,9 @@ namespace Elementor\Modules\EditorOne\Classes {
         {
         }
         public function is_item_accessible(\Elementor\Core\Admin\EditorOneMenu\Interfaces\Menu_Item_Interface $item): bool
+        {
+        }
+        public function get_event_ids_by_slug(): array
         {
         }
         public static function get_current_user_capabilities(): array
@@ -52578,6 +56321,14 @@ namespace Elementor\Modules\Mcp\Abilities {
         final public function execute_guarded($input = [])
         {
         }
+        /**
+         * Validates input against the ability's input schema, the same way the WordPress Abilities API does.
+         *
+         * @return true|\WP_Error
+         */
+        public function validate_input_against_schema($input)
+        {
+        }
         public function check_permission(): bool
         {
         }
@@ -52628,7 +56379,27 @@ namespace Elementor\Modules\Mcp\Abilities {
         public function is_exposed_on_server(): bool
         {
         }
+        protected function should_record_site_capability($input, $result): bool
+        {
+        }
         protected function definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+    }
+    class Agent_Ready_Scan_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const ACTION_READ = 'read';
+        const ACTION_RUN = 'run';
+        protected function get_ability_id(): string
+        {
+        }
+        public function is_exposed_via_proxy(): bool
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
         {
         }
     }
@@ -52642,14 +56413,19 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers {
         /**
          * @param array<string, array&> $config_id_index Index of subtree refs.
          * @param array<string, mixed>  $classes_input   Per-config-id global class labels.
+         *
+         * @return array{error: null, warnings: \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag}
          */
-        public function apply(array $config_id_index, array $classes_input): ?\WP_Error
+        public function apply(array $config_id_index, array $classes_input): array
         {
         }
     }
     class Component_Instance_Applier
     {
         public function __construct(\Elementor\Modules\Components\Components_Repository $repository, \Elementor\Modules\AtomicWidgets\PlainResolvers\Plain_Values_Resolver $plain_values_resolver)
+        {
+        }
+        public function consume_warnings(): \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag
         {
         }
         /**
@@ -52695,7 +56471,7 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers {
          * @param array<string, array>                $widget_configs  Resolved type configs.
          * @param \Elementor\Core\Base\Document|null                       $document        Target document, when one already exists.
          *
-         * @return array{ error: ?\WP_Error, warnings: string[] }
+         * @return array{ error: ?\WP_Error, warnings: \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag }
          */
         public function apply(array &$config_id_index, array $element_config, array $widget_configs, ?\Elementor\Core\Base\Document $document = null): array
         {
@@ -52710,7 +56486,7 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers {
          * @param array<string, array&>            $index        Index of subtree refs.
          * @param array<string, array<int, array>> $interactions Per-config-id list of native-shape interaction items.
          *
-         * @return array{error: \WP_Error|null, warnings: string[]}
+         * @return array{error: null, warnings: \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag}
          */
         public function apply(array &$index, array $interactions): array
         {
@@ -52723,33 +56499,33 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers {
         const LOCAL_STYLE_LABEL = 'local';
         const LOCAL_STYLE_TYPE = 'class';
         const UNSUPPORTED_CSS_CODE = 'unsupported_css';
-        public function __construct(\Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter $css_converter, array $active_breakpoints = [])
+        const UNKNOWN_VARIABLE_CODE = 'unknown_variable';
+        const BORDER_STYLE_NONE = 'none';
+        const SITE_WIDE_STYLE_CODE = 'site_wide_style';
+        const SITE_WIDE_STYLE_FORBIDDEN_CODE = 'site_wide_style_forbidden';
+        public function __construct(\Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter $css_converter, array $active_breakpoints = [], ?\Elementor\Modules\Variables\Services\Variables_Service $variables_service = null)
         {
         }
         /**
          * @param array<string, array&> $config_id_index Index of subtree refs.
          * @param array<string, string> $styles          Per-config-id CSS strings.
          * @param string                $style_apply_mode `patch` or `replace`.
-         * @param array<string, array>  $widget_configs  Optional widget_type => config map (used for V3 mapping).
-         * @return array{error: \WP_Error|null, warnings: string[], variable_connections: array<string, array<string, string>>}
+         * @return array{error: null, warnings: \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag, variable_connections: array<string, array<string, string>>}
          */
-        public function apply(array $config_id_index, array $styles, string $style_apply_mode = 'patch', array $widget_configs = []): array
+        public function apply(array $config_id_index, array $styles, string $style_apply_mode = 'patch'): array
         {
         }
     }
     /**
-     * Bridges V4-shape MCP inputs (global-class labels, plain CSS strings) onto the V3
-     * settings shape (`_css_classes`, `custom_css`) for allowlisted V3 widgets so the
-     * same LLM contract works for both widget generations.
+     * Bridges V4-shape MCP inputs (global-class labels) onto the V3 settings shape
+     * (`_css_classes`) for mapped V3 widgets so the same LLM contract works for both
+     * widget generations.
      */
     class V3_Node_Bridge
     {
         const V3_CUSTOM_CSS_SETTING = 'custom_css';
         const V3_CSS_CLASSES_SETTING = '_css_classes';
         const V3_DYNAMIC_SETTING = '__dynamic__';
-        const RESPONSIVE_SUFFIXES = ['_tablet', '_mobile'];
-        const TYPOGRAPHY_SETTING_SUFFIXES = ['typography', 'font_family', 'font_weight', 'font_style', 'text_transform', 'text_decoration', 'font_size', 'line_height', 'letter_spacing', 'word_spacing'];
-        const TYPOGRAPHY_RESPONSIVE_SUFFIXES = ['font_size', 'line_height', 'letter_spacing', 'word_spacing'];
         /**
          * Seeds each control's `dynamic.default` into the node's `__dynamic__` settings map when the
          * caller did not provide one. Without this, controls whose default is a dynamic tag (e.g.
@@ -52775,173 +56551,286 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers {
         public static function clear_classes(array &$node): void
         {
         }
+    }
+}
+namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters {
+    interface V3_Control_Adapter
+    {
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool;
         /**
-         * Clears all known mapped style settings and custom_css for a V3 widget.
-         * Mirrors V4 replace semantics (wipe existing style before applying a new one).
-         *
-         * @param array<string, mixed> $node           Subtree node (by reference).
-         * @param string               $widget_type    V3 widget type name.
-         * @param array<string, mixed> $widget_config  Widget config from Widget_Context_Helper::get_widget_config().
+         * @param array<string, mixed> $prop_value V4 PropValue envelope (`$$type` + `value`).
+         * @param string[]|null        $sides
+         * @param array<string, mixed> $control
+         * @return mixed|null Null when the V3 control cannot store the value.
          */
-        public static function clear_style_settings(array &$node, string $widget_type, array $widget_config = []): void
+        public function to_control_value(array $prop_value, ?array $sides, array $control);
+        /**
+         * @param mixed         $control_value
+         * @param string[]|null $sides
+         * @return array<string, mixed>|null V4 PropValue envelope, or null when nothing is stored.
+         */
+        public function from_control_value($control_value, ?array $sides): ?array;
+    }
+    class Background_Color_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'color';
+        const COLOR_FIELD = 'color';
+        public function __construct()
+        {
+        }
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Box_Shadow_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'box_shadow';
+        const LENGTH_FIELDS = ['hOffset' => 'horizontal', 'vOffset' => 'vertical', 'blur' => 'blur', 'spread' => 'spread'];
+        const POSITION_OUTLINE = 'outline';
+        const POSITION_INSET = 'inset';
+        const PIXEL_UNIT = 'px';
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Color_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'color';
+        const MAX_LENGTH = 120;
+        const HEX_PATTERN = '/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i';
+        const FUNCTION_PATTERN = '/^(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|var)\(\s*[-\w\s.,%\/#()+*]*\)$/i';
+        const KEYWORDS = ['transparent', 'currentcolor', 'inherit', 'initial', 'unset'];
+        const NAMED_COLORS = 'aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown burlywood ' . 'cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson cyan darkblue darkcyan darkgoldenrod ' . 'darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid darkred darksalmon ' . 'darkseagreen darkslateblue darkslategray darkslategrey darkturquoise darkviolet deeppink deepskyblue dimgray ' . 'dimgrey dodgerblue firebrick floralwhite forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green ' . 'greenyellow grey honeydew hotpink indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon ' . 'lightblue lightcoral lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon ' . 'lightseagreen lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen ' . 'magenta maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue ' . 'mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin navajowhite navy ' . 'oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen paleturquoise palevioletred papayawhip ' . 'peachpuff peru pink plum powderblue purple rebeccapurple red rosybrown royalblue saddlebrown salmon sandybrown ' . 'seagreen seashell sienna silver skyblue slateblue slategray slategrey snow springgreen steelblue tan teal ' . 'thistle tomato turquoise violet wheat white whitesmoke yellow yellowgreen';
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public static function plain_color($prop_value): ?string
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Dimensions_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'dimensions';
+        const LOGICAL_TO_PHYSICAL_SIDES = ['block-start' => 'top', 'inline-end' => 'right', 'block-end' => 'bottom', 'inline-start' => 'left'];
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Dimensions_Sides_Slider_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'slider';
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Font_Family_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'font';
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Number_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'number';
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Object_Size_Box_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'dimensions';
+        const BORDER_WIDTH_SIDES = ['block-start' => 'top', 'inline-end' => 'right', 'block-end' => 'bottom', 'inline-start' => 'left'];
+        const BORDER_RADIUS_SIDES = ['start-start' => 'top', 'start-end' => 'right', 'end-end' => 'bottom', 'end-start' => 'left'];
+        /**
+         * @param string                $prop_type
+         * @param array<string, string> $logical_to_physical
+         */
+        public function __construct(string $prop_type, array $logical_to_physical)
+        {
+        }
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Size_Slider_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPE = 'slider';
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    class Size_Values
+    {
+        /**
+         * Prop types whose value is a size per logical side.
+         *
+         * @return string[]
+         */
+        public static function sides_prop_types(): array
         {
         }
         /**
-         * Writes a CSS string into V3's `custom_css`. Plain declaration lists (`color: red;`)
-         * are wrapped in `selector { ... }` — the Pro custom-css module replaces `selector`
-         * with the widget's wrapper at render.
-         *
-         * @return string|null Warning message when Pro is missing, otherwise null.
+         * @param mixed $prop_value
          */
-        public static function apply_custom_css(array &$node, string $css_string, string $widget_type = ''): ?string
+        public static function is_sides_prop($prop_value): bool
+        {
+        }
+        /**
+         * A unitless `0` converts to `0px`, so `margin: 2rem 0` would mix units; a zero side takes the
+         * unit the other sides share.
+         *
+         * @param array<string, array{unit: string, size: mixed}> $sizes
+         * @return array<string, array{unit: string, size: mixed}>
+         */
+        public static function with_zero_in_shared_unit(array $sizes): array
+        {
+        }
+        /**
+         * @param mixed $prop_value
+         * @return array{unit: string, size: mixed}|null
+         */
+        public static function from_prop($prop_value): ?array
+        {
+        }
+        /**
+         * @param mixed $control_value
+         */
+        public static function to_prop($control_value): ?array
+        {
+        }
+        /**
+         * @param array{unit: string, size: mixed} $size
+         * @param array<string, mixed>             $control
+         */
+        public static function is_unit_allowed(array $size, array $control): bool
+        {
+        }
+        /**
+         * @param array<int, array{unit: string, size: mixed}> $sizes
+         */
+        public static function are_equal(array $sizes): bool
+        {
+        }
+    }
+    class String_Choice_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
+    {
+        const CONTROL_TYPES = ['select', 'choose', 'text'];
+        public function supports(string $prop_type, string $control_type, bool $has_sides): bool
+        {
+        }
+        public function to_control_value(array $prop_value, ?array $sides, array $control)
+        {
+        }
+        public function from_control_value($control_value, ?array $sides): ?array
+        {
+        }
+    }
+    /**
+     * The style schema only accepts logical alignments, while some V3 controls list physical ones,
+     * so `left` and `right` map to `start` and `end` by the site's text direction.
+     */
+    class Text_Alignment
+    {
+        const LTR_PHYSICAL = ['start' => 'left', 'end' => 'right'];
+        const RTL_PHYSICAL = ['start' => 'right', 'end' => 'left'];
+        public static function to_physical(string $logical): ?string
+        {
+        }
+        public static function to_logical(string $physical): ?string
+        {
+        }
+    }
+    class V3_Control_Adapter_Registry
+    {
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter[] $adapters
+         */
+        public function __construct(array $adapters)
+        {
+        }
+        public static function create_default(): self
+        {
+        }
+        public function find(string $prop_type, string $control_type, bool $has_sides): ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter
         {
         }
     }
 }
 namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter {
     /**
-     * Maps a single parsed CSS declaration onto V3 legacy settings.
-     *
-     * Mirrors the pattern of the atomic-widgets CSS converter
-     * ({@see \Elementor\Modules\AtomicWidgets\CssConverter\Property_Converter}) but writes
-     * flat legacy-shape values into a {@see V3_Conversion_Context} instead of V4 PropValues.
-     *
-     * $rule shape: [
-     *   'property'   => 'color',       // lowercase CSS property
-     *   'value'      => 'red',
-     *   'state'      => 'hover'|null,  // normalized pseudo-state (hover|focus|active|null)
-     *   'breakpoint' => 'desktop',
-     * ]
-     */
-    interface V3_Property_Converter
-    {
-        public function is_supported(array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool;
-        /**
-         * @return bool True when the converter emitted something (or intentionally consumed
-         *              the rule as a no-op); false when the value could not be mapped and the
-         *              orchestrator should mark the rule as unmapped.
-         */
-        public function convert(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context $ctx, array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool;
-    }
-}
-namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\Converters {
-    /**
-     * Handles `border_prefix` overrides: explodes `border: <width> <style> <color>` into
-     * three prefixed V3 settings via V3_Value_Resolvers::resolve_border_shorthand.
-     */
-    class Border_Shorthand_Converter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter
-    {
-        public function is_supported(array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-        public function convert(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context $ctx, array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-    }
-    /**
-     * Handles `box_shadow_prefix` overrides: writes `<prefix>_box_shadow_type` (visibility
-     * toggle) + `<prefix>_box_shadow` (parsed shape) as a pair.
-     */
-    class Box_Shadow_Prefix_Converter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter
-    {
-        public function is_supported(array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-        public function convert(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context $ctx, array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-    }
-    /**
-     * Fallback converter: uses V3_Style_Settings_Index auto-discovered mappings when no
-     * registry override matches. Registered last.
-     *
-     * Note the responsive rule differs from `Simple_Setting_Converter`: the generic index
-     * does not carry an explicit `responsive` flag, so any non-desktop breakpoint requires
-     * the suffixed control to exist — otherwise the write is dropped.
-     */
-    class Generic_Index_Converter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter
-    {
-        const BASE_BREAKPOINT = \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Responsive_Key_Resolver::BASE_BREAKPOINT;
-        public function is_supported(array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-        public function convert(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context $ctx, array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-    }
-    /**
-     * Handles simple `setting` + `resolver` overrides: single-key writes with responsive
-     * suffixing. Also handles the `resolver = box_shadow` sub-case (writes both
-     * `<setting>_type` and `<setting>`).
-     */
-    class Simple_Setting_Converter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter
-    {
-        public function __construct(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Responsive_Key_Resolver $responsive_resolver)
-        {
-        }
-        public function is_supported(array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-        public function convert(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context $ctx, array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-    }
-    /**
-     * Handles `typography_prefix` overrides: buckets declarations by (breakpoint, state, prefix)
-     * for a deferred group expansion via V3_Value_Resolvers::resolve_typography_group.
-     */
-    class Typography_Group_Converter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter
-    {
-        public function is_supported(array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-        public function convert(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context $ctx, array $rule, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): bool
-        {
-        }
-    }
-}
-namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter {
-    /**
-     * Immutable per-node conversion metadata: everything a converter needs to look up
-     * the mapping for a rule without recomputing it per declaration.
+     * Immutable per-node conversion metadata: the widget's compiled map and the controls
+     * it was compiled against.
      */
     class V3_Context_Meta
     {
-        public function __construct(string $widget_type, array $widget_config, array $overrides, array $generic_index)
+        public function __construct(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, array $controls)
         {
         }
-        public function widget_type(): string
-        {
-        }
-        public function widget_config(): array
-        {
-        }
-        public function overrides(): array
-        {
-        }
-        public function generic_index(): array
+        public function map(): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map
         {
         }
         public function controls(): array
         {
         }
-        public function has_control(string $key): bool
-        {
-        }
-        public function match_key(string $property, ?string $state): string
-        {
-        }
-        public function get_override(string $property, ?string $state): ?array
-        {
-        }
-        public function get_generic_rule(string $property, ?string $state): ?array
-        {
-        }
     }
     /**
      * Mutable per-node conversion state: accumulates the settings patch that will be
-     * merged into the V3 widget, the unmapped CSS chunks (destined for `custom_css`),
-     * warnings, and typography-group buckets which are finalized in one pass at the end.
+     * merged into the V3 widget, the custom CSS fallback rules and warnings.
      */
     class V3_Conversion_Context
     {
@@ -52951,13 +56840,65 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter {
         public function merge_patch(array $patch): void
         {
         }
-        public function add_typography_declaration(string $prefix, string $breakpoint, ?string $state, bool $responsive, string $property, string $value): void
+        /**
+         * @param array<string, mixed> $requirements Setting => value a bound control needs to take effect.
+         * @param string               $declaration  The CSS declaration that needs them, for warnings.
+         */
+        public function require_settings(array $requirements, string $declaration): void
         {
         }
-        public function mark_unmapped(string $original_css): void
+        /**
+         * @return array<string, array{value: mixed, declaration: string}>
+         */
+        public function required_settings(): array
+        {
+        }
+        /**
+         * @param array<string, string> $defaults Border style setting => style to use while none is saved.
+         */
+        public function add_border_style_defaults(array $defaults): void
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public function border_style_defaults(): array
+        {
+        }
+        /**
+         * @param array<string, string[]> $requirements Multi-select setting => values its list must contain.
+         */
+        public function require_list_values(array $requirements): void
+        {
+        }
+        /**
+         * @return array<string, string[]>
+         */
+        public function list_requirements(): array
         {
         }
         public function warn(string $message): void
+        {
+        }
+        /**
+         * @param array{target: string, state: string|null, breakpoint: string, media: string|null, declarations: array<string, string>} $rule
+         */
+        public function add_fallback_rule(array $rule): void
+        {
+        }
+        public function add_fallback_note(string $note): void
+        {
+        }
+        /**
+         * @return array<int, array{target: string, state: string|null, breakpoint: string, media: string|null, declarations: array<string, string>}>
+         */
+        public function fallback_rules(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function fallback_notes(): array
         {
         }
         public function settings_patch(): array
@@ -52966,59 +56907,14 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter {
         /**
          * @return string[]
          */
-        public function unmapped_parts(): array
-        {
-        }
-        /**
-         * @return string[]
-         */
         public function warnings(): array
-        {
-        }
-        /**
-         * @return array<string, array>
-         */
-        public function typography_buckets(): array
-        {
-        }
-    }
-    /**
-     * Builds the ordered {@see V3_Converter_Registry}. Order matters: more specific
-     * shapes are registered before the generic-index fallback.
-     *
-     * Mirror of {@see \Elementor\Modules\AtomicWidgets\CssConverter\Converter_Registry_Factory}.
-     */
-    class V3_Converter_Registry_Factory
-    {
-        public static function create(): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Converter_Registry
-        {
-        }
-    }
-    /**
-     * Registration-order iterator of {@see V3_Property_Converter}. Mirror of
-     * {@see \Elementor\Modules\AtomicWidgets\CssConverter\Converter_Registry}.
-     *
-     * The mapper iterates converters, taking the first one whose `is_supported()` returns
-     * true; a `convert()` returning false marks the rule as unmapped (no fallthrough,
-     * because the override shapes do not overlap).
-     */
-    class V3_Converter_Registry
-    {
-        public function register(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter $converter): self
-        {
-        }
-        /**
-         * @return \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter[]
-         */
-        public function all(): array
         {
         }
     }
 }
 namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper {
     /**
-     * Extracts `property: value` declarations from a CSS block and normalizes selector
-     * fragments into V3 pseudo-states (hover|focus|active or null).
+     * Extracts `property: value` declarations from a CSS block.
      */
     class Css_Declaration_Parser
     {
@@ -53028,54 +56924,1770 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper {
         public function parse_declarations(string $css): array
         {
         }
-        public function normalize_state(?string $selector): ?string
-        {
-        }
     }
     /**
-     * Decides which V3 setting key to write for a given (setting, breakpoint, is_responsive)
-     * tuple. Encapsulates the "silent drop when responsive variant is absent" rule so it can
-     * be shared between converters.
+     * Breakpoint naming of V3 settings: the base breakpoint writes the bare key, the others
+     * write `<setting>_<breakpoint>`.
      */
     class Responsive_Key_Resolver
     {
         const BASE_BREAKPOINT = 'desktop';
+        const RESPONSIVE_SUFFIXES = ['_tablet' => 'tablet', '_mobile' => 'mobile'];
+    }
+    /**
+     * Routes the CSS of one breakpoint to the style targets of a map-driven V3 widget:
+     *   `color: red;`              default target
+     *   `&:hover { ... }`          default target, hover state
+     *   `main-menu { ... }`        `main-menu` target
+     *   `main-menu:current { ... }` `main-menu` target, `current` state
+     */
+    class V3_Style_Target_Router
+    {
+        use \Elementor\Modules\AtomicWidgets\CssConverter\Css_Block_Scanner_Trait;
+        const DEFAULT_TARGET_SELECTOR = '&';
+        const SELECTOR_PATTERN = '/^(?P<target>&|[a-z0-9]+(?:-[a-z0-9]+)*)(?::(?P<state>[a-z]+(?:-[a-z]+)*))?$/i';
+        const MEDIA_AT_PATTERN = '/^\s*@media/i';
+        const REASON_UNKNOWN_TARGET = 'unknown_target';
+        const REASON_UNKNOWN_STATE = 'unknown_state';
+        const REASON_NESTED_BLOCK = 'nested_block';
+        const REASON_MALFORMED = 'malformed';
         /**
-         * @return string|null Suffixed key, base key, or null when the write should be dropped.
+         * @param string                  $css
+         * @param string                  $default_target
+         * @param array<string, string[]> $target_states Alias => states the target accepts.
+         * @return array{blocks: array<int, array{target: string, state: ?string, css: string}>, dropped: array<int, array{selector: string, reason: string}>}
          */
-        public function resolve(string $setting, string $breakpoint, bool $is_responsive, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): ?string
+        public function route(string $css, string $default_target, array $target_states): array
         {
         }
         /**
-         * Applies the responsive-suffix rule across an entire patch (typography group case).
-         *
-         * @param array<string, mixed> $patch
+         * @param string $css `@media <condition> { ... }` blocks.
+         * @return array<int, array{condition: string, css: string}>
+         */
+        public function media_blocks(string $css): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps {
+    /**
+     * The part of a style prop value that one binding owns: the whole value, a set of sides, or
+     * one field of an object value.
+     */
+    class Binding_Coverage
+    {
+        public static function whole(): self
+        {
+        }
+        /**
+         * @param string[] $sides
+         */
+        public static function sides(array $sides): self
+        {
+        }
+        public static function part(string $part): self
+        {
+        }
+        public function overlaps(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Binding_Coverage $other): bool
+        {
+        }
+    }
+    class Compiled_Style_Binding
+    {
+        /**
+         * @param array{prop: string, state: string, setting: string, control_type: string, responsive: bool, sides: string[]|null, dependency_values: array<string, mixed>, read_type: string, part?: string|null, part_of?: string|null} $fields
+         */
+        public function __construct(array $fields)
+        {
+        }
+        public function get_prop(): string
+        {
+        }
+        public function get_state(): string
+        {
+        }
+        public function get_setting(): string
+        {
+        }
+        public function get_control_type(): string
+        {
+        }
+        public function is_responsive(): bool
+        {
+        }
+        /**
+         * @return string[]|null
+         */
+        public function get_sides(): ?array
+        {
+        }
+        /**
          * @return array<string, mixed>
          */
-        public function suffix_patch(array $patch, string $breakpoint, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Context_Meta $meta): array
+        public function get_dependency_values(): array
+        {
+        }
+        public function get_read_type(): string
+        {
+        }
+        /**
+         * Field of the object prop value this binding owns, or null for the whole value.
+         */
+        public function get_part(): ?string
+        {
+        }
+        /**
+         * Prop type key of the object value a part binding belongs to.
+         */
+        public function get_part_of(): ?string
+        {
+        }
+    }
+    class Compiled_Style_Target
+    {
+        /**
+         * @param string                   $alias
+         * @param string                   $label
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_Style_Binding[] $bindings
+         * @param string|null              $selector
+         * @param array<string, string>    $defaults
+         * @param string                   $description
+         */
+        public function __construct(string $alias, string $label, array $bindings, ?string $selector = null, array $defaults = [], string $description = '')
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public function get_defaults(): array
+        {
+        }
+        public function get_alias(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_selector(): ?string
+        {
+        }
+        /**
+         * @return \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_Style_Binding[]
+         */
+        public function get_bindings(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function get_props(): array
+        {
+        }
+        /**
+         * States that have at least one binding, in binding order.
+         *
+         * @return string[]
+         */
+        public function get_states(): array
+        {
+        }
+        /**
+         * Bound properties for each state, in binding order.
+         *
+         * @return array<string, string[]>
+         */
+        public function get_props_by_state(): array
+        {
+        }
+    }
+    class Compiled_V3_Map
+    {
+        /**
+         * @param string                               $widget_type
+         * @param string                               $description
+         * @param array<string, Compiled_V3_Setting>   $settings
+         * @param string                               $default_target
+         * @param array<string, Compiled_Style_Target> $targets
+         * @param string[]                             $kit_target_aliases {@see Style_Target::kit_hosted()}.
+         * @param string[]                             $kit_keys           Settings stored on the active kit.
+         */
+        public function __construct(string $widget_type, string $description, array $settings, string $default_target, array $targets, array $kit_target_aliases = [], array $kit_keys = [])
+        {
+        }
+        public function get_settings_host(): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Settings_Host
+        {
+        }
+        /**
+         * Replacing a widget's own style keeps its site-wide styles unless the CSS restyles them.
+         *
+         * @param array<string, mixed> $settings_patch
+         */
+        public function for_replace(array $settings_patch): self
+        {
+        }
+        public function without_kit_targets(): self
+        {
+        }
+        public function get_widget_type(): string
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        /**
+         * @return array<string, Compiled_V3_Setting>
+         */
+        public function get_settings(): array
+        {
+        }
+        /**
+         * @return array<string, array<string, mixed>>
+         */
+        public function get_setting_schemas(): array
+        {
+        }
+        public function get_default_target(): string
+        {
+        }
+        /**
+         * @return array<string, Compiled_Style_Target>
+         */
+        public function get_targets(): array
+        {
+        }
+        /**
+         * @return \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_Style_Binding[]
+         */
+        public function get_style_bindings(): array
+        {
+        }
+    }
+    class Compiled_V3_Setting
+    {
+        /**
+         * @param string               $control_key
+         * @param bool                 $dynamic
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter   $adapter
+         * @param \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type            $prop_type
+         * @param array<string, mixed> $control
+         * @param array<string, mixed> $schema      Plain JSON schema advertised for the setting.
+         */
+        public function __construct(string $control_key, bool $dynamic, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter $adapter, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $prop_type, array $control, array $schema)
+        {
+        }
+        public function get_control_key(): string
+        {
+        }
+        public function is_dynamic(): bool
+        {
+        }
+        public function get_prop_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        /**
+         * @param mixed $plain Value that already passed the published schema.
+         * @return string|null Rejection reason for a rule the schema cannot express, or null to accept.
+         */
+        public function reject_reason($plain): ?string
+        {
+        }
+        /**
+         * A multiple-choice setting can be cleared with an empty list, which the list prop type rejects.
+         */
+        public function accepts_empty_list(): bool
+        {
+        }
+        /**
+         * @return mixed
+         */
+        public function to_control_value(array $prop_value)
+        {
+        }
+        /**
+         * @param mixed $stored
+         * @return mixed
+         */
+        public function from_control_value($stored)
+        {
+        }
+        /**
+         * @return array<string, mixed>
+         */
+        public function get_schema(): array
+        {
+        }
+        /**
+         * @return array<string, mixed> The schema exactly as `get-widget-schemas` publishes it for this setting.
+         */
+        public function get_published_schema(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments {
+    interface Style_Fragment
+    {
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void;
+    }
+    /**
+     * Advanced tab controls shared by every `Widget_Common_Base` widget. Containers register
+     * different keys and do not get this target.
+     */
+    class Advanced_Wrapper implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment
+    {
+        const ALIAS = 'wrapper';
+        const LABEL = 'Widget wrapper (Advanced tab: spacing, size, position, background, border)';
+        const HOVER_STATE = 'hover';
+        const OFFSET_START = 'start';
+        const OFFSET_END = 'end';
+        const CLASSIC_BACKGROUND = 'classic';
+        const WRAPPER_SELECTOR = '';
+        public static function target(): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target
+        {
+        }
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void
         {
         }
     }
     /**
-     * Re-serializes CSS fragments that could not be mapped to V3 settings, back into a
-     * single CSS string suitable for V3's `custom_css`. Wraps state fragments as `&:state`
-     * and non-desktop breakpoints as `@media(--breakpoint) { ... }`.
+     * Binds the solid color of an Elementor background group control (`Group_Control_Background`),
+     * switching the group to its classic type when written.
      */
-    class Unmapped_Css_Serializer
+    class Background_Group implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment
     {
-        public function serialize_declaration(string $breakpoint, ?string $state, string $property, string $value): string
+        const CLASSIC = 'classic';
+        public static function from_prefix(string $prefix, string $state = \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target::DEFAULT_STATE): self
         {
         }
-        public function serialize_nested_block(string $breakpoint, string $selector, string $css): string
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void
         {
         }
-        public function serialize_breakpoint_block(string $breakpoint, string $css): string
+    }
+    /**
+     * Binds the fields of an Elementor border group control (`Group_Control_Border`).
+     */
+    class Border_Group implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment
+    {
+        public static function from_prefix(string $prefix, string $state = \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target::DEFAULT_STATE): self
+        {
+        }
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void
+        {
+        }
+    }
+    /**
+     * Binds the box-shadow field of an Elementor box shadow group control (`Group_Control_Box_Shadow`).
+     */
+    class Box_Shadow_Group implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment
+    {
+        public static function from_prefix(string $prefix, string $state = \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target::DEFAULT_STATE): self
+        {
+        }
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void
+        {
+        }
+    }
+    /**
+     * The Heading widget controls shared by the theme title widgets (Post Title, Archive Title),
+     * which extend the core Heading widget.
+     */
+    class Heading_Title implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment
+    {
+        const HOVER_STATE = 'hover';
+        /**
+         * @return array<string, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Setting>
+         */
+        public static function settings(): array
+        {
+        }
+        public static function title_target(string $description): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target
+        {
+        }
+        public static function link_target(): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target
+        {
+        }
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void
+        {
+        }
+    }
+    /**
+     * Binds the fields of an Elementor typography group control (`Group_Control_Typography`).
+     */
+    class Typography_Group implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment
+    {
+        const FIELDS = ['font-family' => ['_font_family', false], 'font-size' => ['_font_size', true], 'font-weight' => ['_font_weight', false], 'text-transform' => ['_text_transform', false], 'font-style' => ['_font_style', false], 'text-decoration' => ['_text_decoration', false], 'line-height' => ['_line_height', true], 'letter-spacing' => ['_letter_spacing', true], 'word-spacing' => ['_word_spacing', true]];
+        public static function from_prefix(string $prefix): self
+        {
+        }
+        public function except(string ...$props): self
+        {
+        }
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void
+        {
+        }
+    }
+    /**
+     * The "Forms > Fields" controls shared by the WooCommerce Cart, Checkout and My Account widgets.
+     */
+    class Woo_Form_Fields implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment
+    {
+        const ALIAS = 'fields';
+        const LABEL = 'Form fields';
+        const FOCUS_BEHAVIOR = 'The focus state styles a field while the visitor is typing in it.';
+        const FOCUS_STATE = 'focus';
+        const DEFAULTS = ['font-size' => '14px', 'background-color' => '#f9fafa', 'color' => '#69727d'];
+        public static function target(string $selector, string $description): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target
+        {
+        }
+        public function apply_to(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): void
+        {
+        }
+    }
+    /**
+     * The site-wide WooCommerce notice styles, shared by every widget that prints WooCommerce notices.
+     */
+    class Woocommerce_Notice_Targets
+    {
+        const KIT_TAB = 'settings-woocommerce';
+        const KIT_SECTIONS = ['section_woocommerce_notices', 'woocommerce_error_notices', 'woocommerce_message_notices', 'woocommerce_info_notices'];
+        const NOTICE_TYPES_SETTING = 'woocommerce_notices_elements';
+        const HOVER_STATE = 'hover';
+        const SITE_WIDE = 'Site-wide: it styles every WooCommerce notice of this type on every page, including Cart, Checkout, My Account and pages not built with Elementor, not only this widget. The editor preview shows demo notices.';
+        /**
+         * @return \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target[] The error notice first.
+         */
+        public static function all(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps {
+    /**
+     * The active kit tab sections whose controls store a kit-hosted target's settings.
+     */
+    class Kit_Controls_Source
+    {
+        /**
+         * @param string   $tab_id
+         * @param string[] $sections
+         * @param string[] $required_controls Kit controls the targets cannot work without.
+         */
+        public function __construct(string $tab_id, array $sections, array $required_controls = [])
+        {
+        }
+        public function get_tab_id(): string
         {
         }
         /**
-         * @param string[] $parts
+         * @return string[]
          */
-        public function join(array $parts): string
+        public function get_sections(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function get_required_controls(): array
+        {
+        }
+    }
+    /**
+     * Where the style settings of a map-driven element are stored: the element itself, the active
+     * kit for targets that style site-wide Site Settings ({@see Style_Target::kit_hosted()}), or both.
+     */
+    interface V3_Map_Settings_Host
+    {
+        /**
+         * @return array<string, mixed>
+         */
+        public function read(array $node): array;
+        /**
+         * @param array                $node     Subtree node (by reference).
+         * @param array<string, mixed> $settings The full settings {@see self::read()} returned, after the write.
+         */
+        public function write(array &$node, array $settings): void;
+        /**
+         * @param array<string, mixed> $settings Settings in the shape {@see self::read()} returns.
+         * @return array<string, mixed> The part stored on the active kit.
+         */
+        public function site_settings(array $settings): array;
+        /**
+         * @param array<string, mixed> $settings      Settings in the shape {@see self::read()} returns.
+         * @param array<string, mixed> $site_settings Replaces the part stored on the active kit.
+         * @return array<string, mixed>
+         */
+        public function with_site_settings(array $settings, array $site_settings): array;
+    }
+    /**
+     * Reads and writes map style settings on the active kit. Writes wait for the edited document to
+     * save, so a dry run or a failed save leaves the site untouched, and then save the kit, which
+     * regenerates the kit CSS.
+     *
+     * The kit custom CSS is the site's own stylesheet, so it is kept out of the settings a map sees.
+     */
+    class Kit_Settings_Host implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Settings_Host
+    {
+        const FLUSH_ACTION = 'elementor/document/after_save';
+        const EXCLUDED_SETTINGS = [\Elementor\Modules\Mcp\Abilities\Appliers\V3_Node_Bridge::V3_CUSTOM_CSS_SETTING];
+        public function read(array $node): array
+        {
+        }
+        public function write(array &$node, array $settings): void
+        {
+        }
+        public function site_settings(array $settings): array
+        {
+        }
+        public function with_site_settings(array $settings, array $site_settings): array
+        {
+        }
+        public static function can_write(): bool
+        {
+        }
+        /**
+         * Settings other code saved on the kit since the read are kept; only keys the map wrote or
+         * removed change.
+         */
+        public static function flush(): void
+        {
+        }
+        public static function discard_pending(): void
+        {
+        }
+    }
+    class Node_Settings_Host implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Settings_Host
+    {
+        public function read(array $node): array
+        {
+        }
+        public function write(array &$node, array $settings): void
+        {
+        }
+        public function site_settings(array $settings): array
+        {
+        }
+        public function with_site_settings(array $settings, array $site_settings): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings {
+    /**
+     * Optional contract for a rule the published JSON schema cannot express, such as an attachment that
+     * must exist or a date that must be real. It runs after the value passed the published schema, so it
+     * never re-checks types, patterns, ranges or keys.
+     */
+    interface V3_Plain_Value_Guard
+    {
+        /**
+         * @param mixed                $plain   Value that already passed the published schema, sanitized by it.
+         * @param array<string, mixed> $control
+         * @return string|null Rejection reason that completes the sentence `Property "x" on "y" <reason> and was skipped.`, or null to accept.
+         */
+        public function reject_reason($plain, array $control): ?string;
+    }
+    /**
+     * Bridges one V3 control to a V4 prop type: the prop type resolves, validates and sanitizes
+     * the plain value, and the adapter converts the resulting prop value to and from the
+     * control's stored format.
+     */
+    interface V3_Setting_Adapter
+    {
+        /**
+         * @param array<string, mixed> $control
+         */
+        public function supports(array $control): bool;
+        /**
+         * @param array<string, mixed> $control
+         */
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type;
+        /**
+         * @param array<string, mixed> $prop_value Sanitized `{ $$type, value }` prop value.
+         * @param array<string, mixed> $control
+         * @return mixed
+         */
+        public function to_control_value(array $prop_value, array $control);
+        /**
+         * @param mixed                $stored
+         * @param array<string, mixed> $control
+         * @return mixed Plain value, or null when the stored value is unreadable.
+         */
+        public function from_control_value($stored, array $control);
+    }
+    class String_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        /**
+         * @param string[] $allowed_values
+         */
+        public function __construct(array $allowed_values = [])
+        {
+        }
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    /**
+     * Text control holding a CSS selector that the frontend passes to `querySelector`/jQuery, where a
+     * malformed selector throws and stops the widget script.
+     */
+    class Css_Selector_Setting_Adapter extends \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\String_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Plain_Value_Guard
+    {
+        const MAX_LENGTH = 200;
+        const PATTERN = '^[#.\[\]\w\s>+~:()="\'*,^$|-]*$';
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        /**
+         * The published pattern limits the characters; a pattern cannot check that brackets and quotes
+         * close or that the selector does not start or end on a combinator.
+         */
+        public function reject_reason($plain, array $control): ?string
+        {
+        }
+    }
+    /**
+     * Date or date-time text control. The widgets parse it at render time and throw on anything
+     * PHP cannot read, so invalid text is rejected here instead of being saved.
+     */
+    class Date_Time_Setting_Adapter extends \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\String_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Plain_Value_Guard
+    {
+        const PATTERN = '^(\d{4}-\d{2}-\d{2}( \d{2}:\d{2}(:\d{2})?)?)?$';
+        const FORMATS = ['Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d'];
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        /**
+         * The published pattern fixes the format; a pattern cannot tell whether the date exists (no Feb 30).
+         */
+        public function reject_reason($plain, array $control): ?string
+        {
+        }
+    }
+    class Enum_From_Control_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        const CHOICE_CONTROL_TYPES = ['select', 'select2', 'choose'];
+        const EMPTY_OPTION_KEY = '';
+        const FALLBACK_EMPTY_OPTION = 'blank';
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+        /**
+         * Option keys as the schema shows them. An empty key is the label's slug, because an empty enum value is not a value an agent can send.
+         *
+         * @param array<string, mixed> $control
+         * @return string[]
+         */
+        public static function public_values(array $control): array
+        {
+        }
+        /**
+         * @param string               $stored
+         * @param array<string, mixed> $control
+         */
+        public static function public_value(string $stored, array $control): string
+        {
+        }
+        /**
+         * @param string               $value
+         * @param array<string, mixed> $control
+         */
+        public static function stored_value(string $value, array $control): string
+        {
+        }
+    }
+    /**
+     * GALLERY control, stored as a list of `{ id, url }` attachments.
+     */
+    class Gallery_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Plain_Value_Guard
+    {
+        const CONTROL_TYPE = 'gallery';
+        /**
+         * The published schema fixes the item shape; whether the attachment exists is only known at write time.
+         * Without this the item would be dropped silently while the rest of the gallery is saved.
+         */
+        public function reject_reason($plain, array $control): ?string
+        {
+        }
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    class Icons_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        const CONTROL_TYPE = 'icons';
+        const FIELD_KEYS = ['value', 'library'];
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    class Link_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        const CONTROL_TYPE = 'url';
+        const FLAG_ON = 'on';
+        const FLAG_OFF = '';
+        const FLAG_KEYS = ['is_external', 'nofollow'];
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    /**
+     * Multiple-choice `select2` control, stored as a list of option keys.
+     */
+    class Multi_Enum_From_Control_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        const CONTROL_TYPE = 'select2';
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    class Number_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        const CONTROL_TYPE = 'number';
+        /**
+         * Largest magnitude that a float and a stored integer both represent exactly.
+         */
+        const MAX_MAGNITUDE = 9007199254740992;
+        public function __construct(bool $whole = false)
+        {
+        }
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    class Post_Id_Setting_Adapter extends \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\Number_Setting_Adapter
+    {
+        const CONTROL_TYPE = 'query';
+        const MIN_POST_ID = 1;
+        public function __construct()
+        {
+        }
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+    /**
+     * REPEATER control. The row shape is derived from the control's own fields: each field whose
+     * type maps to a setting adapter is exposed under its field key and converted by that adapter.
+     * A write replaces the whole list; every row gets a fresh `_id`.
+     */
+    class Repeater_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Plain_Value_Guard
+    {
+        const CONTROL_TYPE = 'repeater';
+        const ROW_ID_KEY = '_id';
+        const ROW_ID_LENGTH = 7;
+        /**
+         * The published row schema already carries each field's shape; this only runs the row fields'
+         * own exceptions, so nothing is silently stripped from a row.
+         */
+        public function reject_reason($plain, array $control): ?string
+        {
+        }
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    /**
+     * Slider control used as a content value (e.g. Progress Bar `percent`), stored as `{ unit, size, sizes }`.
+     */
+    class Size_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        const CONTROL_TYPE = 'slider';
+        const DEFAULT_UNIT = 'px';
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    class Switcher_Setting_Adapter implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+    {
+        const CONTROL_TYPE = 'switcher';
+        const DEFAULT_RETURN_VALUE = 'yes';
+        const OFF_VALUE = '';
+        public function supports(array $control): bool
+        {
+        }
+        public function prop_type(array $control): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+        public function to_control_value(array $prop_value, array $control)
+        {
+        }
+        public function from_control_value($stored, array $control)
+        {
+        }
+    }
+    /**
+     * Media Library attachment id: a positive whole number.
+     */
+    class V3_Attachment_Id_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\Number_Prop_Type
+    {
+        const MINIMUM = 1;
+        public static function get_key(): string
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        public function to_json_schema(): array
+        {
+        }
+    }
+    class V3_Gallery_Item_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
+    class V3_Gallery_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+    class V3_Icons_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        /**
+         * The icon value becomes a CSS class list and an icon-library lookup; only class-name characters make sense.
+         */
+        const CLASS_NAME_PATTERN = '^[A-Za-z0-9 _-]*$';
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
+    class V3_Link_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Object_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        protected function define_shape(): array
+        {
+        }
+    }
+    /**
+     * Float number for V3 NUMBER controls. Its own key keeps it off the shared V4 number plain
+     * resolver, which casts to int and would drop decimals (e.g. a Counter ending at 4.5).
+     */
+    class V3_Number_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\Number_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        public static function make()
+        {
+        }
+        /**
+         * @param int|float|null $minimum
+         * @param int|float|null $maximum
+         */
+        public function range($minimum, $maximum): self
+        {
+        }
+        public function whole(): self
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        public function to_json_schema(): array
+        {
+        }
+    }
+    /**
+     * Array of repeater rows. The row shape is not known until a repeater control is converted, so
+     * it is passed with {@see self::set_item_shape()} instead of through a dedicated item class.
+     */
+    class V3_Repeater_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Base\Array_Prop_Type
+    {
+        public static function get_key(): string
+        {
+        }
+        /**
+         * @param array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type> $shape Prop types of the row fields, keyed by field key.
+         * @return $this
+         */
+        public function set_item_shape(array $shape): self
+        {
+        }
+        protected function define_item_type(): \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type
+        {
+        }
+    }
+    /**
+     * Picks the setting adapter for a V3 control by its type. Used to derive a repeater row's
+     * item prop types from the control's own fields, so maps do not re-declare them.
+     *
+     * Only content-mappable control types resolve; anything else (hidden, color, style groups,
+     * nested repeaters, ...) returns null and is skipped by the caller.
+     */
+    class V3_Setting_Adapter_Resolver
+    {
+        public static function resolve(array $control): ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+        {
+        }
+    }
+    /**
+     * Size limited to the units the V3 slider control accepts. The V4 size prop type only checks
+     * that the unit is a known CSS unit, and advertises all of them.
+     */
+    class V3_Size_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Size_Prop_Type
+    {
+        public function units($units = 'all'): self
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+    }
+    /**
+     * String with a JSON Schema `pattern` and `maxLength` that are both published and enforced, so the
+     * schema an agent reads is the rule the value is checked against. V4 string schemas are unchanged.
+     */
+    class V3_String_Prop_Type extends \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type
+    {
+        public function pattern(string $pattern): self
+        {
+        }
+        public function max_length(int $max_length): self
+        {
+        }
+        protected function validate_value($value): bool
+        {
+        }
+        public function to_json_schema(): array
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps {
+    /**
+     * Stores the kit keys, and their global links, on the active kit and every other setting on the
+     * element, for widgets whose own targets sit next to kit-hosted ones.
+     */
+    class Split_Settings_Host implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Settings_Host
+    {
+        /**
+         * @param string[] $kit_keys
+         */
+        public function __construct(array $kit_keys)
+        {
+        }
+        public function read(array $node): array
+        {
+        }
+        public function write(array &$node, array $settings): void
+        {
+        }
+        public function site_settings(array $settings): array
+        {
+        }
+        public function with_site_settings(array $settings, array $site_settings): array
+        {
+        }
+    }
+    class Style_Target
+    {
+        const DEFAULT_STATE = 'default';
+        const GLOBAL_STATES = [self::DEFAULT_STATE, 'hover'];
+        public static function make(string $alias): self
+        {
+        }
+        public function label(string $label): self
+        {
+        }
+        /**
+         * Plain-language purpose of the inner element and when it is hidden, conditional or stateful,
+         * for agents that cannot see the rendered widget.
+         */
+        public function description(string $description): self
+        {
+        }
+        /**
+         * DOM selector inside the widget wrapper that declarations the widget controls cannot store
+         * fall back to as custom CSS. An empty string is the wrapper itself; targets without a
+         * selector drop those declarations instead.
+         */
+        public function selector(string $selector): self
+        {
+        }
+        /**
+         * Widget-specific states on top of {@see self::GLOBAL_STATES}, written as `<alias>:<state> { ... }`.
+         */
+        public function states(string ...$states): self
+        {
+        }
+        /**
+         * Declarations the widget's own stylesheet paints on this target before any setting is set,
+         * kept in sync with the widget stylesheet by hand.
+         *
+         * @param array<string, string> $declarations CSS property => value.
+         */
+        public function defaults(array $declarations): self
+        {
+        }
+        public function bind(string $prop, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Control $control, string $state = self::DEFAULT_STATE): self
+        {
+        }
+        /**
+         * The target reads and writes controls of the active kit instead of the widget's,
+         * so a write styles every page of the site.
+         */
+        public function kit_hosted(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Kit_Controls_Source $source): self
+        {
+        }
+        public function with(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Fragments\Style_Fragment $fragment): self
+        {
+        }
+        public function get_alias(): string
+        {
+        }
+        public function get_label(): string
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        public function get_selector(): ?string
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function get_declared_states(): array
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public function get_defaults(): array
+        {
+        }
+        /**
+         * @return array<int, array{prop: string, state: string, control: V3_Control}>
+         */
+        public function get_bindings(): array
+        {
+        }
+        public function get_kit_source(): ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Kit_Controls_Source
+        {
+        }
+    }
+    /**
+     * V3 colors can only link to a V4 color variable that is synced to the V3 global colors,
+     * through the `v4-<label>` global color the design system sync registers for it.
+     */
+    class V3_Color_Variables
+    {
+        const GLOBAL_COLORS_PREFIX = 'globals/colors?id=';
+        /**
+         * @param callable(): (\Elementor\Modules\Variables\Services\Variables_Service|null) $create_service
+         */
+        public function __construct(callable $create_service)
+        {
+        }
+        public static function create_default(): self
+        {
+        }
+        /**
+         * @return string|null The variable id of the first color variable in a color, background or box shadow prop value.
+         */
+        public static function variable_id_in(array $prop_value): ?string
+        {
+        }
+        public static function with_resolved_color(array $prop_value, string $color): array
+        {
+        }
+        /**
+         * @return array{id: string, label: string, value: string, sync_to_v3?: bool}|null
+         */
+        public function find(string $variable_id): ?array
+        {
+        }
+        public function global_link(array $variable): ?string
+        {
+        }
+        /**
+         * @param mixed $global_link
+         */
+        public function variable_id_for_global_link($global_link): ?string
+        {
+        }
+    }
+    class V3_Control
+    {
+        public static function bind_to(string $setting): self
+        {
+        }
+        public function responsive(): self
+        {
+        }
+        public function sides(string ...$sides): self
+        {
+        }
+        /**
+         * Binds the control to one field of an object style prop, for example `flexGrow` of `flex`.
+         */
+        public function part(string $part): self
+        {
+        }
+        /**
+         * Overrides the requirements derived from the control's `condition`.
+         *
+         * @param array<string, scalar> $setting_values
+         */
+        public function requires(array $setting_values): self
+        {
+        }
+        public function get_setting(): string
+        {
+        }
+        public function is_responsive(): bool
+        {
+        }
+        /**
+         * @return string[]|null
+         */
+        public function get_sides(): ?array
+        {
+        }
+        public function get_part(): ?string
+        {
+        }
+        /**
+         * @return array<string, scalar>|null
+         */
+        public function get_requirements(): ?array
+        {
+        }
+    }
+    /**
+     * Renders the declarations a style target cannot store as custom CSS scoped to that target.
+     * Pro replaces `selector` with the widget wrapper at render.
+     *
+     * Rule shape: `{ target, state, breakpoint, media, declarations: property => value }`, where `media`
+     * is the condition of a media query that is not a site breakpoint, or null. Rules render desktop
+     * first, then in the order of `$media_queries`, then custom media, so later rules win the cascade.
+     */
+    class V3_Custom_Css_Fallback
+    {
+        use \Elementor\Modules\AtomicWidgets\CssConverter\Css_Block_Scanner_Trait;
+        const WRAPPER_PLACEHOLDER = 'selector';
+        const MAX_WIDTH_DIRECTION = 'max';
+        const MEDIA_PRELUDE_PATTERN = '/^@media\s*(?P<condition>.+)$/is';
+        const IMPORTANT = '!important';
+        const IMPORTANT_PATTERN = '/\s*!\s*important\s*$/i';
+        const TRAILING_PSEUDO_ELEMENT_PATTERN = '/::?(?:before|after)$/i';
+        /**
+         * @param array<string, string|null> $selectors     Target alias => DOM selector inside the wrapper.
+         * @param array<string, string>      $media_queries Breakpoint name => media query condition, in cascade order.
+         */
+        public function __construct(array $selectors, array $media_queries)
+        {
+        }
+        public static function for_map(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map): self
+        {
+        }
+        /**
+         * @return array<string, string|null>
+         */
+        public static function selectors_of(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map): array
+        {
+        }
+        /**
+         * @return array<string, string>
+         */
+        public static function site_media_queries(): array
+        {
+        }
+        public function render(array $rules): string
+        {
+        }
+        /**
+         * Reverse of {@see self::render()}. A rule whose selector belongs to no target, like one a user
+         * typed in the editor, is returned as written in `unmatched`.
+         *
+         * @return array{rules: array[], unmatched: string[]}
+         */
+        public function parse(string $css): array
+        {
+        }
+        /**
+         * Same target, state and media: incoming declarations override existing ones of the same property.
+         */
+        public static function merge(array $existing, array $incoming): array
+        {
+        }
+        /**
+         * Removes unchanged copies of `$statements` from `$css`, so a rule read back as written is not
+         * reported as an unknown style target when it is sent again.
+         *
+         * @param string   $css
+         * @param string[] $statements
+         */
+        public static function without_statements(string $css, array $statements): string
+        {
+        }
+    }
+    /**
+     * What a map-driven V3 widget paints before any of its style settings are set, in the same
+     * target CSS as its styles, layered in cascade order: the widget stylesheet, the kit globals
+     * Elementor prints for every widget of the type, then the element's control defaults.
+     */
+    class V3_Map_Default_Styles
+    {
+        const COLOR = 'color';
+        const TYPOGRAPHY = 'typography';
+        const LAYER_SEPARATOR = "\n";
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Style_Reader     $reader
+         * @param callable(string): mixed $resolve_global       Kit value of a global key such as `globals/colors?id=primary`.
+         * @param string[]                $enabled_global_types {@see self::COLOR} and {@see self::TYPOGRAPHY} when the kit defaults of that type are on.
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Block_Renderer|null     $renderer
+         */
+        public function __construct(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Style_Reader $reader, callable $resolve_global, array $enabled_global_types, ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Block_Renderer $renderer = null)
+        {
+        }
+        public static function create_default(): self
+        {
+        }
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map      $map
+         * @param array<string, mixed> $settings   The element settings; only the ones that decide which controls show are used.
+         * @param array<string, mixed> $controls
+         * @param callable|null        $is_visible {@see V3_Map_Style_Reader::read()}.
+         */
+        public function render(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, array $settings, array $controls, ?callable $is_visible = null): string
+        {
+        }
+        /**
+         * The kit globals Elementor prints for every widget of the type, read into the map's targets.
+         *
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map      $map
+         * @param array<string, mixed> $settings
+         * @param array<string, mixed> $controls
+         * @return array<string, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator>
+         */
+        public function kit_global_blocks(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, array $settings, array $controls): array
+        {
+        }
+    }
+    class V3_Map_Diagnostics
+    {
+        const MAP_ENTRY = 'map';
+        public function add(string $widget_type, string $entry, string $reason, string $detail = ''): void
+        {
+        }
+        /**
+         * @return array<int, array{widget_type: string, entry: string, reason: string, detail: string}>
+         */
+        public function for_widget(string $widget_type): array
+        {
+        }
+        /**
+         * @return array<int, array{widget_type: string, entry: string, reason: string, detail: string}>
+         */
+        public function all(): array
+        {
+        }
+        public function is_empty(): bool
+        {
+        }
+    }
+    /**
+     * Writes the fallback rules of a map-driven style result into the widget's `custom_css`,
+     * which only renders with the Elementor Pro custom CSS module.
+     */
+    class V3_Map_Fallback_Css
+    {
+        const WRITTEN_CODE = 'css_fallback_custom_css';
+        const SKIPPED_CODE = \Elementor\Modules\Mcp\Abilities\Appliers\Style_Applier::UNSUPPORTED_CSS_CODE;
+        /**
+         * @param bool|null                  $has_pro       Whether Pro's custom CSS module is available; detected when null.
+         * @param array<string, string>|null $media_queries Breakpoint name => media query; the site breakpoints when null.
+         */
+        public function __construct(?bool $has_pro = null, ?array $media_queries = null)
+        {
+        }
+        /**
+         * @param array        $node        Subtree node (by reference).
+         * @param array        $result      {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\V3_Style_Mapper::apply()} result.
+         * @param string       $widget_type
+         * @param string       $config_id
+         * @param \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $warnings
+         */
+        public function apply(array &$node, array $result, string $widget_type, string $config_id, \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $warnings): void
+        {
+        }
+    }
+    class V3_Map_Settings_Reader
+    {
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map      $map
+         * @param array<string, mixed> $raw Stored V3 settings keyed by control key.
+         * @return array<string, mixed> Plain values keyed by public setting key.
+         */
+        public static function read(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, array $raw): array
+        {
+        }
+    }
+    /**
+     * Writes plain map settings the V4 way: check the raw value against the schema `get-widget-schemas`
+     * publishes, run the setting's explicit exceptions, resolve it against the setting's prop type, then
+     * let the setting adapter convert it to the control's storage.
+     * Invalid values are skipped and reported instead of failing the request.
+     */
+    class V3_Map_Settings_Writer
+    {
+        const REASON_SCHEMA = 'does not match the published schema (%s)';
+        const REASON_UNRESOLVED = 'could not be resolved';
+        const REASON_INVALID = 'failed validation';
+        public function __construct(\Elementor\Modules\AtomicWidgets\PlainResolvers\Plain_Values_Resolver $plain_values_resolver)
+        {
+        }
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map      $map
+         * @param array<string, mixed> $plain Public setting key => plain value. Null clears the setting.
+         * @return array{settings: array<string, mixed>, rejected: array<string, string>}
+         */
+        public function write(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, array $plain): array
+        {
+        }
+    }
+    /**
+     * Clears the style a map-driven widget exposes on read, so `replace` never deletes a setting
+     * the agent could not see, such as one hidden by an inactive condition.
+     */
+    class V3_Map_Style_Clearer
+    {
+        public function __construct(?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Style_Reader $reader = null)
+        {
+        }
+        public function clear(array &$node, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, string $widget_type): void
+        {
+        }
+        /**
+         * Custom CSS rules outside every style target, which the read returns as written.
+         *
+         * @return string[]
+         */
+        public static function user_css_rules(array $settings, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map): array
+        {
+        }
+    }
+    class V3_Map_Style_Reader
+    {
+        public function __construct(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter_Registry $adapters, ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Color_Variables $color_variables = null)
+        {
+        }
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map      $map
+         * @param array<string, mixed> $settings
+         * @param array<string, mixed> $controls
+         * @param callable|null        $is_visible `( array $control, array $values, array $controls ): bool`; hidden controls are not rendered.
+         * @return array<string, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator> Alias => blocks of that style target.
+         */
+        public function read(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, array $settings, array $controls, ?callable $is_visible = null): array
+        {
+        }
+        /**
+         * Setting keys {@see self::read()} renders from, so a replace clears exactly what was read.
+         *
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map      $map
+         * @param array<string, mixed> $settings
+         * @param array<string, mixed> $controls
+         * @param callable|null        $is_visible `( array $control, array $values, array $controls ): bool`.
+         * @return string[]
+         */
+        public function readable_keys(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map $map, array $settings, array $controls, ?callable $is_visible = null): array
+        {
+        }
+    }
+    class V3_Map_Style_Writer
+    {
+        const NONE_KEYWORD = 'none';
+        const DEFAULT_BORDER_STYLE = 'solid';
+        const SHADOW_POSITION_SUFFIX = '_position';
+        const SHADOW_INSET = 'inset';
+        const SHADOW_OUTLINE_POSITION = ' ';
+        const TRANSPARENT_ZERO_SHADOW = ['horizontal' => 0, 'vertical' => 0, 'blur' => 0, 'spread' => 0, 'color' => 'rgba(0,0,0,0)', 'position' => 'outline'];
+        const POSITION_PROPERTY = 'position';
+        const POSITION_OFFSET_PROPERTIES = ['inset-inline-start', 'inset-inline-end', 'inset-block-start', 'inset-block-end'];
+        const PHYSICAL_TEXT_ALIGN_PATTERN = '/(text-align\s*:\s*)(left|right)\b/i';
+        const PHYSICAL_SIDES = ['block-start' => 'top', 'inline-end' => 'right', 'block-end' => 'bottom', 'inline-start' => 'left'];
+        const PART_LONGHANDS = ['flexBasis' => 'flex-basis'];
+        const INITIAL_FLEX_BASIS = 'auto';
+        const SIDE_LONGHAND_FORMATS = ['margin' => 'margin-%s', 'padding' => 'padding-%s', 'border-width' => 'border-%s-width'];
+        public function __construct(\Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter $css_converter, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter_Registry $adapters, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Css_Declaration_Parser $declaration_parser, ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Color_Variables $color_variables = null)
+        {
+        }
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context    $ctx
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_Style_Binding[] $bindings
+         * @param array<string, mixed>     $controls
+         * @param string                   $breakpoint
+         * @param string|null              $state
+         * @param string                   $css
+         * @return array<int, array{property: string, value: string, reason: string}> Declarations the bindings cannot store, for the caller to fall back on.
+         */
+        public function write(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Conversion_Context $ctx, array $bindings, array $controls, string $breakpoint, ?string $state, string $css): array
+        {
+        }
+    }
+    class V3_Setting
+    {
+        public static function bind_to(string $control_key): self
+        {
+        }
+        public function string(): self
+        {
+        }
+        public function date_time(): self
+        {
+        }
+        public function css_selector(): self
+        {
+        }
+        /**
+         * @param string[] $values
+         */
+        public function enum(array $values): self
+        {
+        }
+        public function enum_from_control(): self
+        {
+        }
+        public function multi_enum_from_control(): self
+        {
+        }
+        public function switcher(): self
+        {
+        }
+        public function number(): self
+        {
+        }
+        public function whole_number(): self
+        {
+        }
+        public function post_id(): self
+        {
+        }
+        public function size(): self
+        {
+        }
+        public function link(): self
+        {
+        }
+        public function gallery(): self
+        {
+        }
+        public function repeater(): self
+        {
+        }
+        public function icons(): self
+        {
+        }
+        public function dynamic(): self
+        {
+        }
+        public function default(string $value): self
+        {
+        }
+        public function get_control_key(): string
+        {
+        }
+        public function get_adapter(): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Settings\V3_Setting_Adapter
+        {
+        }
+        public function is_dynamic(): bool
+        {
+        }
+        public function get_default(): ?string
+        {
+        }
+    }
+    class V3_Settings_Patch
+    {
+        const GLOBALS_KEY = '__globals__';
+        /**
+         * Elementor renders a setting from its `__globals__` link before its own value, so a
+         * patched value must drop the old link, and links of other settings must survive.
+         *
+         * @param array<string, mixed> $settings
+         * @param array<string, mixed> $patch
+         * @return array<string, mixed>
+         */
+        public static function merge(array $settings, array $patch): array
+        {
+        }
+    }
+    class V3_Style_Binding_Compiler
+    {
+        const STATE_PATTERN = '/^[a-z]+(?:-[a-z]+)*$/';
+        const TOGGLE_CONTROL_TYPES = ['popover_toggle', 'switcher'];
+        const DEFAULT_TOGGLE_VALUE = 'yes';
+        const NEGATION_SUFFIX = '!';
+        const RESPONSIVE_PROBE_SUFFIX = '_mobile';
+        public function __construct(array $style_schema, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter_Registry $adapters)
+        {
+        }
+        public function compile(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target, array $controls, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Diagnostics $diagnostics, string $widget_type): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_Style_Target
+        {
+        }
+    }
+    class V3_Widget_Map_Compiler
+    {
+        const ERROR_CODE = 'elementor_v3_map_invalid';
+        const ALIAS_PATTERN = '/^[a-z0-9]+(?:-[a-z0-9]+)*$/';
+        const SETTING_ENTRY_PREFIX = 'setting.';
+        const DATE_TIME_CONTROL_TYPE = 'date_time';
+        const DATE_TIME_FORMAT_DESCRIPTION = 'Date and time as YYYY-MM-DD HH:MM, in the site timezone.';
+        /**
+         * @param array<string, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type>|null $style_schema
+         */
+        public function __construct(?array $style_schema = null, ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Adapters\V3_Control_Adapter_Registry $adapters = null)
+        {
+        }
+        /**
+         * Map-shape errors fail the whole map. A setting or binding whose control is missing or
+         * incompatible is dropped and recorded in the diagnostics, so control drift in the widget
+         * degrades the map instead of removing the widget from the catalog.
+         *
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Widget_Map        $map
+         * @param array<string, mixed> $controls
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Diagnostics   $diagnostics
+         * @param string|null          $expected_widget_type
+         * @param array<string, mixed> $kit_controls Controls of the active kit that kit-hosted targets compile against.
+         * @return \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map|\WP_Error
+         */
+        public function compile(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Widget_Map $map, array $controls, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Diagnostics $diagnostics, ?string $expected_widget_type = null, array $kit_controls = [])
+        {
+        }
+        public static function error(string $reason, string $detail): \WP_Error
+        {
+        }
+    }
+    class V3_Widget_Map_Registry
+    {
+        const MAPS_DIR = __DIR__;
+        const REGISTERED_MAPS_FILE = __DIR__ . '/registered-maps.php';
+        const DIAGNOSTICS_LOG_MESSAGE = 'V3 widget map entries were dropped while compiling against the registered controls.';
+        const COMMON_WIDGET_TYPE = 'common';
+        const KIT_CONTROL_COLLISION = 'kit_control_collision';
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Widget_Map_Compiler                                            $compiler
+         * @param callable(string): (array<string, mixed>|null)                     $get_controls
+         * @param array<string, V3_Widget_Map>                                      $maps
+         * @param (callable(string): bool)|null                                     $has_advanced_tab Widgets that get the {@see Advanced_Wrapper} target.
+         * @param (callable(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Kit_Controls_Source): (array<string, mixed>|null))|null $get_kit_controls Null while the kit controls are unavailable.
+         */
+        public function __construct(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Widget_Map_Compiler $compiler, callable $get_controls, array $maps = [], ?callable $has_advanced_tab = null, ?callable $get_kit_controls = null)
+        {
+        }
+        public static function instance(): self
+        {
+        }
+        public static function set_instance(self $registry): void
+        {
+        }
+        /**
+         * @param array<string, V3_Widget_Map>|null $maps Defaults to the maps listed in registered-maps.php.
+         */
+        public static function create_default(?array $maps = null): self
+        {
+        }
+        /**
+         * Without Pro, core registers a promotion placeholder under every Pro widget name.
+         * Its controls are not the real widget's, so a map must not compile against it.
+         */
+        public static function registered_widget(string $widget_type): ?\Elementor\Widget_Base
+        {
+        }
+        public static function reset_instance(): void
+        {
+        }
+        public function has_registered_map(string $widget_type): bool
+        {
+        }
+        public function is_supported(string $widget_type): bool
+        {
+        }
+        /**
+         * The single gate for map-driven behavior: null whenever the widget has no map or the map
+         * shape is invalid.
+         */
+        public function get_map(string $widget_type): ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Compiled_V3_Map
+        {
+        }
+        /**
+         * @return array<int, array{widget_type: string, entry: string, reason: string, detail: string}>
+         */
+        public function get_diagnostics(string $widget_type): array
+        {
+        }
+        /**
+         * Full control stack (content and style buckets) the map was compiled against.
+         * `get_config()['controls']` omits split style controls, so responsive style keys
+         * must be looked up here.
+         *
+         * @return array<string, mixed>
+         */
+        public function get_registered_controls(string $widget_type): array
+        {
+        }
+        /**
+         * Public shape exposed to the LLM as the widget contract.
+         *
+         * @return array{description: string, properties: array<string, array<string, mixed>>, default_style_target: string, style_targets: array<string, array{label: string, description?: string, states: string[], properties: string[], properties_by_state: array<string, string[]>}>}|null
+         */
+        public function get_llm_contract(string $widget_type): ?array
+        {
+        }
+    }
+    class V3_Widget_Map
+    {
+        public static function make(string $widget_type): self
+        {
+        }
+        public function description(string $description): self
+        {
+        }
+        /**
+         * @param array<string, V3_Setting> $settings Keyed by the public property name exposed to the LLM.
+         */
+        public function settings(array $settings): self
+        {
+        }
+        public function default_target(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target $target): self
+        {
+        }
+        public function targets(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target ...$targets): self
+        {
+        }
+        public function get_widget_type(): string
+        {
+        }
+        public function get_description(): string
+        {
+        }
+        /**
+         * @return array<string, V3_Setting>
+         */
+        public function get_settings(): array
+        {
+        }
+        /**
+         * The kit controls source of the first kit-hosted target, null when every target is the widget's.
+         */
+        public function get_kit_source(): ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Kit_Controls_Source
+        {
+        }
+        public function has_only_kit_targets(): bool
+        {
+        }
+        public function without_kit_targets(): self
+        {
+        }
+        public function get_default_target(): ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target
+        {
+        }
+        /**
+         * @return \Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\Style_Target[] The default target first, then the others in declaration order.
+         */
+        public function get_all_targets(): array
         {
         }
     }
@@ -53085,102 +58697,24 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer {
      * Renders a {@see V3_Block_Accumulator} back into a CSS string that
      * {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\V3_Style_Mapper} can consume.
      *
-     * Layout: base declarations, then `&:hover|focus|active { ... }`, then
-     * `@media(--breakpoint) { ... }` blocks with the same nesting inside.
+     * Layout: base declarations, then `&:hover|focus|active { ... }`, then named style targets
+     * as `<target> { ... } <target>:<state> { ... }`, then `@media(--breakpoint) { ... }` blocks
+     * with the same nesting inside.
      */
     class Block_Renderer
     {
+        const DEFAULT_TARGET_SELECTOR = '&';
         public function render(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator $blocks): string
         {
         }
-    }
-    /**
-     * Inverse of {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Property_Converter}:
-     * reads V3 legacy settings and emits CSS declarations into a {@see V3_Block_Accumulator}
-     * grouped by breakpoint / pseudo-state.
-     *
-     * Each serializer owns a single override shape (typography_prefix, border_prefix,
-     * box_shadow_prefix, setting+resolver, or generic index fallback).
-     */
-    interface V3_Property_Serializer
-    {
-        public function is_supported(array $entry, string $property, ?string $state): bool;
-        public function emit(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator $blocks, array $settings, array $entry, string $property, ?string $state): void;
-    }
-}
-namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Serializers {
-    /**
-     * Common helpers for concrete serializers: responsive-suffix walking and
-     * setting-key -> CSS emission via {@see V3_Value_Formatters}.
-     */
-    abstract class Base_Property_Serializer implements \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Property_Serializer
-    {
-        const RESPONSIVE_SUFFIXES = ['_tablet' => 'tablet', '_mobile' => 'mobile'];
-        const BASE_BREAKPOINT = \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Responsive_Key_Resolver::BASE_BREAKPOINT;
-        protected function emit_setting_at_breakpoint(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator $blocks, array $settings, string $property, ?string $state, string $setting_key, string $resolver, string $breakpoint): void
+        /**
+         * @param array<string, V3_Block_Accumulator> $targets        Alias => blocks of that style target.
+         * @param string                              $default_target Alias rendered without a wrapping block.
+         */
+        public function render_targets(array $targets, string $default_target): string
         {
         }
     }
-    /**
-     * Inverse of {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\Converters\Border_Shorthand_Converter}.
-     * Combines `<prefix>_border` (style) + `<prefix>_width` (sides) + `<prefix>_color` back
-     * into a single `border: <width> <style> <color>` declaration.
-     */
-    class Border_Shorthand_Serializer extends \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Serializers\Base_Property_Serializer
-    {
-        public function is_supported(array $entry, string $property, ?string $state): bool
-        {
-        }
-        public function emit(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator $blocks, array $settings, array $entry, string $property, ?string $state): void
-        {
-        }
-    }
-    /**
-     * Inverse of {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\Converters\Box_Shadow_Prefix_Converter}.
-     * Reassembles `<prefix>_box_shadow_type` (visibility toggle) + `<prefix>_box_shadow`
-     * (shape) into `box-shadow: [inset ]<h> <v> <blur> <spread> <color>`.
-     */
-    class Box_Shadow_Prefix_Serializer extends \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Serializers\Base_Property_Serializer
-    {
-        public function is_supported(array $entry, string $property, ?string $state): bool
-        {
-        }
-        public function emit(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator $blocks, array $settings, array $entry, string $property, ?string $state): void
-        {
-        }
-    }
-    /**
-     * Inverse of {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\Converters\Simple_Setting_Converter}.
-     * Emits declarations for `setting` + `resolver` overrides (and their `_tablet`/`_mobile`
-     * responsive variants when applicable).
-     */
-    class Simple_Setting_Serializer extends \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Serializers\Base_Property_Serializer
-    {
-        public function is_supported(array $entry, string $property, ?string $state): bool
-        {
-        }
-        public function emit(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator $blocks, array $settings, array $entry, string $property, ?string $state): void
-        {
-        }
-    }
-    /**
-     * Inverse of {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\Converters\Typography_Group_Converter}.
-     * Emits one CSS property from a typography group (font-family, font-size, etc.) by
-     * reading its matching `<prefix>_<suffix>` V3 setting.
-     */
-    class Typography_Group_Serializer extends \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Serializers\Base_Property_Serializer
-    {
-        const TYPOGRAPHY_PROPERTIES = ['font-family' => 'font_family', 'font-weight' => 'font_weight', 'font-style' => 'font_style', 'text-transform' => 'text_transform', 'text-decoration' => 'text_decoration', 'font-size' => 'font_size', 'line-height' => 'line_height', 'letter-spacing' => 'letter_spacing', 'word-spacing' => 'word_spacing'];
-        const DIMENSION_PROPERTIES = ['font-size', 'line-height', 'letter-spacing', 'word-spacing'];
-        public function is_supported(array $entry, string $property, ?string $state): bool
-        {
-        }
-        public function emit(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Block_Accumulator $blocks, array $settings, array $entry, string $property, ?string $state): void
-        {
-        }
-    }
-}
-namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer {
     /**
      * Groups CSS declarations by breakpoint + pseudo-state for the serializer's output.
      *
@@ -53199,34 +58733,52 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer {
         {
         }
     }
+}
+namespace Elementor\Modules\Mcp\Abilities\Appliers\V3 {
     /**
-     * Builds the ordered {@see V3_Serializer_Registry}. Each concrete serializer targets
-     * exactly one override shape, mirroring the converter registry.
+     * Words an Elementor control `condition` (e.g. `[ 'layout!' => 'dropdown', 'pointer' => [ 'underline' ] ]`)
+     * for the LLM. Evaluation stays with `Controls_Stack::is_control_visible()`.
      */
-    class V3_Serializer_Registry_Factory
+    class V3_Control_Condition
     {
-        public static function create(): \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Serializer_Registry
+        const TERM_PATTERN = '/^(?P<key>[^\[!]+)(?:\[(?P<sub>[^\]]+)\])?(?P<negation>!)?$/';
+        /**
+         * Words the condition in the same values the schema accepts. Switchers are booleans,
+         * an empty choice key is its public token, and a multiple control matches by inclusion.
+         *
+         * @param array<string, mixed> $condition
+         * @param array<string, mixed> $controls Registered controls, keyed by control name.
+         */
+        public static function describe(array $condition, array $controls = []): string
         {
         }
     }
     /**
-     * Registration-order iterator of {@see V3_Property_Serializer}. Inverse of
-     * {@see \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Converter_Registry}.
+     * Exposes `Controls_Stack::is_control_visible()` of a registered widget as a callable, so map
+     * code decides whether a V3 control takes effect exactly the way Elementor does.
      */
-    class V3_Serializer_Registry
+    class V3_Control_Visibility
     {
-        public function register(\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Property_Serializer $serializer): self
+        /**
+         * @return callable|null `( array $control, array $values, array $controls ): bool`, or null when the widget is not registered.
+         */
+        public static function for_widget(string $widget_type): ?callable
         {
         }
         /**
-         * @return \Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Property_Serializer[]
+         * Elementor does not store settings left at their default, and `is_control_visible()` treats
+         * a missing condition value as hidden, so unset settings fall back to the control default.
+         * Defaults come from each control type's `get_value()`, as in `Controls_Stack::get_init_settings()`,
+         * so a multi-value control also gets its type's own defaults (for example `unit: px`).
+         *
+         * @param array<string, mixed> $controls
+         * @param array<string, mixed> $settings
+         * @return array<string, mixed>
          */
-        public function all(): array
+        public static function values_with_defaults(array $controls, array $settings): array
         {
         }
     }
-}
-namespace Elementor\Modules\Mcp\Abilities\Appliers\V3 {
     class V3_Dynamic_Hoister
     {
         public function __construct(?\Elementor\Core\DynamicTags\Manager $manager = null)
@@ -53254,6 +58806,15 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3 {
         /**
          * @return array{name: string, settings: array<string, mixed>}|null
          */
+        public static function contains_dynamic_input($value, ?string $property = null): bool
+        {
+        }
+        /**
+         * @param mixed $value
+         */
+        public static function contains_nested_dynamic_input($value): bool
+        {
+        }
         public static function extract_input($value, ?string $property): ?array
         {
         }
@@ -53267,7 +58828,37 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3 {
         }
     }
     /**
-     * Validates V3 element_config settings against the per-widget non-style allowlist.
+     * Lists written V3 settings that Elementor ignores because their control is hidden by the
+     * node's final settings. The values are still persisted.
+     */
+    class V3_Inactive_Condition_Warnings
+    {
+        const WARNING_CODE = 'inactive_condition';
+        const UNWORDED_CONDITION = 'other settings allow it';
+        /**
+         * @param \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag         $warnings
+         * @param string               $config_id
+         * @param string               $widget_type
+         * @param string[]             $written_keys Control keys written by this request.
+         * @param array<string, mixed> $settings     Final node settings.
+         */
+        public static function report(\Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $warnings, string $config_id, string $widget_type, array $written_keys, array $settings): void
+        {
+        }
+        /**
+         * @param string[]              $written_keys
+         * @param array<string, mixed>  $settings     Final node settings.
+         * @param array<string, mixed>  $controls     Registered controls of the widget.
+         * @param callable              $is_visible   `( array $control, array $values, array $controls ): bool`.
+         * @param array<string, string> $labels       Setting key => CSS the setting stores, for map-bound style settings.
+         * @return string[]
+         */
+        public static function collect(array $written_keys, array $settings, array $controls, callable $is_visible, array $labels = []): array
+        {
+        }
+    }
+    /**
+     * Validates V3 element_config settings against the setting keys of the widget's map.
      */
     class V3_Non_Style_Allowlist
     {
@@ -53281,72 +58872,65 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3 {
         }
     }
     /**
-     * Shallow shape guard for the primitive remainder of a V3 element_config entry.
-     *
-     * Called after `V3_Non_Style_Allowlist` (key gate) and `V3_Dynamic_Hoister`
-     * (splits dynamic shortcodes from primitives). Delegates to
-     * `V3_Json_Schema_Builder::check_settings_shape()` — enforces only `type`,
-     * `enum`, and one-level nested `properties.type` so the applier never merges
-     * an array into a scalar field.
+     * A style that needs another setting to take effect (e.g. a hover background needs
+     * `pointer: background`) wins over the value the node already had, so the caller is told.
      */
-    class V3_Settings_Validator
+    class V3_Overridden_Setting_Warnings
     {
+        const WARNING_CODE = 'setting_overridden_by_style';
         /**
-         * @param string               $widget_type   V3 widget type (e.g. `theme-post-title`).
-         * @param array<string, mixed> $primitives    Primitive settings (after hoisting removed __dynamic__ entries).
-         * @param array<string, mixed> $widget_config Widget config from `Widget_Type_Resolver::resolve_type_config()`.
+         * @param \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag                                            $warnings
+         * @param string                                                  $config_id
+         * Elementor only stores a setting that differs from its default, so a stored empty value
+         * is a switcher the user turned off, while a missing key was never touched.
          *
-         * @return array{
-         *     valid: array<string, mixed>,
-         *     error: \WP_Error|null,
-         * }
+         * @param array<string, mixed>                                    $settings          Node settings before the style patch, including settings written in the same operation.
+         * @param array<string, array{value: mixed, declaration: string}> $required_settings
+         * @param array<string, mixed>                                    $controls          Registered controls, so quoted values match the schema.
          */
-        public static function validate_shape(string $widget_type, array $primitives, array $widget_config): array
+        public static function report(\Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $warnings, string $config_id, array $settings, array $required_settings, array $controls = []): void
         {
         }
     }
     /**
      * Wires the default collaborators of {@see V3_Style_Mapper} so production callers
-     * do not have to know about the internal converter/serializer/resolver graph.
+     * do not have to know about its internal collaborators.
      */
     class V3_Style_Mapper_Factory
     {
-        public static function create(\Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter $css_converter, array $active_breakpoints = []): \Elementor\Modules\Mcp\Abilities\Appliers\V3\V3_Style_Mapper
+        public static function create(\Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter $css_converter, array $active_breakpoints = [], ?bool $has_pro = null): \Elementor\Modules\Mcp\Abilities\Appliers\V3\V3_Style_Mapper
         {
         }
     }
     /**
-     * Maps LLM CSS strings onto legacy V3 style settings; unmapped rules become custom_css.
+     * Maps LLM CSS strings onto the style settings of a V3 widget through its compiled map.
      *
-     * Breakpoints:
      * The input CSS is split by `Css_Media_Splitter` using the site's active breakpoint names.
-     * Only `desktop` writes to bare setting keys. Non-desktop breakpoints look up
-     * `<setting>_<breakpoint>` on the widget config; if the responsive variant does not exist
-     * and the base setting does, the rule is dropped (to avoid overwriting desktop with mobile).
-     *
-     * Overrides (per-widget CSS -> V3 setting map, see {@see V3_Widget_Bridge_Registry}):
-     * Four mutually-exclusive shapes are dispatched by the {@see V3_Converter_Registry},
-     * one converter class per shape. A fallback `Generic_Index_Converter` uses
-     * {@see V3_Style_Settings_Index} for auto-discovered mappings.
+     * Only `desktop` writes to bare setting keys; other breakpoints write `<setting>_<breakpoint>`.
      */
     class V3_Style_Mapper
     {
-        public function __construct(\Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter $css_converter, array $active_breakpoints, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Converter\V3_Converter_Registry $converter_registry, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Css_Declaration_Parser $declaration_parser, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Unmapped_Css_Serializer $unmapped_serializer, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Responsive_Key_Resolver $responsive_resolver)
+        /**
+         * @param \Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter          $css_converter
+         * @param array                  $active_breakpoints
+         * @param \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Css_Declaration_Parser $declaration_parser
+         * @param bool|null              $has_pro             Whether Pro's custom CSS module is available; detected when null.
+         */
+        public function __construct(\Elementor\Modules\AtomicWidgets\CssConverter\Css_Converter $css_converter, array $active_breakpoints, \Elementor\Modules\Mcp\Abilities\Appliers\V3\Mapper\Css_Declaration_Parser $declaration_parser, ?bool $has_pro = null)
         {
         }
         /**
          * @param string $css_string
          * @param string $widget_type
-         * @param array  $widget_config From Widget_Context_Helper::get_widget_config().
-         * @return array{settings_patch: array<string, mixed>, unmapped_css: string, warnings: string[]}
+         * @return array{settings_patch: array<string, mixed>, fallback_rules: array[], fallback_notes: string[], required_settings: array<string, array{value: mixed, declaration: string}>, warnings: string[], error: string|null}
          */
-        public function apply(string $css_string, string $widget_type, array $widget_config): array
+        public function apply(string $css_string, string $widget_type): array
         {
         }
     }
     /**
      * Serializes a V3 widget's flat style settings back into a CSS string that
-     * V3_Style_Mapper can consume. Reverse of V3_Style_Mapper.
+     * V3_Style_Mapper can consume, through the widget's compiled map. Reverse of V3_Style_Mapper.
      *
      * The output is grouped by breakpoint / pseudo-state to match what the write path
      * expects: base declarations, then `&:hover|focus|active { ... }`, then
@@ -53354,157 +58938,10 @@ namespace Elementor\Modules\Mcp\Abilities\Appliers\V3 {
      */
     class V3_Style_Serializer
     {
-        public function __construct(?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\V3_Serializer_Registry $registry = null, ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Block_Renderer $renderer = null)
+        public function __construct(?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Serializer\Block_Renderer $renderer = null, ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Style_Reader $map_reader = null)
         {
         }
-        public function serialize(array $settings, string $widget_type, array $widget_config): string
-        {
-        }
-    }
-    /**
-     * Indexes a V3 widget's controls for generic CSS-property → setting reverse lookup.
-     *
-     * Only considers simple selector-backed controls (not Group_Control_* siblings).
-     * Group controls are handled exclusively via registry style_overrides.
-     */
-    class V3_Style_Settings_Index
-    {
-        const GROUP_CONTROL_PREFIXES = ['typography_', 'text_stroke_', 'text_shadow_', 'box_shadow_', 'border_', 'background_', 'css_filters_', 'image_border_', 'image_box_shadow_', 'caption_typography_', 'caption_text_shadow_', 'menu_typography_', 'dropdown_typography_', 'dropdown_border_', 'dropdown_box_shadow_', 'dropdown_divider_'];
-        /**
-         * @param array                $controls Widget controls from get_config()['controls'].
-         * @param array<string, array> $style_overrides Registry overrides (excluded from generic index).
-         * @return array<string, array{setting: string, resolver: string, responsive: bool}>
-         *         Keyed by "property" or "property@state". Only unique matches are kept.
-         */
-        public static function build(array $controls, array $style_overrides = []): array
-        {
-        }
-    }
-    /**
-     * Inverse of {@see V3_Value_Resolvers}: turns V3 control values back into CSS strings.
-     * Uses the same resolver names so mapper/serializer stay symmetric under one vocabulary.
-     */
-    class V3_Value_Formatters
-    {
-        const DEFAULT_UNIT = 'px';
-        public static function format(string $resolver, $value): ?string
-        {
-        }
-        public static function format_size($size): string
-        {
-        }
-    }
-    /**
-     * Pure functions that turn CSS values into legacy V3 control value shapes.
-     */
-    class V3_Value_Resolvers
-    {
-        const DEFAULT_UNIT = 'px';
-        /**
-         * @return array{unit: string, size: float}|null
-         */
-        public static function resolve_dimension(string $css_value): ?array
-        {
-        }
-        /**
-         * Parses padding/margin/border-radius shorthand into Elementor dimensions shape.
-         *
-         * @return array{top: string, right: string, bottom: string, left: string, unit: string, isLinked: bool}|null
-         */
-        public static function resolve_sides_shorthand(string $css_value): ?array
-        {
-        }
-        public static function resolve_color(string $css_value): string
-        {
-        }
-        /**
-         * Parses a single box-shadow declaration into Elementor's box_shadow control shape.
-         *
-         * @return array{box_shadow_type: string, box_shadow: array}|null
-         */
-        public static function resolve_box_shadow(string $css_value): ?array
-        {
-        }
-        /**
-         * Spreads typography-related CSS properties into legacy typography_* keys and
-         * forces the group toggle to `custom`.
-         *
-         * @param array<string, string> $declarations property => css value
-         * @param string                $prefix       Control group prefix, e.g. `typography` or `menu_typography`.
-         * @return array<string, mixed>
-         */
-        public static function resolve_typography_group(array $declarations, string $prefix = 'typography'): array
-        {
-        }
-        /**
-         * Parses `border: WIDTH STYLE COLOR` into Elementor border group keys.
-         *
-         * @param string $css_value
-         * @param string $prefix    e.g. `border` or `image_border` or `dropdown_border`.
-         * @return array<string, mixed>|null
-         */
-        public static function resolve_border_shorthand(string $css_value, string $prefix = 'border'): ?array
-        {
-        }
-        /**
-         * Dispatches a named resolver against a CSS value.
-         *
-         * @param string               $resolver_name One of: color, dimension, sides, box_shadow, border, text, slider.
-         * @param string               $css_value
-         * @param array<string, mixed> $args          Extra args (prefix for border/typography).
-         * @return mixed|null
-         */
-        public static function resolve(string $resolver_name, string $css_value, array $args = [])
-        {
-        }
-    }
-    /**
-     * Per-widget allowlists and CSS→legacy-setting overrides for MCP-allowlisted V3 widgets.
-     *
-     * Entry shape:
-     * [
-     *   'non_style_keys' => string[],
-     *   'style_overrides' => [
-     *     // Match key: "css-property" or "css-property@pseudo" (pseudo: hover|focus|active)
-     *     'color' => [
-     *       'setting' => 'title_color',          // single setting key
-     *       'resolver' => 'color',               // V3_Value_Resolvers::resolve name
-     *       'responsive' => true,               // write _tablet/_mobile suffix when breakpoint != desktop
-     *     ],
-     *     'font-size' => [
-     *       'typography_prefix' => 'typography', // expands via resolve_typography_group
-     *     ],
-     *     'border' => [
-     *       'border_prefix' => 'image_border',   // expands via resolve_border_shorthand
-     *     ],
-     *     'box-shadow' => [
-     *       'setting' => 'image_box_shadow',     // writes box_shadow_type + box_shadow under this prefix
-     *       'resolver' => 'box_shadow',
-     *     ],
-     *   ],
-     * ]
-     */
-    class V3_Widget_Bridge_Registry
-    {
-        /**
-         * @return array{non_style_keys: string[], style_overrides: array<string, array>, description?: string}|null
-         */
-        public static function get(string $widget_type): ?array
-        {
-        }
-        /**
-         * @return string[]
-         */
-        public static function get_non_style_keys(string $widget_type): array
-        {
-        }
-        /**
-         * @return array<string, array>
-         */
-        public static function get_style_overrides(string $widget_type): array
-        {
-        }
-        public static function get_description(string $widget_type): ?string
+        public function serialize(array $settings, string $widget_type): string
         {
         }
     }
@@ -53547,7 +58984,7 @@ namespace Elementor\Modules\Mcp\Abilities\Build_Composition {
          * @param array[]  $subtrees Root subtrees to insert.
          * @param string   $parent_id Parent element id ("document" for root).
          * @param string   $mode 'append' (default) or 'replace_children'.
-         * @return array{tree: array, root_ids: string[], removed_ids: string[]}|\WP_Error
+         * @return array{tree: array, root_ids: string[], removed_ids: string[], document: \Elementor\Core\Base\Document}|\WP_Error
          */
         public function insert_and_save(\Elementor\Core\Base\Document $document, array $subtrees, string $parent_id, string $mode = self::MODE_APPEND)
         {
@@ -53559,7 +58996,13 @@ namespace Elementor\Modules\Mcp\Abilities\Build_Composition {
     class Form_Structure_Validator
     {
         const FORM_ELEMENT_TYPE = 'e-form';
-        const FORM_FIELD_ELEMENT_TYPES = ['e-form-input', 'e-form-textarea', 'e-form-label', 'e-form-checkbox', 'e-form-submit-button', 'e-form-select', 'e-form-radio-button', 'e-form-file-upload', 'e-form-date-picker', 'e-form-time-picker'];
+        // Mirror the Pro-only e-form-honeypot and e-form-recaptcha-score widgets (same precedent as e-form-hidden).
+        const HONEYPOT_ELEMENT_TYPE = 'e-form-honeypot';
+        const RECAPTCHA_SCORE_ELEMENT_TYPE = 'e-form-recaptcha-score';
+        // Element type => plural label used in error messages.
+        const SINGLE_INSTANCE_ELEMENT_TYPES = [self::HONEYPOT_ELEMENT_TYPE => 'honeypots', self::RECAPTCHA_SCORE_ELEMENT_TYPE => 'Score-based reCAPTCHA atoms'];
+        const FORM_MESSAGE_ELEMENT_TYPES = ['e-form-success-message', 'e-form-error-message'];
+        const FORM_FIELD_ELEMENT_TYPES = ['e-form-input', 'e-form-textarea', 'e-form-label', 'e-form-checkbox', 'e-form-submit-button', 'e-form-select', 'e-form-radio-button', 'e-form-file-upload', 'e-form-date-picker', 'e-form-time-picker', 'e-form-hidden', self::HONEYPOT_ELEMENT_TYPE, self::RECAPTCHA_SCORE_ELEMENT_TYPE];
         public function __construct(?\Elementor\Modules\Mcp\Abilities\Build_Composition\Xml_Parser $xml_parser = null)
         {
         }
@@ -53573,6 +59016,18 @@ namespace Elementor\Modules\Mcp\Abilities\Build_Composition {
          * @return string[]
          */
         public function collect_errors(\DOMDocument $dom, array $document_tree, string $parent_id): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function collect_tree_single_instance_errors(array $tree): array
+        {
+        }
+        /**
+         * @return array<string, int> Map of form element id => count of elements of the given type
+         */
+        public function collect_form_element_counts(array $tree, string $type): array
         {
         }
     }
@@ -53658,6 +59113,9 @@ namespace Elementor\Modules\Mcp\Abilities\Build_Composition {
         public function get_tag_name(\DOMElement $node): string
         {
         }
+        public function remove_element(\DOMElement $node): void
+        {
+        }
         public function get_configuration_id(\DOMElement $node): ?string
         {
         }
@@ -53679,8 +59137,24 @@ namespace Elementor\Modules\Mcp\Abilities\Build_Composition {
     }
 }
 namespace Elementor\Modules\Mcp\Abilities {
+    class Clear_Cache_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
+        public function is_exposed_via_proxy(): bool
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
     class Create_Page_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
+        const TEMPLATES = ['default', \Elementor\Modules\PageTemplates\Module::TEMPLATE_THEME, \Elementor\Modules\PageTemplates\Module::TEMPLATE_HEADER_FOOTER, \Elementor\Modules\PageTemplates\Module::TEMPLATE_CANVAS];
         protected function get_ability_id(): string
         {
         }
@@ -53726,6 +59200,39 @@ namespace Elementor\Modules\Mcp\Abilities {
         {
         }
     }
+    class Enable_Agent_Ready_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
+        public function is_exposed_via_proxy(): bool
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Find_Icons_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const EMPTY_RESULT_HINT = 'No icon on this site matches these queries. Try a broader phrase (for example "cart" instead of "shopping trolley"), or drop the library and category filters. Never invent an icon value.';
+        const TRUNCATED_PACK_HINT = 'Results may be incomplete: the custom icon pack(s) %s are too large to be fully searched, so only their first icons are searchable and a matching icon may exist past that limit. Do not tell the user an icon does not exist, and do not settle for an unrelated icon; ask the user to pick it in the editor icon library.';
+        const CATALOG_MISSING_NOTICE = 'Note: the icon catalog is not available on this site, so icons cannot be looked up.';
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function is_available()
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
     class Get_Default_Styles_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
         public function __construct(?\Elementor\Modules\DefaultStyles\Default_Styles_Repository $repository = null)
@@ -53741,11 +59248,41 @@ namespace Elementor\Modules\Mcp\Abilities {
         {
         }
     }
-    class Get_Structure_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    class Get_License_Status_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
-        public function __construct(?\Elementor\Modules\DefaultStyles\Default_Styles_Repository $default_styles_repository = null)
+        const STATUS_ACTIVE = 'active';
+        const STATUS_EXPIRED = 'expired';
+        const STATUS_INACTIVE = 'inactive';
+        const STATUS_PRO_NOT_INSTALLED = 'pro_not_installed';
+        const PLANS_CONTEXT = 'mcp';
+        protected function get_ability_id(): string
         {
         }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Get_Structure_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        public function __construct(?\Elementor\Modules\DefaultStyles\Default_Styles_Repository $default_styles_repository = null, ?\Elementor\Modules\Mcp\Abilities\Appliers\V3\Maps\V3_Map_Default_Styles $v3_default_styles = null)
+        {
+        }
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Get_System_Info_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const REPORT_FORMAT = 'raw';
         protected function get_ability_id(): string
         {
         }
@@ -53796,6 +59333,15 @@ namespace Elementor\Modules\Mcp\Abilities {
         public function execute($input = [])
         {
         }
+        /**
+         * Deleted variables stay in storage so existing CSS references keep resolving. The resource lists only variables an agent can use.
+         *
+         * @param array<string, mixed> $variables
+         * @return array<string, mixed>
+         */
+        public static function active_variables(array $variables): array
+        {
+        }
     }
     class Interactions_Schema_Resource_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
@@ -53821,7 +59367,8 @@ namespace Elementor\Modules\Mcp\Abilities {
         const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/svg+xml'];
         const SVG_MIME_TYPE = 'image/svg+xml';
         const VIDEO_MIME_TYPES = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-m4v', 'video/avi', 'video/x-ms-wmv', 'video/mpeg', 'video/3gpp', 'video/3gpp2'];
-        const EMPTY_RESULT_HINT = 'No matching assets are in the Media Library. Ask the user to upload the images or SVG icons they want to use (WP Admin → Media → Add New), then call this tool again. Do not fabricate attachment ids.';
+        const EMPTY_RESULT_HINT = 'No matching assets are in the Media Library. After the user consents, use elementor/upload-media when the image has a public HTTPS URL (the server downloads it), or elementor/request-media-upload only if you can run a shell command or send an HTTP request to upload a local file. If those are unavailable, ask the user to upload via WP Admin → Media → Add New, then call this tool again. Do not fabricate attachment ids.';
+        const EMPTY_RESULT_HINT_WITHOUT_UPLOAD_TOOLS = 'No matching assets are in the Media Library. Ask the user to upload via WP Admin → Media → Add New, then call this tool again. Do not fabricate attachment ids.';
         protected function get_ability_id(): string
         {
         }
@@ -53858,6 +59405,18 @@ namespace Elementor\Modules\Mcp\Abilities {
         {
         }
         public function execute($input = [], $tags_module = null)
+        {
+        }
+    }
+    class List_Experiments_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
         {
         }
     }
@@ -53899,6 +59458,7 @@ namespace Elementor\Modules\Mcp\Abilities {
     }
     class List_Widget_Schemas_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
+        const CATALOG_REPLACEMENTS = ['image-carousel' => 'e-carousel'];
         protected function get_ability_id(): string
         {
         }
@@ -53989,6 +59549,70 @@ namespace Elementor\Modules\Mcp\Abilities {
         {
         }
     }
+    class Manage_Experiments_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const ACTION_ACTIVATE = 'activate';
+        const ACTION_DEACTIVATE = 'deactivate';
+        const ACTION_RESET = 'reset';
+        const ACTION_ENABLE_ATOMIC_EDITOR = 'enable_atomic_editor';
+        const ACTION_DISABLE_ATOMIC_EDITOR = 'disable_atomic_editor';
+        protected function get_ability_id(): string
+        {
+        }
+        public function is_exposed_via_proxy(): bool
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Manage_Form_Submissions_Pro_Features_Discovery_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Manage_Revisions_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const ACTION_RESTORE = 'restore';
+        const ACTIONS = [self::ACTION_RESTORE];
+        public function __construct(?\Elementor\Core\Utils\Document\Document_Mutator $mutator = null)
+        {
+        }
+        protected function get_ability_id(): string
+        {
+        }
+        public function is_exposed_via_proxy(): bool
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Manage_Site_Parts_Pro_Features_Discovery_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
     class Manage_Variable_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
         const TYPE_COLOR = 'global-color-variable';
@@ -54021,7 +59645,22 @@ namespace Elementor\Modules\Mcp\Abilities {
         public function execute($input = [])
         {
         }
-        public function build_guide(bool $pro_active): string
+        public function build_guide(): string
+        {
+        }
+    }
+    class Manage_Woocommerce_Settings_Pro_Features_Discovery_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
+        public function is_exposed_via_proxy(): bool
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
         {
         }
     }
@@ -54078,6 +59717,7 @@ namespace Elementor\Modules\Mcp\Abilities {
     }
     class Publish_Document_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
+        const PROMOTED_POST_FIELDS = [\Elementor\Modules\Mcp\Abilities\Update_Settings_Ability::TITLE_SETTING, \Elementor\Modules\Mcp\Abilities\Update_Settings_Ability::EXCERPT_SETTING];
         protected function get_ability_id(): string
         {
         }
@@ -54115,6 +59755,21 @@ namespace Elementor\Modules\Mcp\Abilities {
         protected function get_ability_id(): string
         {
         }
+        protected function should_record_site_capability($input, $result): bool
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Request_Media_Upload_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
         protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
         {
         }
@@ -54138,6 +59793,19 @@ namespace Elementor\Modules\Mcp\Abilities {
     }
     class Update_Settings_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
+        // Post fields that a draft copy of a published document can't carry to the live post on publish.
+        const UNSTAGEABLE_SETTINGS = ['post_status', 'menu_order', 'comment_status'];
+        const FEATURED_IMAGE_SETTING = 'post_featured_image';
+        const EXCERPT_SETTING = 'post_excerpt';
+        const TITLE_SETTING = 'post_title';
+        const FEATURED_IMAGE_META_KEY = '_thumbnail_id';
+        // The autosave snapshots every post field when it is created, so publish-document promotes only the ones listed
+        // here and doesn't overwrite live changes made since. Must not start with `_elementor`: `DB::copy_elementor_meta`
+        // copies those keys from the autosave to the live post.
+        const STAGED_POST_FIELDS_META_KEY = '_mcp_staged_post_fields';
+        public function __construct(?\Elementor\Core\Utils\Document\Document_Mutator $mutator = null)
+        {
+        }
         protected function get_ability_id(): string
         {
         }
@@ -54148,6 +59816,30 @@ namespace Elementor\Modules\Mcp\Abilities {
         {
         }
         public function execute($input = [])
+        {
+        }
+    }
+    class Upload_Media_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \Elementor\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+        /**
+         * Imports each image independently. A failure on one image never stops the others.
+         *
+         * The whole batch has a hard time limit (TOTAL_BATCH_TIMEOUT_SECONDS) that also bounds each
+         * download; images not started before it is reached are reported as `fetch_timeout`.
+         *
+         * @param array<int,array{source_url:string,title?:string,alt?:string}> $images Non-empty list of images.
+         * @param callable|null                                                 $clock  Returns the current time in seconds; defaults to microtime( true ).
+         */
+        public function import_batch(array $images, ?callable $clock = null): array
         {
         }
     }
@@ -54190,6 +59882,26 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         {
         }
     }
+    interface Widget_Pro_Features_Discovery
+    {
+        public static function supports_widget(string $widget_type): bool;
+        public static function for_widget(): \WP_Error;
+    }
+    class Components_Pro_Features_Discovery implements \Elementor\Modules\Mcp\Abilities\Utils\Widget_Pro_Features_Discovery
+    {
+        const UPGRADE_URL = 'https://go.elementor.com/go-pro-mcp-upgrade-components/';
+        const PRO_FEATURE = 'components';
+        const ACTION_ADD_TO_PAGE = 'add_to_page';
+        public static function supports_widget(string $widget_type): bool
+        {
+        }
+        public static function for_widget(): \WP_Error
+        {
+        }
+        public static function for_action(string $action): \WP_Error
+        {
+        }
+    }
     final class Composition_Compiler
     {
         public const COMPONENT_PARENT_ID = 'component';
@@ -54202,7 +59914,7 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
          * @param array     $document_tree Existing document tree used for insertion-context validation.
          * @param string    $parent_id     Target parent used for insertion-context validation.
          *
-         * @return array{elements: array[], warnings: string[], dom: \DOMDocument, xml_parser: \Elementor\Modules\Mcp\Abilities\Build_Composition\Xml_Parser}|\WP_Error
+         * @return array{elements: array[], warnings: Warnings_Bag, dom: \DOMDocument, xml_parser: \Elementor\Modules\Mcp\Abilities\Build_Composition\Xml_Parser, pro_features_discovery: \WP_Error[]}|\WP_Error
          */
         public function compile(array $input, ?\Elementor\Core\Base\Document $document = null, array $document_tree = [], string $parent_id = self::DEFAULT_PARENT_ID)
         {
@@ -54222,6 +59934,21 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         public static function llm_instructions_schema_property(): array
         {
         }
+        public static function staged_schema_property(): array
+        {
+        }
+        public static function staged_write_instructions(\Elementor\Core\Base\Document $document): string
+        {
+        }
+        public static function staged_read_instructions(): string
+        {
+        }
+        public static function undo_revision_id_schema_property(): array
+        {
+        }
+        public static function undo_instructions(int $post_id, ?int $undo_revision_id): string
+        {
+        }
         public static function for_document(\Elementor\Core\Base\Document $document, ?string $success_message = null): array
         {
         }
@@ -54234,6 +59961,15 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         public static function elements_preserving_live_status(\Elementor\Core\Utils\Document\Document_Mutator $mutator, \Elementor\Core\Base\Document $document, array $elements)
         {
         }
+        /**
+         * @return \Elementor\Core\Base\Document|\WP_Error
+         */
+        public static function settings_preserving_live_status(\Elementor\Core\Utils\Document\Document_Mutator $mutator, \Elementor\Core\Base\Document $document, array $settings)
+        {
+        }
+        public static function is_staged(\Elementor\Core\Base\Document $document): bool
+        {
+        }
     }
     class Document_Preview_Url
     {
@@ -54241,6 +59977,30 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         {
         }
         public static function for_document(\Elementor\Core\Base\Document $document): string
+        {
+        }
+    }
+    class Document_Revision_Snapshots
+    {
+        // Must not start with `_elementor`: `DB::copy_elementor_meta` copies those keys from a revision back to its parent.
+        const UNDO_POINT_META_KEY = '_mcp_undo_point';
+        // Besides `_elementor_data`, the meta an MCP write can change: page settings and their page template, and a
+        // component's overridable props and variants. Other `_elementor_*` meta (CSS, version, edit mode) is rebuilt on save.
+        const RESTORABLE_META_KEYS = [\Elementor\Core\Settings\Page\Manager::META_KEY, '_wp_page_template', \Elementor\Modules\Components\Documents\Component::OVERRIDABLE_PROPS_META_KEY, \Elementor\Modules\Components\Documents\Component::VARIANTS_META_KEY];
+        // `Components_Repository::publish_component()` copies these from the autosave with `copy_elementor_meta`, which skips
+        // missing keys, so they are emptied instead of deleted. `get_json_meta()` reads an empty value as no props or variants.
+        const EMPTIED_NOT_DELETED_META_KEYS = [\Elementor\Modules\Components\Documents\Component::OVERRIDABLE_PROPS_META_KEY, \Elementor\Modules\Components\Documents\Component::VARIANTS_META_KEY];
+        const LATEST_REVISIONS_SCAN_LIMIT = 10;
+        public static function capture(\Elementor\Core\Base\Document $document, string $ability_id): ?\Elementor\Modules\Mcp\Abilities\Utils\Undo_Point
+        {
+        }
+        public static function is_undo_point(int $revision_id): bool
+        {
+        }
+        public static function restore_meta(int $from_post_id, int $to_post_id): void
+        {
+        }
+        public static function matches_current_state(int $main_id, int $revision_id): bool
         {
         }
     }
@@ -54256,6 +60016,48 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
          * @return string[] Dotted paths relative to $path.
          */
         public static function find($plain_value, $resolved_value, string $path): array
+        {
+        }
+    }
+    /**
+     * Owns the editor-only fields the MCP exposes in a dedicated `editor_settings` input, kept apart from
+     * `settings` so they can never collide with a prop. Elementor stores them per element version:
+     * atomic elements in `editor_settings`, legacy elements in `settings`.
+     */
+    class Editor_Settings
+    {
+        const NAME = 'name';
+        const DECORATIVE = 'decorative';
+        const KEYS = [self::NAME, self::DECORATIVE];
+        const ATOMIC_NAME_KEY = 'title';
+        const LEGACY_NAME_SETTING = '_title';
+        const DECORATIVE_ELEMENT_TYPES = ['e-div-block', 'e-flexbox', 'e-grid'];
+        const NAME_DESCRIPTION = 'Editor only: the layer name shown in the Structure panel. Never rendered on the page and not a prop. Never use `settings.title` to rename a layer: `title` on e-heading is the visible heading text. Send an empty string or null to clear it.';
+        const DECORATIVE_DESCRIPTION = 'Editor only: never rendered on the frontend. Set true on a visual-only container that will stay empty (a shape, glow, gradient or other HTML/CSS composition), so the editor does not force its empty-container placeholder min-height and min-width on it. Give it an explicit width and height in style. Leave false for containers that will get children.';
+        const SECTION_DESCRIPTION = 'Editor-only fields, sent in the `editor_settings` input and never in `settings`.';
+        public static function is_editor_key($key): bool
+        {
+        }
+        public static function get_schema(string $element_type): array
+        {
+        }
+        /**
+         * @param array                 $node            Element node, updated by reference.
+         * @param array                 $editor_settings Plain editor-only values keyed by MCP key.
+         * @param string                $config_id       Id used to tag warnings.
+         * @param \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag          $warnings        Collects skipped or adjusted values.
+         * @param array<string, string> $key_hints       Keys the caller refuses, mapped to the reason returned in the warning.
+         */
+        public static function apply(array &$node, array $editor_settings, string $config_id, \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $warnings, array $key_hints = []): void
+        {
+        }
+        public static function apply_name(array &$node, ?string $name): void
+        {
+        }
+        public static function read(array $node): array
+        {
+        }
+        public static function warn_misplaced(string $key, string $config_id, \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $warnings): void
         {
         }
     }
@@ -54290,9 +60092,82 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         {
         }
     }
-    class Insufficient_Permissions_Error
+    class Experiments_Catalog
     {
-        public static function for_action(string $action): \WP_Error
+        public static function find(string $name): ?array
+        {
+        }
+        public static function is_toggleable(array $feature): bool
+        {
+        }
+        public static function get_toggleable(): array
+        {
+        }
+        public static function format(array $feature): array
+        {
+        }
+        public static function atomic_editor_status(): array
+        {
+        }
+        public static function experiment_schema(): array
+        {
+        }
+        public static function atomic_editor_schema(): array
+        {
+        }
+    }
+    class Form_Submissions_Schema
+    {
+        const MIN_BATCH_SIZE = 1;
+        const MAX_BATCH_SIZE = 50;
+        const ACTION_MARK_READ = 'mark_read';
+        const ACTION_MARK_UNREAD = 'mark_unread';
+        const ACTION_TRASH = 'trash';
+        const ACTION_RESTORE = 'restore';
+        const ACTION_UPDATE_VALUES = 'update_values';
+        const ACTIONS = [self::ACTION_MARK_READ, self::ACTION_MARK_UNREAD, self::ACTION_TRASH, self::ACTION_RESTORE, self::ACTION_UPDATE_VALUES];
+        public static function manage_input(): array
+        {
+        }
+    }
+    class Forms_Pro_Features_Discovery implements \Elementor\Modules\Mcp\Abilities\Utils\Widget_Pro_Features_Discovery
+    {
+        const UPGRADE_URL = 'https://go.elementor.com/go-pro-mcp-upgrade-form/';
+        const PRO_FEATURE = 'form';
+        const LEGACY_WIDGET_TYPE = 'form';
+        public static function supports_widget(string $widget_type): bool
+        {
+        }
+        public static function for_widget(): \WP_Error
+        {
+        }
+        public static function for_submissions(): \WP_Error
+        {
+        }
+    }
+    class Generic_Widget_Pro_Features_Discovery
+    {
+        const UPGRADE_URL = \Elementor\Modules\Mcp\Module::MCP_PROMOTION_UPGRADE_URL;
+        const PRO_FEATURE = 'widget';
+        public static function for_widget(string $widget_type): \WP_Error
+        {
+        }
+    }
+    /**
+     * `fr` row tracks of an `e-grid` do not collapse when no child fills them, so rows beyond
+     * the ones the children fill render as an equal-height empty band. Only local styles and
+     * the widget's base tracks are known here, so grids with global classes are skipped.
+     */
+    class Grid_Empty_Rows_Warnings
+    {
+        const CODE = 'grid_empty_rows';
+        const GRID_TYPE = 'e-grid';
+        const DESKTOP_BREAKPOINT = 'desktop';
+        const DEFAULT_TRACKS = ['grid-template-columns' => 3, 'grid-template-rows' => 2];
+        /**
+         * @param array<string, array> $config_id_index
+         */
+        public static function report(array $config_id_index, \Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $warnings): void
         {
         }
     }
@@ -54327,6 +60202,63 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         {
         }
     }
+    /**
+     * Accepts or rejects a raw plain setting value against the same JSON schema `get-widget-schemas`
+     * publishes, before any resolver converts it, so the error the agent gets names a keyword it can see.
+     */
+    class Plain_Schema_Validator
+    {
+        const ENVELOPE_TYPE_KEY = '$$type';
+        const ANY_TYPE = ['array', 'object', 'string', 'number', 'integer', 'boolean', 'null'];
+        const STRING_OR_NUMBER = ['string', 'number'];
+        const COMBINING_KEYWORDS = ['anyOf', 'oneOf'];
+        const UNLISTED_KEY_ERROR_CODES = ['rest_additional_properties_forbidden', 'rest_no_matching_schema'];
+        public static function strict(): self
+        {
+        }
+        /**
+         * Keeps the V4 write path's existing tolerance: unlisted object keys are left for the caller to
+         * drop with a warning, numbers are accepted where a string is published, null object keys count
+         * as not set, and `$$type` envelopes are left for `Props_Parser`.
+         */
+        public static function lenient(): self
+        {
+        }
+        /**
+         * @param mixed                $value  Raw value sent by the caller.
+         * @param array<string, mixed> $schema Published plain schema of the setting.
+         * @param string               $name   Setting key, used as the path root in error messages.
+         * @return array{value: mixed, error: string|null} The sanitized value, or the rejection reason.
+         */
+        public function validate($value, array $schema, string $name): array
+        {
+        }
+    }
+    class Pro_Elements_Remover
+    {
+        public function __construct(\Elementor\Modules\Mcp\Abilities\Build_Composition\Xml_Parser $xml_parser)
+        {
+        }
+        /**
+         * @return \WP_Error[] One error per distinct Pro message, in document order.
+         */
+        public function remove_and_collect_errors(\DOMDocument $dom): array
+        {
+        }
+    }
+    class Pro_Features_Discovery_Registry
+    {
+        /**
+         * @var class-string<\Elementor\Modules\Mcp\Abilities\Utils\Widget_Pro_Features_Discovery>[]
+         */
+        const DISCOVERIES = [\Elementor\Modules\Mcp\Abilities\Utils\Forms_Pro_Features_Discovery::class, \Elementor\Modules\Mcp\Abilities\Utils\Components_Pro_Features_Discovery::class, \Elementor\Modules\Mcp\Abilities\Utils\Site_Parts_Pro_Features_Discovery::class, \Elementor\Modules\Mcp\Abilities\Utils\Woocommerce_Pro_Features_Discovery::class];
+        public static function requires_pro(string $widget_type): bool
+        {
+        }
+        public static function for_widget(string $widget_type): \WP_Error
+        {
+        }
+    }
     class Prompt_Loader
     {
         protected static function get_core_path(): string
@@ -54336,6 +60268,62 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         {
         }
         public static function load(string $name): string
+        {
+        }
+    }
+    class Revision_Restorer
+    {
+        public function __construct(\Elementor\Core\Utils\Document\Document_Mutator $mutator)
+        {
+        }
+        /**
+         * @return \Elementor\Core\Base\Document|\WP_Error The undo point's document.
+         */
+        public function resolve_undo_point(\Elementor\Core\Base\Document $document, int $revision_id)
+        {
+        }
+        /**
+         * Restores the undo point through the staged save path: published documents receive it in the current user's autosave.
+         *
+         * @return \Elementor\Core\Base\Document|\WP_Error The document that was written.
+         */
+        public function restore(\Elementor\Core\Base\Document $document, \Elementor\Core\Base\Document $undo_point_document)
+        {
+        }
+    }
+    class Site_Parts_Pro_Features_Discovery implements \Elementor\Modules\Mcp\Abilities\Utils\Widget_Pro_Features_Discovery
+    {
+        const UPGRADE_URL = 'https://go.elementor.com/go-pro-mcp-upgrade-site-parts/';
+        const PRO_FEATURE = 'site-parts';
+        const WIDGET_TYPE_PREFIX = 'theme-';
+        const MESSAGES = ['opener' => 'Site parts need Elementor Pro, which isn\'t installed, so nothing was created.', 'overview' => ['value' => 'With Pro, site parts cover three things Free can\'t do: reusable parts (header, footer) built once and shown on every page; dynamic templates (post, page, archive, search results, loop item, product) where one design fills itself for every post; and site functionality (popups, a custom 404 page).', 'free_path' => 'Free path: build it on the current page with native widgets and a global class. Tell the user it only appears on this page and must be added and updated on each page separately.'], 'groups' => [['types' => ['header', 'footer'], 'value' => 'What Pro gives the user: this %s is built once and appears on every page it\'s assigned to. Edits happen in one place.', 'free_path' => 'Free path: build it on the current page with native widgets and a global class. Tell the user it only appears on this page and must be added and updated on each page separately.'], ['types' => ['single', 'single-post', 'single-page', 'archive', 'search-results', 'loop-item'], 'value' => 'What Pro gives the user: one %s design that fills itself with each post\'s own content, so every new post matches automatically.', 'free_path' => 'Free path: style posts one by one in the editor. Tell the user each new post needs the same work.'], ['types' => ['popup'], 'value' => 'What Pro gives the user: a popup that opens on the trigger they want, like a click or exit intent, on the pages they choose.', 'free_path' => 'Free path: none that matches. Offer a section on the page or a link to a separate page. Say plainly that Free can\'t do this.'], ['types' => ['error-404'], 'value' => 'What Pro gives the user: a custom 404 page in the site\'s design instead of the theme\'s default.', 'free_path' => 'Free path: none. The theme\'s default 404 page stays. Say plainly that Free can\'t do this.']]];
+        public static function supports_widget(string $widget_type): bool
+        {
+        }
+        public static function for_operations(array $operations = []): \WP_Error
+        {
+        }
+        public static function for_widget(): \WP_Error
+        {
+        }
+        public static function get_types(): array
+        {
+        }
+    }
+    class Site_Parts_Schema
+    {
+        const ACTION_CREATE = 'create';
+        const ACTION_UPDATE = 'update';
+        const ACTION_DELETE = 'delete';
+        const ACTIONS = [self::ACTION_CREATE, self::ACTION_UPDATE, self::ACTION_DELETE];
+        const TYPES = ['header', 'footer', 'single', 'single-post', 'single-page', 'archive', 'search-results', 'loop-item', 'popup', 'error-404'];
+        const MIN_BATCH_SIZE = 1;
+        const MAX_BATCH_SIZE = 50;
+        const SITE_WIDE_CONDITION = 'include/general';
+        public static function get_types(): array
+        {
+        }
+        public static function manage_input(): array
         {
         }
     }
@@ -54352,6 +60340,13 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         /**
          * $get_converter is a factory callable resolved lazily — only called if the CSS split succeeds.
          */
+        /**
+         * @param string   $error
+         * @param string[] $active_breakpoints
+         */
+        public static function invalid_breakpoints_message(string $error, array $active_breakpoints): string
+        {
+        }
         public static function parse_css_string(string $css_string, array $active_breakpoints, int $op_index, string $op_action, \Elementor\Modules\Mcp\Abilities\Utils\Bulk_Operations_Result $results, callable $get_converter): ?array
         {
         }
@@ -54377,6 +60372,18 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         {
         }
         public static function resolve_status(array $response, ?\WP_Error $top_level_error): array
+        {
+        }
+    }
+    class Undo_Point
+    {
+        public function __construct(int $post_id, string $ability_id, ?int $revision_id, bool $is_new_revision)
+        {
+        }
+        public function commit(): void
+        {
+        }
+        public function add_to_response(array $response): array
         {
         }
     }
@@ -54421,6 +60428,13 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         {
         }
         /**
+         * @param array<string, array<string, mixed>> $settings
+         * @return array{properties: array<string, array>, required: string[]}
+         */
+        public static function build_from_map(array $settings): array
+        {
+        }
+        /**
          * Shallow shape check against the schema object emitted by `build()`.
          *
          * This is not full JSON Schema validation — only `type`, `enum`, and one-level nested
@@ -54429,17 +60443,69 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
          *
          * @param mixed      $value         Setting value to check.
          * @param array|null $entry_schema  Schema entry from `build()['properties'][$key]`.
+         * @param bool       $strict        Whether to enforce full mapped-object constraints.
          * @return string|null Human-readable reason when shape mismatches; null when acceptable.
          */
-        public static function check_value_shape($value, ?array $entry_schema): ?string
+        public static function check_value_shape($value, ?array $entry_schema, bool $strict = false): ?string
         {
         }
         /**
          * @param array<string, mixed> $settings Settings keyed by control name.
          * @param array                $schema   Output of `build()`.
+         * @param bool                 $strict   Whether to enforce full mapped-object constraints.
          * @return array{valid: array<string, mixed>, errors: array<string, string>}
          */
-        public static function check_settings_shape(array $settings, array $schema): array
+        public static function check_settings_shape(array $settings, array $schema, bool $strict = false): array
+        {
+        }
+    }
+    class Variables_Pro_Features_Discovery
+    {
+        const UPGRADE_URL = 'https://go.elementor.com/go-pro-mcp-upgrade-variables/';
+        const PRO_FEATURE = 'variables';
+        public static function for_size_variables(): \WP_Error
+        {
+        }
+        public static function get_repeated_message(): string
+        {
+        }
+    }
+    final class Warnings_Bag
+    {
+        public static function make(): self
+        {
+        }
+        public static function get_details_schema(): array
+        {
+        }
+        public function add(string $code, string $message, ?string $config_id = null): self
+        {
+        }
+        public function merge(\Elementor\Modules\Mcp\Abilities\Utils\Warnings_Bag $other): self
+        {
+        }
+        public function add_to_response(array $response): array
+        {
+        }
+        public function is_empty(): bool
+        {
+        }
+        /**
+         * @return array<array{code: string, config_id: ?string, message: string}>
+         */
+        public function all(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function messages(): array
+        {
+        }
+        /**
+         * @return string[]
+         */
+        public function codes(): array
         {
         }
     }
@@ -54453,9 +60519,7 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         const EXCLUDED_WIDGET_TITLE = 'Component';
         const VERSION_V3 = 'v3';
         const VERSION_V4 = 'v4';
-        const V3_ALLOWLIST = ['nav-menu', 'theme-post-content', 'theme-post-title', 'theme-post-featured-image', 'theme-post-excerpt', 'theme-archive-title'];
-        const V3_FALLBACK_MESSAGE = '`properties` lists the only keys accepted in `element_config` / `manage-elements.settings` for this widget. Put all visual styling in the `style` (CSS) input.';
-        const V3_FALLBACK_FIELDS_NOTE = 'All properties are optional. Object-typed properties describe common shapes but do not include exhaustive inner validation.';
+        const MCP_UNPROMOTED_ELEMENT_TYPES = ['e-flexbox'];
         const ALLOWED_HTML_TAGS_NOTE = 'May contain inline HTML written directly in the string (e.g. "Hello <strong>world</strong>"), limited to these tags: %s. Any other tag is stripped on save.';
         /**
          * @return array<string, array> widget_type => config, filtered to widgets eligible for LLM use.
@@ -54472,7 +60536,10 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         public static function get_widget_version(array $config): string
         {
         }
-        public static function is_v3_allowlisted(string $widget_type): bool
+        public static function is_type_unpromoted_in_widget_list(string $widget_type): bool
+        {
+        }
+        public static function is_v3_supported(string $widget_type): bool
         {
         }
         public static function build_widget_summary(string $widget_type, array $config): array
@@ -54498,7 +60565,48 @@ namespace Elementor\Modules\Mcp\Abilities\Utils {
         public static function build_widget_schema(string $widget_type, array $config, array $parents_index = []): ?array
         {
         }
+        /**
+         * @return array<string, mixed>|null The property schema `get-widget-schemas` publishes, or null when the key is not configurable.
+         */
+        public static function build_published_property_schema(string $key, \Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $prop_type, string $widget_type): ?array
+        {
+        }
         public static function to_plain_llm_schema(\Elementor\Modules\AtomicWidgets\PropTypes\Contracts\Prop_Type $prop_type): array
+        {
+        }
+    }
+    class Woocommerce_Pro_Features_Discovery implements \Elementor\Modules\Mcp\Abilities\Utils\Widget_Pro_Features_Discovery
+    {
+        const UPGRADE_URL = 'https://go.elementor.com/go-pro-mcp-upgrade-woocommerce/';
+        const PRO_FEATURE = 'woocommerce';
+        const WIDGET_TYPE_PREFIX = 'woocommerce-';
+        const SITE_PART_TYPES = ['product', 'product-archive'];
+        public static function is_active(): bool
+        {
+        }
+        public static function supports_widget(string $widget_type): bool
+        {
+        }
+        public static function for_widget(): \WP_Error
+        {
+        }
+        public static function for_settings(): \WP_Error
+        {
+        }
+        public static function for_site_parts(array $document_types): \WP_Error
+        {
+        }
+        public static function get_site_part_types(): array
+        {
+        }
+    }
+    class Woocommerce_Settings_Schema
+    {
+        const ACTION_GET = 'get';
+        const ACTION_UPDATE = 'update';
+        const ACTIONS = [self::ACTION_GET, self::ACTION_UPDATE];
+        const PAGES = ['cart', 'checkout', 'my_account', 'terms', 'shop', 'purchase_summary'];
+        public static function manage_input(): array
         {
         }
     }
@@ -54579,11 +60687,170 @@ namespace Elementor\Modules\Mcp\Events {
         {
         }
     }
+    class Pro_Feature_Suggestion_Tracker
+    {
+        const EVENT_NAME = 'mcp_pro_feature_suggested';
+        const SESSION_ID_SERVER_KEY = 'HTTP_MCP_SESSION_ID';
+        const LICENSE_TIER_EXPIRED = 'expired';
+        public static function reset(): void
+        {
+        }
+        public static function record(\WP_Error $error): void
+        {
+        }
+        public static function flush(string $tool_name, $result): void
+        {
+        }
+    }
+}
+namespace Elementor\Modules\Mcp\Media {
+    class Media_Attachment_Service
+    {
+        /**
+         * URLs with a query string are neither stored nor matched: they may carry signed
+         * access values and the query can decide which file is served.
+         */
+        public static function source_url_for_storage(string $source_url): ?string
+        {
+        }
+        public static function find_by_source_url(string $source_url, ?int $author_id = null): ?int
+        {
+        }
+        /**
+         * @param array{tmp_name:string,name:string} $file
+         */
+        public static function create_from_temp_file(array $file, ?string $title = null, ?string $alt = null, ?string $source_url = null)
+        {
+        }
+        public static function format_attachment(int $attachment_id): array
+        {
+        }
+        public static function update_title_and_alt(int $attachment_id, ?string $title, ?string $alt)
+        {
+        }
+        public static function load_admin_media_includes(): void
+        {
+        }
+    }
+    class Media_Mime_Validator
+    {
+        public static function sniff_mime_type(string $file_path): ?string
+        {
+        }
+        public static function assert_allowed_mime(?string $mime): ?\WP_Error
+        {
+        }
+        public static function extension_for_mime(string $mime): string
+        {
+        }
+    }
+    class Media_Upload_Config
+    {
+        const SOURCE_URL_META_KEY = '_elementor_mcp_source_url';
+        const UPLOAD_TOKEN_HEADER = 'X-Elementor-Mcp-Upload-Token';
+        const UPLOAD_FILENAME_HEADER = 'X-Elementor-Mcp-Upload-Filename';
+        const UPLOAD_TITLE_HEADER = 'X-Elementor-Mcp-Upload-Title';
+        const UPLOAD_ALT_HEADER = 'X-Elementor-Mcp-Upload-Alt';
+        const MAX_METADATA_LENGTH = 255;
+        const TOKEN_TRANSIENT_PREFIX = 'elementor_mcp_upload_';
+        const TOKEN_TTL_SECONDS = 600;
+        const FETCH_TIMEOUT_SECONDS = 30;
+        const TOTAL_FETCH_TIMEOUT_SECONDS = 60;
+        const TOTAL_BATCH_TIMEOUT_SECONDS = 60;
+        const MAX_REDIRECT_HOPS = 5;
+        const MAX_BYTES = 10485760;
+        const MAX_UPLOADS_PER_REQUEST = 10;
+        const MAX_URL_IMPORTS_PER_REQUEST = 5;
+        const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
+        const SVG_MIME_TYPE = 'image/svg+xml';
+        const REQUIRED_CAPABILITY = 'upload_files';
+        const SVG_REQUIRED_CAPABILITY = 'manage_options';
+        public static function max_upload_bytes(): int
+        {
+        }
+        public static function allowed_mime_types(): array
+        {
+        }
+        public static function is_svg_upload_allowed(): bool
+        {
+        }
+    }
+    class Media_Upload_Token_Store
+    {
+        public static function issue_for_user(int $user_id): array
+        {
+        }
+        public static function outstanding_count(int $user_id): int
+        {
+        }
+        public static function is_valid_for_request(string $token): bool
+        {
+        }
+        public static function consume(string $token)
+        {
+        }
+    }
+    /**
+     * Downloads a remote image with the WordPress HTTP API (wp_safe_remote_get()).
+     *
+     * Redirects are followed here, one hop at a time, so every hop gets the same URL and host
+     * checks as the first request. Each hop connects to the address that was checked for it.
+     */
+    class Remote_Image_Fetcher
+    {
+        /**
+         * @param string        $source_url HTTPS image URL.
+         * @param float|null    $deadline Unix time (seconds) by which the download must finish.
+         * @param callable|null $clock    Returns the current time in seconds; defaults to microtime( true ).
+         *
+         * @return array{tmp_name:string,name:string}|\WP_Error
+         */
+        public static function fetch_to_temp_file(string $source_url, ?float $deadline = null, ?callable $clock = null)
+        {
+        }
+        /**
+         * HTTPS on the default port, without credentials, and accepted by wp_http_validate_url().
+         */
+        public static function assert_fetchable_url(string $url): ?\WP_Error
+        {
+        }
+        /**
+         * Resolves the host and returns the IPv4 address the request will connect to. Every address
+         * the host resolves to must pass wp_http_validate_url(), otherwise the host is refused.
+         *
+         * @return string|\WP_Error
+         */
+        public static function resolve_public_ip(string $host)
+        {
+        }
+        public static function is_public_ip(string $ip): bool
+        {
+        }
+        /**
+         * One generic error for every host that cannot be used.
+         */
+        public static function host_not_allowed_error(): \WP_Error
+        {
+        }
+        public static function is_curl_transport_available(): bool
+        {
+        }
+        public static function is_proxy_in_use(string $url, ?\WP_HTTP_Proxy $proxy = null): bool
+        {
+        }
+        /**
+         * @return array<int,mixed> cURL options that connect to the checked address, keep the request off any proxy and leave the body undecoded.
+         */
+        public static function curl_options(string $host, string $ip): array
+        {
+        }
+    }
 }
 namespace Elementor\Modules\Mcp {
     class Module extends \Elementor\Core\Base\Module
     {
         const ANALYTICS_REGISTRAR_HANDLE = 'elementor-mcp-analytics-registrar';
+        const REVISION_SNAPSHOTS_EXPERIMENT_NAME = 'e_mcp_revision_snapshots';
         const PROMOTION_REGISTRAR_HANDLE = 'elementor-mcp-promotion-registrar';
         const MCP_PROMOTION_UPGRADE_URL = 'https://go.elementor.com/go-pro-mcp-connector-page-upgrade/';
         const MCP_PROMOTION_ALLOWED_DOMAIN = 'elementor.com';
@@ -54596,10 +60863,19 @@ namespace Elementor\Modules\Mcp {
         public function enqueue_promotion_registrar(): void
         {
         }
+        public static function get_promotion_upgrade_url(string $default_url = self::MCP_PROMOTION_UPGRADE_URL): string
+        {
+        }
         public static function is_active()
         {
         }
         public static function is_site_mcp_exposure_enabled(): bool
+        {
+        }
+        public static function get_revision_snapshots_experimental_data(): array
+        {
+        }
+        public static function is_revision_snapshots_active(): bool
         {
         }
         public function __construct()
@@ -54621,6 +60897,10 @@ namespace Elementor\Modules\Mcp {
         {
         }
         public static function build_core_registry(): \Elementor\Modules\Mcp\Registry\Ability_Registry
+        {
+        }
+        /** @return \Elementor\Modules\Mcp\Abilities\Abstract_Ability[] */
+        public static function get_woocommerce_pro_features_discovery_abilities(bool $is_woocommerce_active): array
         {
         }
     }
@@ -54662,6 +60942,34 @@ namespace Elementor\Modules\Mcp\Preview {
         {
         }
     }
+    /**
+     * Renders public previews as a logged-out visitor whose cart holds the latest products,
+     * so cart, checkout and menu-cart widgets show their filled state. The cart is filled in
+     * memory for the preview request only: no cookie, session row or persistent cart is written.
+     */
+    class Woocommerce_Preview_Fixtures
+    {
+        const SAMPLE_PRODUCTS_COUNT = 2;
+        public function __construct(?callable $woocommerce = null, ?callable $sample_product_ids = null)
+        {
+        }
+        public function register(): void
+        {
+        }
+        public function on_activated(): void
+        {
+        }
+        /**
+         * The sample cart lives only in this request, so the browser-side fragments refresh
+         * would replace the rendered cart widgets with an empty session cart.
+         */
+        public function dequeue_cart_fragments(): void
+        {
+        }
+        public function latest_purchasable_product_ids(): array
+        {
+        }
+    }
 }
 namespace Elementor\Modules\Mcp\Registry {
     class Ability_Registry
@@ -54693,6 +61001,17 @@ namespace Elementor\Modules\Mcp\Registry {
     }
 }
 namespace Elementor\Modules\Mcp\RestApi {
+    class Mcp_Media_Upload_REST_API
+    {
+        const API_NAMESPACE = 'elementor/v1';
+        const ROUTE = 'mcp-media-upload';
+        public function register_hooks(): void
+        {
+        }
+        public function permission_check(\WP_REST_Request $request): bool
+        {
+        }
+    }
     class Mcp_Proxy_REST_API
     {
         const API_NAMESPACE = 'elementor/v1';
@@ -54705,15 +61024,49 @@ namespace Elementor\Modules\Mcp\RestApi {
         }
     }
 }
+namespace Elementor\Modules\Mcp {
+    class Site_Flag
+    {
+        const OPTION_NAME = 'elementor_m_exists';
+        const BODY_CLASS = 'elementor-mcp';
+        const TOOL_CAPABILITIES = ['elementor/build-composition' => 'compositions', 'elementor/manage-elements' => 'elements', 'elementor/manage-component' => 'components', 'elementor/manage-classes' => 'classes', 'elementor/manage-global-variable' => 'variables', 'elementor/manage-default-styles' => 'default-styles', 'elementor/reorder-classes' => 'class-order', 'elementor/create-page' => 'pages', 'elementor/publish-document' => 'publish', 'elementor/update-page-settings' => 'page-settings'];
+        public static function register(): void
+        {
+        }
+        public static function capability_for_ability(string $ability_id): ?string
+        {
+        }
+        public static function mark(string $capability): void
+        {
+        }
+        public static function get_value(): string
+        {
+        }
+        public static function filter_body_class($classes)
+        {
+        }
+        public static function filter_generator_tag_capabilities($capabilities)
+        {
+        }
+    }
+}
 namespace Elementor\Modules\Mcp\Utils {
     class Editor_Sync_State
     {
         const EDITOR_UNSAVED_TTL = 300;
         const MCP_MUTATION_TTL = 3600;
+        const POST_LOCK_META_KEY = '_edit_lock';
+        const DEFAULT_POST_LOCK_WINDOW = 150;
         public function register_hooks(): void
         {
         }
+        public function add_server_time_to_config(array $config): array
+        {
+        }
         public function handle_unsaved_signal(int $post_id, $signal_value): void
+        {
+        }
+        public function handle_unpersisted_signal(int $post_id, $signal_value): void
         {
         }
         public function build_mutation_marker($default, int $post_id): ?array
@@ -54722,7 +61075,19 @@ namespace Elementor\Modules\Mcp\Utils {
         public function check_mutation_guard($error, $input): ?\WP_Error
         {
         }
+        public function check_stale_editor_save($conflict, $document, array $request): ?\WP_Error
+        {
+        }
+        public function add_server_time_to_save_response(array $return_data): array
+        {
+        }
         public function on_document_saved($document): void
+        {
+        }
+        public static function is_own_editor_open(int $post_id): bool
+        {
+        }
+        public static function add_open_editor_notice($result, int $post_id)
         {
         }
         public static function set_editor_unsaved(int $post_id): void
@@ -54732,6 +61097,12 @@ namespace Elementor\Modules\Mcp\Utils {
         {
         }
         public static function has_editor_unsaved(int $post_id): bool
+        {
+        }
+        public static function set_editor_unpersisted(int $post_id): void
+        {
+        }
+        public static function clear_editor_unpersisted(int $post_id): void
         {
         }
         public static function set_mcp_mutation(int $post_id): void
@@ -54746,7 +61117,7 @@ namespace Elementor\Modules\Mcp\Utils {
     }
     class Mcp_V4_Gate
     {
-        const GATED_IDS = ['elementor/build-composition', 'elementor/create-preview-link', 'elementor/get-default-styles', 'elementor/get-widget-schema', 'elementor/global-classes-resource', 'elementor/global-variables-resource', 'elementor/interactions-schema-resource', 'elementor/list-components', 'elementor/list-dynamic-tags', 'elementor/list-widget-schemas', 'elementor/manage-classes', 'elementor/manage-component', 'elementor/manage-default-styles', 'elementor/manage-elements', 'elementor/manage-global-variable', 'elementor/manage-global-variable-guide', 'elementor/reorder-classes'];
+        const GATED_IDS = ['elementor/build-composition', 'elementor/create-preview-link', 'elementor/find-icons', 'elementor/get-default-styles', 'elementor/get-widget-schemas', 'elementor/global-classes-resource', 'elementor/global-variables-resource', 'elementor/interactions-schema-resource', 'elementor/list-components', 'elementor/list-dynamic-tags', 'elementor/list-widget-schemas', 'elementor/manage-classes', 'elementor/manage-component', 'elementor/manage-default-styles', 'elementor/manage-elements', 'elementor/manage-global-variable', 'elementor/manage-global-variable-guide', 'elementor/reorder-classes'];
         public static function is_atomic_editor_active(): bool
         {
         }
@@ -54757,6 +61128,33 @@ namespace Elementor\Modules\Mcp\Utils {
          * @return true|\WP_Error true when the ability may run, or an error explaining why not.
          */
         public static function is_available(string $id)
+        {
+        }
+    }
+    class Pro_Features_Discovery
+    {
+        const ERROR_CODE = 'pro_license_required';
+        /**
+         * @param string $pro_feature Feature slug reported in analytics, matching the upgrade go-link slug.
+         * @param string $value       What Pro would do for the user's request.
+         * @param string $free_path   Native Free alternative the agent can still build. Empty when none exists.
+         * @param string $default_url Tool-specific go link, used unless the promotion filter returns an allowed URL.
+         * @param array  $extra_data  Additional error data.
+         */
+        public static function error(string $pro_feature, string $value, string $free_path, string $default_url, array $extra_data = []): \WP_Error
+        {
+        }
+    }
+    class Pro_Features_Server_Instructions
+    {
+        const SERVER_DESCRIPTION_KEY = 'server_description';
+        public function register_hooks(): void
+        {
+        }
+        public function append_to_server_config($config)
+        {
+        }
+        public function get_instructions(): string
         {
         }
     }
@@ -55519,6 +61917,137 @@ namespace Elementor\Modules\ProInstall {
         }
     }
 }
+namespace Elementor\Modules\ProSetupPromotion\Data {
+    class Controller extends \Elementor\Data\V2\Base\Controller
+    {
+        public function get_name(): string
+        {
+        }
+        public function register_endpoints(): void
+        {
+        }
+        public function get_items_permissions_check($request)
+        {
+        }
+        public function get_item_permissions_check($request)
+        {
+        }
+        public function create_items_permissions_check($request)
+        {
+        }
+        public function create_item_permissions_check($request)
+        {
+        }
+    }
+}
+namespace Elementor\Modules\ProSetupPromotion\Data\Endpoints {
+    class Complete_Setup extends \Elementor\Data\V2\Base\Endpoint
+    {
+        public function get_name(): string
+        {
+        }
+        public function get_format(): string
+        {
+        }
+        protected function register(): void
+        {
+        }
+        public function create_items($request)
+        {
+        }
+    }
+    class Dismiss extends \Elementor\Data\V2\Base\Endpoint
+    {
+        public function get_name(): string
+        {
+        }
+        public function get_format(): string
+        {
+        }
+        protected function register(): void
+        {
+        }
+        public function create_items($request)
+        {
+        }
+    }
+    class Setup_State_Endpoint extends \Elementor\Data\V2\Base\Endpoint
+    {
+        public function get_name(): string
+        {
+        }
+        public function get_format(): string
+        {
+        }
+        protected function register(): void
+        {
+        }
+        public function get_items($request)
+        {
+        }
+    }
+}
+namespace Elementor\Modules\ProSetupPromotion {
+    class Dismissal
+    {
+        const USER_META_KEY = 'elementor_pro_setup_promotion_dismissed_at';
+        const DISMISS_ID = 'pro_setup_panel_promotion';
+        const COOLDOWN_SECONDS = 14 * DAY_IN_SECONDS;
+        public static function is_within_cooldown(): bool
+        {
+        }
+        public static function record_dismissal(): void
+        {
+        }
+    }
+    class Editor_Assets
+    {
+        const TRANSIENT_KEY = 'elementor_pro_setup_panel_promotion_assets_data';
+        public static function get_assets_data(): array
+        {
+        }
+        public static function is_enabled(): bool
+        {
+        }
+    }
+    class Module extends \Elementor\Core\Base\Module
+    {
+        public function get_name()
+        {
+        }
+        public static function is_active()
+        {
+        }
+        public function __construct()
+        {
+        }
+        public function add_editor_config(array $settings): array
+        {
+        }
+    }
+    class Setup_State
+    {
+        public const STATE_HIDDEN = 'hidden';
+        public const STATE_INSTALL = 'install';
+        public const STATE_ACTIVATE = 'activate';
+        public const STATE_CONNECT = 'connect';
+        public static function resolve(): string
+        {
+        }
+        public static function is_pro_installed_and_inactive_in_wordpress(): bool
+        {
+        }
+        public static function get_editor_config(): ?array
+        {
+        }
+        public static function get_editor_config_after_plugin_change(): ?array
+        {
+        }
+        public static function should_reload_editor_after_plugin_change_config(?array $config): bool
+        {
+        }
+    }
+}
 namespace Elementor\Modules\Promotions\AdminMenuItems\Interfaces {
     interface Promotion_Menu_Item extends \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item_With_Page
     {
@@ -55993,6 +62522,24 @@ namespace Elementor\Modules\Promotions\Pointers {
     }
 }
 namespace Elementor\Modules\Promotions {
+    class Promotion_Cdn_Url_Validator
+    {
+        public static function read_string_field(array $assets_data, string $key): string
+        {
+        }
+        public static function read_url_field(array $assets_data, string $key): string
+        {
+        }
+        public static function sanitize_promotion_display_string(string $value): string
+        {
+        }
+        public static function is_allowed_promotion_url(string $url): bool
+        {
+        }
+        public static function sanitize_promotion_url(string $url): string
+        {
+        }
+    }
     class PromotionData
     {
         protected \Elementor\Includes\EditorAssetsAPI $editor_assets_api;
@@ -56027,7 +62574,45 @@ namespace Elementor\Modules\Promotions\PropTypes {
         }
     }
 }
+namespace Elementor\Modules\Promotions {
+    class Sticky_Panel_Promotion
+    {
+        const TRANSIENT_KEY = 'elementor_sticky_panel_promotion_assets_data';
+        public static function get_assets_data(): array
+        {
+        }
+        public static function get_promotion_for_editor(): array
+        {
+        }
+        public static function merge_cdn_into_sticky_promotion(array $promotion_data): array
+        {
+        }
+    }
+    class Theme_Builder_Promotion
+    {
+        const DEFAULT_UPGRADE_URL = 'https://go.elementor.com/go-pro-theme-builder/';
+        const TRANSIENT_KEY = 'elementor_theme_builder_promotion_assets_data';
+        public static function get_assets_data(): array
+        {
+        }
+        public static function get_app_promotion_settings_for_config(): array
+        {
+        }
+        public static function get_app_promotion_config(): array
+        {
+        }
+    }
+}
 namespace Elementor\Modules\Promotions\Widgets {
+    class Atomic_Carousel_Widget_Promotion
+    {
+        public function register(): void
+        {
+        }
+        public function add_promotion_data(array $settings): array
+        {
+        }
+    }
     class Atomic_Form_Widget_Promotion
     {
         public function register(): void
@@ -56674,7 +63259,7 @@ namespace Elementor\Modules\System_Info {
         public function register_rest_routes(): void
         {
         }
-        public function get_reports_data(): array
+        public function get_reports_data(string $format = ''): array
         {
         }
         /**
@@ -62749,6 +69334,114 @@ namespace ElementorPro\License\Data\Endpoints {
         }
     }
 }
+namespace ElementorPro\Modules\AdminNotices {
+    class Bootstrap
+    {
+        const NOTICE_FAIL_LOAD = 'fail_load';
+        const NOTICE_OUT_OF_DATE = 'out_of_date';
+        const NOTICE_UPGRADE_RECOMMENDATION = 'upgrade_recommendation';
+        public static function register_from_bootstrap(string $notice_type): void
+        {
+        }
+        public static function render_registered_notices(): void
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AdminNotices\Classes {
+    class Upgrade_Recommendation_Dismissal
+    {
+        const DISMISS_DURATION_SECONDS = 12 * HOUR_IN_SECONDS;
+        const NOTICE_ID_PREFIX = 'elementor_pro_core_upgrade_recommendation_';
+        const TRANSIENT_PREFIX = 'elementor_pro_core_upgrade_rec_dismiss_';
+        public static function register_dismiss_handlers(): void
+        {
+        }
+        public static function handle_dismiss(): void
+        {
+        }
+        public static function should_show_notice(string $recommended_version, string $core_version): bool
+        {
+        }
+        public static function get_notice_id(string $recommended_version): string
+        {
+        }
+        public static function get_transient_key(string $recommended_version): string
+        {
+        }
+        /**
+         * ED-25616 uses a site-wide dismiss (12h), not Core's per-user `User::is_user_notice_viewed()`.
+         * Any admin who dismisses hides the notice for all admins until the transient expires.
+         * On multisite, `get_site_transient` / `set_site_transient` are shared across the network (one dismiss hides for all sites).
+         */
+        public static function is_dismissed(string $recommended_version): bool
+        {
+        }
+        public static function dismiss(string $recommended_version): bool
+        {
+        }
+        public static function clear_dismissal(string $recommended_version): void
+        {
+        }
+        public static function is_upgrade_recommendation_notice(string $notice_id): bool
+        {
+        }
+        public static function get_recommended_version_from_notice_id(string $notice_id): ?string
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AdminNotices\Components {
+    class Notice_Renderer
+    {
+        public function print_legacy_error(string $message): void
+        {
+        }
+        public function print_admin_notice(array $options, array $exclude_pages = []): void
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AdminNotices {
+    class Module extends \ElementorPro\Base\Module_Base
+    {
+        public static function is_active(): bool
+        {
+        }
+        public function get_name(): string
+        {
+        }
+        public function __construct()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AdminNotices\Notices {
+    class Fail_Load_Notice
+    {
+        public function should_print(): bool
+        {
+        }
+        public function print(): void
+        {
+        }
+    }
+    class Out_Of_Date_Notice
+    {
+        public function print(): void
+        {
+        }
+    }
+    class Upgrade_Recommendation_Notice
+    {
+        public function should_print(): bool
+        {
+        }
+        public function print(): void
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\AdminTopBar {
     class Module extends \ElementorPro\Base\Module_Base
     {
@@ -63767,6 +70460,9 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes\Icons {
         public function get_type()
         {
         }
+        public static function has_kit_id(): bool
+        {
+        }
         public function replace_font_awesome_pro($settings)
         {
         }
@@ -63787,6 +70483,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes\Icons {
 namespace ElementorPro\Modules\AssetsManager\AssetTypes\Icons\IconSets {
     abstract class Icon_Set_Base
     {
+        const RESERVED_NAME_PREFIX = 'fa-';
         protected $dir_name = '';
         protected $directory = '';
         protected $data_file = '';
@@ -63850,6 +70547,14 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes\Icons\IconSets {
         public function move_files($post_id)
         {
         }
+        /**
+         * Names that start with "fa-" are routed to the Font Awesome resolver, so a pack with such a name never renders.
+         *
+         * @return true|\WP_Error
+         */
+        public function validate_name()
+        {
+        }
         public function get_unique_name()
         {
         }
@@ -63899,6 +70604,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes\Icons\IconSets {
         protected function get_prefix()
         {
         }
+        const DEFAULT_NAME = 'fontastic';
         public function get_name()
         {
         }
@@ -63908,6 +70614,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes\Icons\IconSets {
     }
     class Fontello extends \ElementorPro\Modules\AssetsManager\AssetTypes\Icons\IconSets\Icon_Set_Base
     {
+        const DEFAULT_NAME = 'fontello';
         protected $data_file = 'config.json';
         protected $stylesheet_file = '';
         protected $allowed_zipped_files = ['config.json', 'demo.html', 'README.txt', 'LICENSE.txt', 'css/', 'font/'];
@@ -63936,6 +70643,7 @@ namespace ElementorPro\Modules\AssetsManager\AssetTypes\Icons\IconSets {
     }
     class Icomoon extends \ElementorPro\Modules\AssetsManager\AssetTypes\Icons\IconSets\Icon_Set_Base
     {
+        const DEFAULT_NAME = 'icomoon';
         protected $data_file = 'selection.json';
         protected $stylesheet_file = 'style.css';
         protected $allowed_zipped_files = ['selection.json', 'demo.html', 'Read Mw.txt', 'demo-files/', 'fonts/'];
@@ -64081,6 +70789,839 @@ namespace ElementorPro\Modules\AssetsManager {
         }
     }
 }
+namespace ElementorPro\Modules\AtomicCarousel {
+    /**
+     * Single source of truth for carousel assistive-technology strings.
+     *
+     * PHP Twig (published markup) and the frontend handler (via `data-e-carousel-labels`)
+     * read this bag. The editor canvas uses English Twig defaults, same as other atomic elements.
+     * Strings are unescaped here; Twig `| e` and `json_encode` escape at the output boundary.
+     */
+    class Carousel_I18n
+    {
+        public static function bag(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Controls {
+    class Slides_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Element_Control_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Base {
+    /**
+     * Shared behaviour of the locked carousel child elements.
+     */
+    abstract class Atomic_Carousel_Child_Base extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        // Declared only here. A subclass that `use`s the trait again would override `build_template_context()`.
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template;
+        const BASE_STYLE_KEY = 'base';
+        protected const IS_CONTAINER = false;
+        const ICON_LIBRARY = 'fa-solid';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function should_show_in_panel()
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function get_extra_keywords(): array
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        public static function get_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected static function px($size): array
+        {
+        }
+        protected static function percent($size): array
+        {
+        }
+        protected static function auto(): array
+        {
+        }
+        protected static function custom(string $value): array
+        {
+        }
+        protected static function focus_visible_outline_props(string $color = '#000'): array
+        {
+        }
+        protected static function build_svg_icon(string $icon_name): array
+        {
+        }
+        protected function build_template_context(): array
+        {
+        }
+    }
+    /** Shared behaviour of the previous/next arrows. */
+    abstract class Atomic_Carousel_Arrow_Base extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        protected const IS_CONTAINER = true;
+        const ICON_COLOR = 'rgba(238, 238, 238, 0.9)';
+        abstract protected static function get_default_label(): string;
+        abstract public static function get_aria_label(): string;
+        abstract protected static function get_inline_edge(): string;
+        abstract protected static function get_icon_name(): string;
+        protected static function get_extra_keywords(): array
+        {
+        }
+        protected function define_default_html_tag()
+        {
+        }
+        protected function define_initial_attributes()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_atomic_style_states(): array
+        {
+        }
+        public static function build_default_element(): array
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Arrow_Next {
+    class Atomic_Carousel_Arrow_Next extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Arrow_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-arrow-next';
+        public static $widget_description = 'The next-slide button of a carousel. A container: drop any element inside (SVG, image, text) to become the arrow, and the button keeps handling navigation. Must be a direct child of e-carousel, never of the viewport.';
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function get_default_label(): string
+        {
+        }
+        public static function get_aria_label(): string
+        {
+        }
+        protected static function get_inline_edge(): string
+        {
+        }
+        protected static function get_icon_name(): string
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Arrow_Prev {
+    class Atomic_Carousel_Arrow_Prev extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Arrow_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-arrow-prev';
+        public static $widget_description = 'The previous-slide button of a carousel. A container: drop any element inside (SVG, image, text) to become the arrow, and the button keeps handling navigation. Must be a direct child of e-carousel, never of the viewport.';
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function get_default_label(): string
+        {
+        }
+        public static function get_aria_label(): string
+        {
+        }
+        protected static function get_inline_edge(): string
+        {
+        }
+        protected static function get_icon_name(): string
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Autoplay_Controls {
+    /** Wrapper of the autoplay Play and Pause buttons. The carousel root's state class shows one of them. */
+    class Atomic_Carousel_Autoplay_Controls extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-autoplay-controls';
+        protected const IS_CONTAINER = true;
+        public static $widget_description = 'The autoplay play/pause controls of a carousel. Locked container, present only while autoplay and show_autoplay_button are on. REQUIRED children: exactly one e-carousel-autoplay-play and one e-carousel-autoplay-pause; only the one matching the current state is visible. Must be a direct child of e-carousel.';
+        protected static function get_extra_keywords(): array
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_atomic_style_states(): array
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+        /**
+         * Component instances attach the controls from the children dependency's `default_model`, which is
+         * empty and only hydrated in the editor. Print the missing default buttons for this response only.
+         * They are not written back into `elements`.
+         */
+        protected function render_children_to_html(): string
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Base {
+    /**
+     * Shared behaviour of the autoplay Play and Pause buttons. The carousel root's state class decides
+     * which one is visible, so each can be styled on its own.
+     */
+    abstract class Atomic_Carousel_Autoplay_Control_Base extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        protected const IS_CONTAINER = true;
+        // Set on every state, so a theme's button hover colours never reach the icon.
+        const ICON_COLOR = '#000';
+        abstract protected static function get_default_label(): string;
+        abstract public static function get_aria_label(): string;
+        abstract protected static function get_icon_name(): string;
+        protected static function get_extra_keywords(): array
+        {
+        }
+        protected function define_default_html_tag()
+        {
+        }
+        protected function define_initial_attributes()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        public static function build_default_element(bool $mark_required = false): array
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Autoplay_Pause {
+    class Atomic_Carousel_Autoplay_Pause extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Autoplay_Control_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-autoplay-pause';
+        public static $widget_description = 'The Pause button of a carousel\'s autoplay controls, shown while autoplay runs. A container: put its content inside, e.g. an e-svg with the icon `fa-solid fa-pause`; without a child the button is empty and invisible. The button keeps pausing autoplay whatever it contains. Must be a direct child of e-carousel-autoplay-controls.';
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function get_default_label(): string
+        {
+        }
+        public static function get_aria_label(): string
+        {
+        }
+        protected static function get_icon_name(): string
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Autoplay_Play {
+    class Atomic_Carousel_Autoplay_Play extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Autoplay_Control_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-autoplay-play';
+        public static $widget_description = 'The Play button of a carousel\'s autoplay controls, shown while autoplay is paused. A container: put its content inside, e.g. an e-svg with the icon `fa-solid fa-play`; without a child the button is empty and invisible. The button keeps resuming autoplay whatever it contains. Must be a direct child of e-carousel-autoplay-controls.';
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function get_default_label(): string
+        {
+        }
+        public static function get_aria_label(): string
+        {
+        }
+        protected static function get_icon_name(): string
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Container {
+    /** The slide track. The engine drives this node with an inline `transform`. */
+    class Atomic_Carousel_Container extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-container';
+        public static $widget_description = 'The slide track of a carousel. Locked structural element whose only children are e-carousel-slide elements. Set the space between slides with the CSS gap property on this element.';
+        protected static function get_extra_keywords(): array
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_initial_attributes()
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Dot {
+    /**
+     * Styleable pagination bullet. One prototype is stored; the handler clones it per snap.
+     */
+    class Atomic_Carousel_Dot extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-dot';
+        const SIZE = 6;
+        const IDLE_COLOR = 'rgba(0, 0, 0, 0.2)';
+        const ACTIVE_COLOR = '#000';
+        public static $widget_description = 'The pagination bullet of a carousel. Locked, not a container. Exactly one prototype is stored as a child of e-carousel-pagination; the handler clones it once per snap and never writes the clones back. Style the prototype, including the Selected state for the active snap.';
+        protected static function get_extra_keywords(): array
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected function define_default_html_tag()
+        {
+        }
+        protected function define_initial_attributes()
+        {
+        }
+        protected function define_atomic_style_states(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        public static function build_default_element(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Pagination {
+    /** Dot strip. Holds one styleable prototype; the handler clones it per snap. */
+    class Atomic_Carousel_Pagination extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-pagination';
+        protected const IS_CONTAINER = true;
+        public static $widget_description = 'The pagination strip of a carousel. Locked container with exactly one child, e-carousel-dot. That child is a prototype: the handler clones it once per snap position and never writes the clones into the document. Gap on this element is the space between dots. Must be a direct child of e-carousel.';
+        protected static function get_extra_keywords(): array
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_initial_attributes()
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+        /**
+         * The bullet is required chrome. `classes` is never `false`, including when the stored
+         * value is still missing, so the prototype is reattached if it is removed. Stash keeps
+         * the user's styles on that prototype.
+         */
+        protected function define_children_dependencies(): array
+        {
+        }
+        public static function build_default_element(): array
+        {
+        }
+        /**
+         * A document saved before the dot child existed renders an empty strip. Print one prototype
+         * for this response only. It is not written back into `elements`.
+         */
+        protected function render_children_to_html(): string
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Slide {
+    /** One slide. Empty by default; width comes from `--e-carousel-slides-per-view` and, per breakpoint, `--e-carousel-spv-*` on the root. */
+    class Atomic_Carousel_Slide extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-slide';
+        protected const IS_CONTAINER = true;
+        const LAYOUT_CLASS = 'e-carousel__slide';
+        const SLIDE_WIDTH = 'calc((100% - (var(--e-carousel-slides-per-view, 3) - 1) * var(--e-carousel-gap, 0px)) / var(--e-carousel-slides-per-view, 3))';
+        public static $widget_description = 'A single carousel slide. Accepts any element inside; starts empty so a full layout can be built in it. Lives only inside e-carousel-container.';
+        protected static function get_extra_keywords(): array
+        {
+        }
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        /**
+         * Slides Per View and the gap, as module CSS instead of base styles, so the panel does not show
+         * these internals. `div.e-carousel__slide` (0,1,1) outranks any single-class rule and stays below
+         * the slide's own styles (0,2,0), whatever the load order.
+         */
+        public static function get_layout_css(): string
+        {
+        }
+        protected function define_initial_attributes()
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel_Viewport {
+    /** The clipping window. The engine initialises on this node. */
+    class Atomic_Carousel_Viewport extends \ElementorPro\Modules\AtomicCarousel\Elements\Base\Atomic_Carousel_Child_Base
+    {
+        const ELEMENT_TYPE = 'e-carousel-viewport';
+        public static $widget_description = 'The clipping window of a carousel. Locked structural element with exactly one child: e-carousel-container. Do not place slides or arrows directly inside it.';
+        public function get_title()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel\Elements\Atomic_Carousel {
+    /**
+     * V4 Carousel root element (ED-25236).
+     */
+    class Atomic_Carousel extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Element_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Element_Template {
+            get_initial_config as private get_template_initial_config;
+        }
+        const ELEMENT_TYPE = 'e-carousel';
+        const BASE_STYLE_KEY = 'base';
+        const TRANSITION_SLIDE = 'slide';
+        const TRANSITION_FADE = 'fade';
+        const TRANSITION_NONE = 'none';
+        const PAGINATION_NONE = 'none';
+        const PAGINATION_DOTS = 'dots';
+        const AUTOPLAY_STATE_PLAYING = 'playing';
+        const AUTOPLAY_STATE_PAUSED = 'paused';
+        const DEFAULT_SLIDE_COUNT = 4;
+        const DEFAULT_SLIDES_PER_VIEW = 3;
+        const DEFAULT_AUTOPLAY_DELAY = 5000;
+        const DEFAULT_CAROUSEL_NAME = 'Carousel';
+        const NEW_UNTIL_VERSION = '4.4';
+        public static $widget_description = 'A carousel of slides with arrow navigation and dot pagination. REQUIRED child: e-carousel-viewport, which contains a single e-carousel-container holding the e-carousel-slide elements. Optional direct children: e-carousel-arrow-prev, e-carousel-arrow-next (each wraps any element as the arrow content), e-carousel-pagination (one e-carousel-dot prototype; the handler clones it per snap and never persists the clones) and e-carousel-autoplay-controls. When autoplay and show_autoplay_button are both true, add e-carousel-autoplay-controls as a direct child containing exactly one e-carousel-autoplay-play and one e-carousel-autoplay-pause; each button wraps any element (SVG, text) as its content. Setting those props through MCP does not add the elements: write the subtree yourself. Arrows, pagination and the autoplay controls are siblings of the viewport, never children of it, so dragging a slide never starts on a control.';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public function get_initial_config()
+        {
+        }
+        public static function get_type()
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title()
+        {
+        }
+        protected function build_template_context(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        public function get_icon()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function define_base_styles(): array
+        {
+        }
+        protected function define_default_children()
+        {
+        }
+        protected function define_children_dependencies(): array
+        {
+        }
+        protected function define_allowed_child_types()
+        {
+        }
+        public function get_style_depends()
+        {
+        }
+        public function get_script_depends()
+        {
+        }
+        public function register_frontend_handlers()
+        {
+        }
+        public function render_markdown(): string
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCarousel {
+    /**
+     * V4 Carousel, a Pro element (ED-25236).
+     */
+    class Module extends \ElementorPro\Base\Module_Base
+    {
+        const MODULE_NAME = 'e-atomic-carousel';
+        const LICENSE_FEATURE_NAME = 'atomic-carousel';
+        const MIN_ELEMENTOR_VERSION = '4.4';
+        const HANDLER_SCRIPT_HANDLE = 'elementor-pro-carousel-handler';
+        const PREVIEW_HANDLER_SCRIPT_HANDLE = 'elementor-pro-carousel-preview-handler';
+        const PACKAGE_HANDLE = 'editor-atomic-carousel';
+        const STYLE_HANDLE = 'elementor-pro-atomic-carousel';
+        // An arrow's icon points the way of the slide, so RTL mirrors it. The SVG element is the target: the SVG wrapper
+        // carries no `data-e-type`, only its classes. `:where()` keeps the rule at zero specificity, leaving a transform
+        // set on the icon wrapper in the editor in charge.
+        // Default arrow and play/pause icon sizes. A variable, so the SVG's own Width and Height still win.
+        // The root's autoplay state class shows one of Play and Pause. Child combinators keep a nested
+        // carousel's controls out of reach, and the selectors outrank the buttons' own `display`.
+        // Without a state class (autoplay or the controls switched off) the controls stay hidden, and so do
+        // they under reduced motion, where autoplay never starts: before the handler runs, a Pause button
+        // would flash. The editor keeps them so they can be styled. A button left without content has
+        // nothing to show, so it is not left as an invisible tab stop.
+        const INLINE_CSS = '.e-carousel__arrow { --e-svg-width: 25px; --e-svg-height: 25px; }' . ':where([dir="rtl"] .e-carousel__arrow svg) { transform: scaleX(-1); }' . '.e-carousel__autoplay-play, .e-carousel__autoplay-pause { --e-svg-width: 20px; --e-svg-height: 20px; appearance: none; -webkit-appearance: none; }' . '.e-carousel.e-carousel--autoplay-playing > .e-carousel__autoplay-controls > .e-carousel__autoplay-play { display: none; }' . '.e-carousel.e-carousel--autoplay-paused > .e-carousel__autoplay-controls > .e-carousel__autoplay-pause { display: none; }' . '.e-carousel:not(.e-carousel--autoplay-playing):not(.e-carousel--autoplay-paused) > .e-carousel__autoplay-controls { display: none; }' . '@media (prefers-reduced-motion: reduce) { .elementor:not(.elementor-edit-mode) .e-carousel > .e-carousel__autoplay-controls { display: none; } }' . '.e-carousel > .e-carousel__autoplay-controls > :is(.e-carousel__autoplay-play, .e-carousel__autoplay-pause):not(:has(*)) { display: none; }';
+        public function get_name()
+        {
+        }
+        public function __construct()
+        {
+        }
+        public static function get_element_classes(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicCustomIcons {
+    class Converter_Registry
+    {
+        /**
+         * @return \ElementorPro\Modules\AtomicCustomIcons\Svg_Converter[]
+         */
+        public static function all(): array
+        {
+        }
+        public static function for_tab(array $tab): ?\ElementorPro\Modules\AtomicCustomIcons\Svg_Converter
+        {
+        }
+    }
+    /**
+     * Durable store for Font Awesome Pro icon geometry captured from the user's own kit.
+     *
+     * The kit is the only source of Pro SVG data and only exists in the browser, so the editor
+     * sends the geometry once when a licensed user renders an icon, and the server keeps it. Saved
+     * icons keep rendering whatever the license state while a kit is configured; once the kit is
+     * removed, callers render the default icon instead.
+     *
+     * Each icon is its own non-autoloaded option, so a render reads one small row and the first
+     * write is an atomic insert. The first write wins: geometry stays as captured even after the
+     * kit moves to a newer Font Awesome version, until an admin re-renders the icon.
+     *
+     * Content that never went through a licensed canvas render (imports, templates, cross-site
+     * paste, AI or MCP writes) has nothing stored and renders the default icon.
+     */
+    class Font_Awesome_Pro_Icons
+    {
+        const OPTION_PREFIX = 'elementor_pro_atomic_fa_pro_icon_';
+        const LIBRARIES = ['fa-solid', 'fa-regular', 'fa-light', 'fa-brands'];
+        const MAX_ENTRIES = 2500;
+        const MAX_PATHS = 2;
+        const MAX_PATH_LENGTH = 8000;
+        const MAX_TOTAL_PATH_LENGTH = 10000;
+        const MAX_DIMENSION = 2048;
+        const VALUE_PATTERN = '/^fa-[a-z]+ fa-[a-z0-9-]+\z/D';
+        const PATH_PATTERN = '/^[MmLlHhVvCcSsQqTtAaZz0-9eE.,\s+-]+\z/D';
+        public static function reset_cache(): void
+        {
+        }
+        public static function is_font_awesome_pro_library($library): bool
+        {
+        }
+        /**
+         * @return true|\WP_Error
+         */
+        public static function store(string $library, string $value, int $width, int $height, array $paths)
+        {
+        }
+        public static function resolve(array $icon): string
+        {
+        }
+    }
+    class Font_Awesome_Pro_Rest_Api
+    {
+        const API_NAMESPACE = 'elementor-pro/v1';
+        const API_BASE = 'font-awesome-pro-icon';
+        public function register_hooks()
+        {
+        }
+        public function get_icon(\WP_REST_Request $request)
+        {
+        }
+        public function store_icon(\WP_REST_Request $request)
+        {
+        }
+    }
+    interface Svg_Converter
+    {
+        public function supports(array $tab): bool;
+        public function convert(array $tab, string $icon_value): string;
+    }
+    class Fontello_Converter implements \ElementorPro\Modules\AtomicCustomIcons\Svg_Converter
+    {
+        public function supports(array $tab): bool
+        {
+        }
+        public function convert(array $tab, string $icon_value): string
+        {
+        }
+        public static function tab_from_disk(string $library): ?array
+        {
+        }
+        public static function names_from_config(array $config): array
+        {
+        }
+        public static function pack_urls(array $tab): array
+        {
+        }
+        public static function pack_dir(array $tab): string
+        {
+        }
+        public static function icon_name_from_value(string $icon_value, string $prefix): string
+        {
+        }
+    }
+    class Fontello_Glyph_Parser
+    {
+        public static function reset_memory(): void
+        {
+        }
+        public static function to_svg(string $config_json, string $svg_font, string $icon_name, string $prefix = ''): string
+        {
+        }
+    }
+    class Icomoon_Converter implements \ElementorPro\Modules\AtomicCustomIcons\Svg_Converter
+    {
+        const DEFAULT_VIEWBOX = 1024;
+        public function supports(array $tab): bool
+        {
+        }
+        public function convert(array $tab, string $icon_value): string
+        {
+        }
+        public static function tab_from_disk(string $library): ?array
+        {
+        }
+        public static function pack_urls(array $tab): array
+        {
+        }
+        public static function pack_dir(array $tab): string
+        {
+        }
+        public static function svg_from_selection(string $json, string $icon_name, string $prefix): string
+        {
+        }
+        public static function names_from_selection(array $data): array
+        {
+        }
+    }
+    class Module extends \ElementorPro\Base\Module_Base
+    {
+        const LICENSE_FEATURE_NAME = 'atomic-custom-icons';
+        const SKIPPED_TAB_NAMES = ['all', 'recommended', 'GoPro'];
+        public function get_name()
+        {
+        }
+        public function __construct()
+        {
+        }
+        /**
+         * Strict on purpose: no BC callback, which would allow every feature on the frontend and for legacy licenses.
+         */
+        public static function is_licensed(): bool
+        {
+        }
+        /**
+         * Core versions before this flag skip the `svg-html` filter for Font Awesome values, so stored Pro icons could not render.
+         */
+        public static function is_core_font_awesome_pro_supported(): bool
+        {
+        }
+    }
+    class Pack_Directory
+    {
+        /**
+         * @return string[]
+         */
+        const SVG_FONT_RELATIVE_PATHS = ['fontello' => 'font/fontello.svg', 'icomoon' => 'fonts/icomoon.svg', 'fontastic' => 'fonts/fontastic.svg'];
+        const ALLOWED_TYPES = ['fontello', 'icomoon', 'fontastic'];
+        const SVG_FONT_FOLDERS = ['font', 'fonts'];
+        public static function reset_memory(): void
+        {
+        }
+        public static function detect_type(array $tab): string
+        {
+        }
+        public static function is_supported(array $tab): bool
+        {
+        }
+        public static function resolve(array $tab): string
+        {
+        }
+        /**
+         * Lookup order: the fixed names of each vendor export first, then the first valid SVG font
+         * (alphabetical) in `font/`, then in `fonts/`. Packs exported with a custom font name only
+         * match the last two steps. Memoized per request; `reset_memory()` clears it.
+         */
+        public static function find_svg_font(string $dir): string
+        {
+        }
+        public static function public_urls(array $tab): array
+        {
+        }
+    }
+    class Resolver
+    {
+        const FONT_AWESOME_PREFIX = 'fa-';
+        const CACHE_GROUP = 'elementor_custom_icon_svg';
+        const MAX_LIBRARY_ICONS = 250;
+        const CACHE_TTL = 7 * DAY_IN_SECONDS;
+        const CONVERTER_VERSION = '3';
+        public static function reset_memory(): void
+        {
+        }
+        public static function resolve(array $icon): string
+        {
+        }
+        public static function resolve_library(string $library): array
+        {
+        }
+        /**
+         * @return array{icons: array<string, string>, truncated: bool, total: int}
+         */
+        public static function resolve_library_response(string $library, int $offset = 0, int $limit = self::MAX_LIBRARY_ICONS): array
+        {
+        }
+        /**
+         * @return array{values: array<string, string>, truncated: bool, total: int}
+         */
+        public static function resolve_library_values(string $library): array
+        {
+        }
+        public static function is_renderable_value(string $library, string $value): bool
+        {
+        }
+    }
+    class Rest_Api
+    {
+        const API_NAMESPACE = 'elementor-pro/v1';
+        const API_BASE = 'custom-icon-svg';
+        public function register_hooks()
+        {
+        }
+        public function get_svg(\WP_REST_Request $request)
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\AtomicForm\Actions {
     abstract class Action_Base
     {
@@ -64100,7 +71641,7 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
          * @param array $context Additional context (post_id, form_id, form_name).
          *                       Example: ['post_id' => 123, 'form_id' => 'contact', 'form_name' => 'Contact Form']
          * @return array Result array with 'status' and optional data.
-         *               Success: ['status' => 'success', 'message' => '...', ...]
+         *               Success: ['status' => 'success', 'message' => '...', 'log' => '...' (optional, stored in the submission action log), ...]
          *               Failure: ['status' => 'failed', 'error' => '...', ...]
          */
         abstract public function execute(array $form_data, array $widget_settings, array $context): array;
@@ -64209,6 +71750,9 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
         const EMAIL = 'email';
         const COLLECT_SUBMISSIONS = 'collect-submissions';
         const WEBHOOK = 'webhook';
+        const REDIRECT = 'redirect';
+        const POPUP = 'popup';
+        const MAILCHIMP = 'mailchimp';
         /**
          * Get all registered action types.
          *
@@ -64284,6 +71828,58 @@ namespace ElementorPro\Modules\AtomicForm\Actions {
         {
         }
     }
+    class Mailchimp_Action extends \ElementorPro\Modules\AtomicForm\Actions\Action_Base
+    {
+        const API_KEY_SOURCE_DEFAULT = 'default';
+        const API_KEY_SOURCE_CUSTOM = 'custom';
+        const EMAIL_REMOTE_ID = 'email';
+        const STATUS_SUBSCRIBED = 'subscribed';
+        const STATUS_PENDING = 'pending';
+        const HTTP_OK = 200;
+        const HTTP_NO_CONTENT = 204;
+        const HTTP_NOT_FOUND = 404;
+        public function get_type(): string
+        {
+        }
+        public static function get_global_api_key(): string
+        {
+        }
+        public static function resolve_api_key(array $settings): string
+        {
+        }
+        public function execute(array $form_data, array $widget_settings, array $context): array
+        {
+        }
+    }
+    class Popup_Action extends \ElementorPro\Modules\AtomicForm\Actions\Action_Base
+    {
+        const NONE = 'none';
+        const OPEN = 'open';
+        const CLOSE = 'close';
+        public function get_type(): string
+        {
+        }
+        public function execute(array $form_data, array $widget_settings, array $context): array
+        {
+        }
+        /**
+         * Returns the selected popup ID, or 0 when the popup is missing, deleted or not published.
+         *
+         * @param mixed $value Resolved `popup-id` setting: the ID itself or the query value `{ id, label }`.
+         */
+        public static function get_popup_id($value): int
+        {
+        }
+    }
+    class Redirect_Action extends \ElementorPro\Modules\AtomicForm\Actions\Action_Base
+    {
+        public function get_type(): string
+        {
+        }
+        public function execute(array $form_data, array $widget_settings, array $context): array
+        {
+        }
+    }
     class Webhook_Action extends \ElementorPro\Modules\AtomicForm\Actions\Action_Base
     {
         public function get_type(): string
@@ -64308,11 +71904,18 @@ namespace ElementorPro\Modules\AtomicForm {
         {
         }
     }
+    trait Has_Default_Field_Id
+    {
+        public function __construct($data = [], $args = null)
+        {
+        }
+    }
 }
 namespace ElementorPro\Modules\AtomicForm\Checkbox {
     class Checkbox extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -64429,10 +72032,89 @@ namespace ElementorPro\Modules\AtomicForm\Classes {
     }
     class Field_Id_Shortcode_Resolver implements \ElementorPro\Modules\AtomicForm\Classes\Shortcode_Resolver
     {
-        public function __construct(array $form_data)
+        public function __construct(array $form_data, bool $urlencode = false, array $cssid_map = [], bool $is_html = false)
         {
         }
         public function resolve(string $message): string
+        {
+        }
+    }
+    class Form_Elements_Finder
+    {
+        /**
+         * Recursively collects the elements in a form tree whose widget type matches.
+         */
+        public static function find_by_type(array $elements, string $widget_type): array
+        {
+        }
+    }
+    class Mailchimp_Api_Key_Notice_Control extends \Elementor\Modules\AtomicWidgets\Controls\Types\Notice_Control
+    {
+        const CONTROL_TYPE = 'mailchimp-api-key-notice';
+        public function get_type(): string
+        {
+        }
+        public function set_has_global_api_key(bool $has_global_api_key): self
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+    class Mailchimp_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
+    {
+        const AUDIENCE = 'mailchimp-audience';
+        const GROUPS = 'mailchimp-groups';
+        const FIELDS_MAP = 'mailchimp-fields-map';
+        const CONTROL_TYPE_AUDIENCE = 'mailchimp-audience';
+        const CONTROL_TYPE_GROUPS = 'mailchimp-groups';
+        const CONTROL_TYPE_FIELDS_MAP = 'mailchimp-fields-map';
+        const CONTROL_TYPES = [self::AUDIENCE => self::CONTROL_TYPE_AUDIENCE, self::GROUPS => self::CONTROL_TYPE_GROUPS, self::FIELDS_MAP => self::CONTROL_TYPE_FIELDS_MAP];
+        public function get_type(): string
+        {
+        }
+        public function get_props(): array
+        {
+        }
+    }
+    class Mailchimp_Export_Sanitizer
+    {
+        public static function sanitize_elements($elements)
+        {
+        }
+        public static function sanitize_form_element(array $element): array
+        {
+        }
+    }
+    class Mailchimp_Form_Action
+    {
+        const ACTIONS_PROP = 'actions-after-submit';
+        const API_KEY_NOTICE_PROP = '_mailchimp_api_key_notice';
+        const API_KEY_SOURCE_PROP = 'mailchimp-api-key-source';
+        const CUSTOM_API_KEY_PROP = 'mailchimp-api-key';
+        const AJAX_ACTION = 'pro_atomic_form_mailchimp_data';
+        const RESOURCE_API_KEY_STATUS = 'api-key-status';
+        const PROPS_SCHEMA_PRIORITY = 5;
+        /**
+         * The props are registered with or without the license, so saved Mailchimp settings are kept and their
+         * sensitive / non-exportable meta still applies. The chip, the controls and the AJAX need the license.
+         */
+        public function __construct(bool $is_licensed = true)
+        {
+        }
+        public function register_props(array $schema): array
+        {
+        }
+        public function register_controls(array $controls, $element): array
+        {
+        }
+        public function register_ajax_actions(\Elementor\Core\Common\Modules\Ajax\Module $ajax): void
+        {
+        }
+        /**
+         * @throws \Exception
+         */
+        public function get_mailchimp_data(array $data): array
         {
         }
     }
@@ -64445,11 +72127,30 @@ namespace ElementorPro\Modules\AtomicForm\Classes {
         {
         }
     }
+    class Popup_Form_Action
+    {
+        const ACTIONS_PROP = 'actions-after-submit';
+        const POPUPS_SEARCH_LIMIT = 20;
+        const PROPS_SCHEMA_PRIORITY = 5;
+        public function __construct()
+        {
+        }
+        public function register_props(array $schema): array
+        {
+        }
+        public function register_controls(array $controls, $element): array
+        {
+        }
+        public function maybe_print_popup(\Elementor\Element_Base $element): void
+        {
+        }
+    }
 }
 namespace ElementorPro\Modules\AtomicForm\Date_Picker {
     class Date_Picker extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -64492,10 +72193,17 @@ namespace ElementorPro\Modules\AtomicForm\Date_Picker {
 namespace ElementorPro\Modules\AtomicForm {
     class Default_Id_Provider
     {
+        const CSSID_PROP = '_cssid';
         public static function get_default_id(string $prefix): string
         {
         }
         public static function get_default_id_prop(string $prefix): \Elementor\Modules\AtomicWidgets\PropTypes\Primitives\String_Prop_Type
+        {
+        }
+        public static function get_field_id(string $element_type, string $element_id): string
+        {
+        }
+        public static function with_field_id(array $data, string $element_type): array
         {
         }
     }
@@ -64589,6 +72297,7 @@ namespace ElementorPro\Modules\AtomicForm\File_Upload {
     class File_Upload extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -64712,10 +72421,161 @@ namespace ElementorPro\Modules\AtomicForm\File_Upload\Validators {
         }
     }
 }
+namespace ElementorPro\Modules\AtomicForm\Hidden {
+    class Hidden extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        const HANDLER_SCRIPT_HANDLE = 'elementor-pro-atomic-form-hidden-handler';
+        const REQUEST_PARAMETER_TAG = 'request-arg';
+        const GET_REQUEST_TYPE = 'get';
+        const REQUEST_PARAM_SETTING = 'request_param';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_computed_html_tag(array $settings): string
+        {
+        }
+        public static $widget_description = 'Add an invisible field that submits a fixed or dynamic value (for example a UTM parameter, post ID or product ID) with the form.';
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+        public function get_atomic_settings(): array
+        {
+        }
+        public function get_script_depends()
+        {
+        }
+        public function register_frontend_handlers()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm\Honeypot {
+    class Honeypot_Handler
+    {
+        public function __construct(array $form_element, array $cssid_map = [])
+        {
+        }
+        public function is_triggered(array $form_fields): bool
+        {
+        }
+        public function remove_honeypot_fields(array $form_fields): array
+        {
+        }
+    }
+    class Honeypot extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        const CSSID_PROP = \ElementorPro\Modules\AtomicForm\Default_Id_Provider::CSSID_PROP;
+        // Render-only values, injected into the settings so they reach the template on every supported Core.
+        const HIDDEN_CLASS_SETTING = '_hidden_class';
+        const DETACHED_FORM_ID_SETTING = '_detached_form_id';
+        const NEW_UNTIL_VERSION = '4.4';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_computed_html_tag(array $settings): string
+        {
+        }
+        public static $widget_description = 'Add an invisible spam trap field to the form. No configuration needed. If a bot fills it, the submission is rejected with an error and nothing is sent or stored. Only one per form.';
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_initial_config()
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        public function get_atomic_settings(): array
+        {
+        }
+        public function get_atomic_setting(string $key)
+        {
+        }
+        /**
+         * Shaped like the id of a regular input, so the trap does not stand out.
+         */
+        public static function get_default_field_id(string $element_id): string
+        {
+        }
+        /**
+         * Per-site class, so the hidden field has no class name shared by every site.
+         */
+        public static function get_hidden_class(): string
+        {
+        }
+        /**
+         * Points the input at a form that does not exist. WebMCP builds a form's tool schema only from its
+         * associated controls, so agents never see the field, while bots and the form handler still read it.
+         */
+        public static function get_detached_form_id(): string
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+        public function render_markdown(): string
+        {
+        }
+        public static function get_inline_styles(): string
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\AtomicForm\Input {
     class Input extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -64816,8 +72676,14 @@ namespace ElementorPro\Modules\AtomicForm {
         const MODULE_NAME = 'e-atomic-form';
         const EXPERIMENT_NAME = 'e_pro_atomic_form';
         const AKISMET_LICENSE_FEATURE_NAME = 'akismet';
+        const POPUP_ACTION_LICENSE_FEATURE_NAME = 'atomic-form-action-popup';
+        const MAILCHIMP_ACTION_LICENSE_FEATURE_NAME = 'atomic-form-mailchimp';
+        const MAILCHIMP_MIN_ELEMENTOR_VERSION = '4.4';
         const EMAIL_ACTION_COUNT = 2;
         const FORM_ELEMENT_TYPE = 'e-form';
+        const EXPORT_ELEMENTS_FILTER = 'elementor/template_library/sources/local/export/elements';
+        // Score-based reCAPTCHA needs Notice_Control and the before-submit form event, both shipped in Core 4.4.
+        const RECAPTCHA_SCORE_MIN_ELEMENTOR_VERSION = '4.4';
         public function get_name()
         {
         }
@@ -64827,10 +72693,20 @@ namespace ElementorPro\Modules\AtomicForm {
         public static function get_form_field_widget_types(): array
         {
         }
+        public static function is_recaptcha_score_supported(): bool
+        {
+        }
         public static function get_experimental_data(): array
         {
         }
         public function __construct()
+        {
+        }
+        /**
+         * Mailchimp keeps its API key in the form settings, so it needs Core's Prop_Sensitivity to keep the key
+         * out of exports, cloud templates and agents. Without it the action is not registered at all.
+         */
+        public static function is_mailchimp_action_available(): bool
         {
         }
     }
@@ -64839,6 +72715,7 @@ namespace ElementorPro\Modules\AtomicForm\Radio_Button {
     class Radio_Button extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -64882,6 +72759,160 @@ namespace ElementorPro\Modules\AtomicForm\Radio_Button {
         }
     }
 }
+namespace ElementorPro\Modules\AtomicForm\Recaptcha_Score {
+    class Recaptcha_Score_Admin
+    {
+        const SECTION_ID = 'recaptcha_score';
+        // Runs after the reCAPTCHA (v2) and V3 sections, which register on the default priority.
+        const SETTINGS_PRIORITY = 11;
+        const VALIDATE_ACTION = 'elementor_pro_recaptcha_score_validate';
+        const VALIDATE_FIELD_ID = 'recaptcha_score_validate';
+        const VALIDATE_BUTTON_ID = 'elementor_pro_recaptcha_score_validate_button';
+        const SETUP_GUIDE_URL = 'https://go.elementor.com/wp-dash-atomic-form-recaptcha-google/';
+        // Core settings use the URL hash for the tab id and render section titles without an id,
+        // so the section is passed as a query arg and the admin script scrolls to this anchor.
+        const SECTION_QUERY_ARG = 'elementor_settings_section';
+        const SECTION_ANCHOR_ID = 'elementor-pro-recaptcha-score-section';
+        public function __construct()
+        {
+        }
+        public static function get_section_url(): string
+        {
+        }
+        public function register_admin_fields(\Elementor\Settings $settings): void
+        {
+        }
+        public function ajax_validate(): void
+        {
+        }
+    }
+    class Recaptcha_Score_Client
+    {
+        const ASSESSMENTS_URL = 'https://recaptchaenterprise.googleapis.com/v1/projects/%s/assessments';
+        const CREDENTIALS_CHECK_TOKEN = 'elementor-credentials-check';
+        const REQUEST_TIMEOUT = 10;
+        public function __construct(string $project_id, string $api_key, string $site_key)
+        {
+        }
+        public function create_assessment(string $token, string $expected_action): ?array
+        {
+        }
+        // Google answers an assessment for a placeholder token with 200 only when the project and API key are accepted.
+        public function validate_credentials(): bool
+        {
+        }
+    }
+    class Recaptcha_Score_Handler
+    {
+        // Must match the action the frontend passes to grecaptcha.enterprise.execute().
+        const ACTION = 'atomic_form_submit';
+        const TOKEN_FIELD = 'recaptcha_score_token';
+        public function __construct(array $form_element)
+        {
+        }
+        public function is_rejected(string $token): bool
+        {
+        }
+    }
+    class Recaptcha_Score_Settings
+    {
+        const FIELD_SITE_KEY = 'pro_recaptcha_score_site_key';
+        const FIELD_PROJECT_ID = 'pro_recaptcha_score_project_id';
+        const FIELD_API_KEY = 'pro_recaptcha_score_api_key';
+        const FIELD_THRESHOLD = 'pro_recaptcha_score_threshold';
+        const OPTION_NAME_SITE_KEY = 'elementor_' . self::FIELD_SITE_KEY;
+        const OPTION_NAME_PROJECT_ID = 'elementor_' . self::FIELD_PROJECT_ID;
+        const OPTION_NAME_API_KEY = 'elementor_' . self::FIELD_API_KEY;
+        const OPTION_NAME_THRESHOLD = 'elementor_' . self::FIELD_THRESHOLD;
+        const DEFAULT_THRESHOLD = 0.5;
+        public static function get_site_key(): string
+        {
+        }
+        public static function get_project_id(): string
+        {
+        }
+        public static function get_api_key(): string
+        {
+        }
+        public static function get_threshold(): float
+        {
+        }
+        public static function sanitize_threshold($value): float
+        {
+        }
+        public static function has_credentials(): bool
+        {
+        }
+        public static function create_client(): \ElementorPro\Modules\AtomicForm\Recaptcha_Score\Recaptcha_Score_Client
+        {
+        }
+    }
+    class Recaptcha_Score extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
+    {
+        use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        const POSITION_BOTTOM_RIGHT = 'bottomright';
+        const POSITION_BOTTOM_LEFT = 'bottomleft';
+        const POSITION_INLINE = 'inline';
+        const SETUP_NOTICE_PROP = '_recaptcha_score_setup_notice';
+        const HANDLER_SCRIPT_HANDLE = 'elementor-pro-atomic-form-recaptcha-score-handler';
+        const NEW_UNTIL_VERSION = '4.4';
+        public static $widget_description = 'Protect the form from spam with Google\'s score-based reCAPTCHA. Credentials are configured globally in Elementor > Settings > Integrations. Only one per form.';
+        public function __construct($data = [], $args = null)
+        {
+        }
+        public static function get_element_type(): string
+        {
+        }
+        public function get_title(): string
+        {
+        }
+        public function get_icon(): string
+        {
+        }
+        public function get_categories(): array
+        {
+        }
+        public function get_initial_config()
+        {
+        }
+        public function get_keywords()
+        {
+        }
+        protected static function define_props_schema(): array
+        {
+        }
+        protected function define_atomic_controls(): array
+        {
+        }
+        protected function get_content_controls(): array
+        {
+        }
+        protected function get_settings_controls(): array
+        {
+        }
+        protected function get_css_id_control_meta(): array
+        {
+        }
+        protected function get_templates(): array
+        {
+        }
+        protected function get_template_extra_context(): array
+        {
+        }
+        public function get_script_depends()
+        {
+        }
+        public function register_frontend_handlers()
+        {
+        }
+        public function render_markdown(): string
+        {
+        }
+        public static function get_inline_styles(): string
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\AtomicForm\Select\Controls {
     class Options_Select_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Atomic_Control_Base
     {
@@ -64897,6 +72928,7 @@ namespace ElementorPro\Modules\AtomicForm\Select {
     class Select extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -65020,6 +73052,7 @@ namespace ElementorPro\Modules\AtomicForm\Textarea {
     class Textarea extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -65066,6 +73099,7 @@ namespace ElementorPro\Modules\AtomicForm\Time_Picker {
     class Time_Picker extends \Elementor\Modules\AtomicWidgets\Elements\Base\Atomic_Widget_Base
     {
         use \Elementor\Modules\AtomicWidgets\Elements\Base\Has_Template;
+        use \ElementorPro\Modules\AtomicForm\Has_Default_Field_Id;
         public static function get_computed_html_tag(array $settings): string
         {
         }
@@ -65101,6 +73135,22 @@ namespace ElementorPro\Modules\AtomicForm\Time_Picker {
         {
         }
         protected function get_css_id_control_meta(): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicForm {
+    class Webmcp_Field_Props
+    {
+        const PARAM_DESCRIPTION_PROP = 'webmcp-param-description';
+        const MIN_ELEMENTOR_VERSION = '4.4';
+        public static function get_props(): array
+        {
+        }
+        public static function get_controls(): array
+        {
+        }
+        public static function apply_exposure(array $settings): array
         {
         }
     }
@@ -65174,6 +73224,14 @@ namespace ElementorPro\Modules\AtomicWidgets {
         {
         }
         public function register_hooks()
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\AtomicWidgets\Traits {
+    trait Has_Webmcp_Field_Exposure
+    {
+        public function get_atomic_settings(): array
         {
         }
     }
@@ -65790,6 +73848,52 @@ namespace ElementorPro\Modules\CodeHighlight\Widgets {
         }
     }
 }
+namespace ElementorPro\Modules\CollectionLoop\Compat {
+    /**
+     * The only place v4 avoid lists touch v3, so v3 and v4 loops on the same page
+     * dedupe each other. Deleting this class (and its call sites in the v4 avoid
+     * lists) drops the interop without affecting v4-only pages.
+     */
+    final class Legacy_Avoid_List_Bridge
+    {
+        /**
+         * @param int[] $post_ids
+         */
+        public static function forward_posts(array $post_ids): void
+        {
+        }
+        /**
+         * @return int[]
+         */
+        public static function legacy_post_ids(): array
+        {
+        }
+        /**
+         * @param int[] $term_ids
+         */
+        public static function forward_terms(array $term_ids): void
+        {
+        }
+        /**
+         * @return int[]
+         */
+        public static function legacy_term_ids(): array
+        {
+        }
+        /**
+         * Intended for tests, so resetting a v4 list also clears what it forwarded.
+         */
+        public static function reset_posts(): void
+        {
+        }
+        /**
+         * Intended for tests, so resetting a v4 list also clears what it forwarded.
+         */
+        public static function reset_terms(): void
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\CollectionLoop\Controls {
     class Alternating_Items_Control extends \Elementor\Modules\AtomicWidgets\Controls\Base\Element_Control_Base
     {
@@ -66241,7 +74345,7 @@ namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop {
         const PAGINATION_LOAD_AJAX = 'ajax';
         const PAGINATION_LOAD_TYPE_OPTIONS = [self::PAGINATION_LOAD_PAGE_RELOAD, self::PAGINATION_LOAD_AJAX];
         const EMPTY_STATE_PROP = 'empty_state';
-        public static $widget_description = 'Repeats a content template for each item in a collection (posts, terms, etc.).';
+        public static $widget_description = 'Repeats a content template for each item in a collection (posts, terms, etc.). ' . 'query.posts_per_page defaults to ' . \ElementorPro\Modules\CollectionLoop\Query\Loop_Query::DEFAULT_POSTS_PER_PAGE . '; set it to the number of items the design needs. ' . 'Pagination is off by default; when enabled, pagination_load_type defaults to ' . self::PAGINATION_LOAD_PAGE_RELOAD . ' (full page reload). ' . 'Set it to ' . self::PAGINATION_LOAD_AJAX . ' to load pages in place without reloading.';
         public function __construct($data = [], $args = null)
         {
         }
@@ -66306,6 +74410,9 @@ namespace ElementorPro\Modules\CollectionLoop\Elements\Collection_Loop {
         const TYPE_MANUAL_SELECTION = 'manual_selection';
         const TYPE_CURRENT_POST = 'current_post';
         public static function apply(array $args, array $filters, string $mode): array
+        {
+        }
+        public static function merge_post_not_in(array $args, array $ids): array
         {
         }
     }
@@ -66646,6 +74753,36 @@ namespace ElementorPro\Modules\CollectionLoop\Query {
         }
     }
 }
+namespace ElementorPro\Modules\CollectionLoop\Query\Post {
+    /**
+     * Page-global list of post IDs emitted by post-based loops during the current
+     * request. When a subsequent loop has `avoid_duplicates` enabled, its
+     * `post__not_in` is augmented with this list so already-shown posts do not repeat.
+     *
+     * Request-scoped with no explicit reset, same as {@see \ElementorPro\Modules\CollectionLoop\Query\Taxonomy\Taxonomy_Avoid_List}.
+     */
+    final class Post_Avoid_List
+    {
+        /**
+         * @param int[] $post_ids
+         */
+        public static function add(array $post_ids): void
+        {
+        }
+        /**
+         * @return int[]
+         */
+        public static function get(): array
+        {
+        }
+        /**
+         * Intended for tests. Not part of any product-facing lifecycle.
+         */
+        public static function reset(): void
+        {
+        }
+    }
+}
 namespace ElementorPro\Modules\CollectionLoop\Query\Taxonomy {
     /**
      * Depth limiter for a hierarchical set of `WP_Term` objects.
@@ -66751,6 +74888,13 @@ namespace ElementorPro\Modules\CollectionLoop\Query\TemplateTypes {
          * types override this directly.
          */
         public function build_item_provider(array $query_settings, ?\Elementor\Element_Base $element = null): \ElementorPro\Modules\CollectionLoop\Query\ItemProviders\Loop_Item_Provider
+        {
+        }
+        /**
+         * Items the user asked to skip before the loop starts. Template types that
+         * expose a "Skip items" control override this.
+         */
+        protected function get_skipped_items(array $query_settings): int
         {
         }
         protected function setting(array $query_settings, string $key)
@@ -66929,6 +75073,9 @@ namespace ElementorPro\Modules\CollectionLoop\Query\TemplateTypes {
         {
         }
         public function build_query_args(array $query_settings): array
+        {
+        }
+        protected function get_skipped_items(array $query_settings): int
         {
         }
         public function build_source_select_options(): array
@@ -72075,6 +80222,7 @@ namespace ElementorPro\Modules\Forms\Fields {
         const MODE_LINK = 'link';
         const MODE_ATTACH = 'attach';
         const MODE_BOTH = 'both';
+        const DEFAULT_FILE_TYPES = 'jpg,jpeg,png,gif,pdf,doc,docx,ppt,pptx,odt,avi,ogg,m4a,mov,mp3,mp4,mpg,wav,wmv';
         public function get_type()
         {
         }
@@ -76055,6 +84203,35 @@ namespace ElementorPro\Modules\Mcp\Abilities {
     abstract class Abstract_Ability extends \Elementor\Modules\Mcp\Abilities\Abstract_Ability
     {
     }
+    class List_Form_Submissions_Ability extends \ElementorPro\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const MAX_PER_PAGE = 25;
+        const DEFAULT_PER_PAGE = 10;
+        const STATUS_ALL = 'all';
+        const STATUS_UNREAD = 'unread';
+        const STATUS_READ = 'read';
+        const STATUS_TRASH = 'trash';
+        const STATUSES = [self::STATUS_ALL, self::STATUS_UNREAD, self::STATUS_READ, self::STATUS_TRASH];
+        const ORDER_ASC = 'asc';
+        const ORDER_DESC = 'desc';
+        const ORDER_BY_CREATED_AT = 'created_at';
+        const ORDER_BY_ID = 'id';
+        const FORM_KEY_PATTERN = '/^\d+_\w+$/';
+        const DATE_PATTERN = '/^\d{4}-\d{2}-\d{2}$/';
+        const EMPTY_RESULT_HINT = 'No matching form submissions found. Adjust the filters, check "counts" for what exists, or pass include_forms: true to see the available forms.';
+        public function is_available()
+        {
+        }
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \ElementorPro\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
     class List_Site_Parts_Ability extends \ElementorPro\Modules\Mcp\Abilities\Abstract_Ability
     {
         protected function get_ability_id(): string
@@ -76067,12 +84244,58 @@ namespace ElementorPro\Modules\Mcp\Abilities {
         {
         }
     }
-    class Manage_Site_Parts_Ability extends \ElementorPro\Modules\Mcp\Abilities\Abstract_Ability
+    class Manage_Form_Submissions_Ability extends \ElementorPro\Modules\Mcp\Abilities\Abstract_Ability
     {
-        public function __construct(?\ElementorPro\Modules\Mcp\Abilities\Utils\Template_Conditions_Writer $conditions_writer = null)
+        const MAX_BATCH_SIZE = 50;
+        const ACTION_MARK_READ = 'mark_read';
+        const ACTION_MARK_UNREAD = 'mark_unread';
+        const ACTION_TRASH = 'trash';
+        const ACTION_RESTORE = 'restore';
+        const ACTION_UPDATE_VALUES = 'update_values';
+        const ACTIONS = [self::ACTION_MARK_READ, self::ACTION_MARK_UNREAD, self::ACTION_TRASH, self::ACTION_RESTORE, self::ACTION_UPDATE_VALUES];
+        public function is_available()
         {
         }
         protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \ElementorPro\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Manage_Site_Parts_Ability extends \ElementorPro\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        public function __construct(?\ElementorPro\Modules\Mcp\Abilities\Utils\Template_Conditions_Writer $conditions_writer = null, ?\ElementorPro\Modules\Mcp\Abilities\Utils\Popup_Display_Settings_Writer $display_settings_writer = null, ?\ElementorPro\Modules\Mcp\Abilities\Utils\Popup_Display_Settings_Schema $display_settings_schema = null)
+        {
+        }
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \ElementorPro\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
+        {
+        }
+    }
+    class Manage_Woocommerce_Settings_Ability extends \ElementorPro\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const ACTION_GET = 'get';
+        const ACTION_UPDATE = 'update';
+        const ACTIONS = [self::ACTION_GET, self::ACTION_UPDATE];
+        const PAGE_POST_TYPE = 'page';
+        const KIT_KEYS_BY_PAGE = ['cart' => 'woocommerce_cart_page_id', 'checkout' => 'woocommerce_checkout_page_id', 'my_account' => 'woocommerce_myaccount_page_id', 'terms' => 'woocommerce_terms_page_id', 'shop' => 'woocommerce_shop_page_id', 'purchase_summary' => 'woocommerce_purchase_summary_page_id'];
+        const PAGES_RENDERED_BY_ELEMENTOR = ['cart', 'checkout', 'my_account', 'purchase_summary'];
+        protected function get_ability_id(): string
+        {
+        }
+        public function is_exposed_via_proxy(): bool
+        {
+        }
+        public function is_available()
         {
         }
         protected function get_definition(): \ElementorPro\Modules\Mcp\Abilities\Ability_Definition
@@ -76089,7 +84312,7 @@ namespace ElementorPro\Modules\Mcp\Abilities\Utils {
         public function add_success(int $index, string $action, array $extra = []): void
         {
         }
-        public function add_error(int $index, string $action, string $code, string $message): void
+        public function add_error(int $index, string $action, string $code, string $message, array $extra = []): void
         {
         }
         public function has(int $index): bool
@@ -76099,10 +84322,88 @@ namespace ElementorPro\Modules\Mcp\Abilities\Utils {
         {
         }
     }
+    class Form_Submission_Formatter
+    {
+        public static function format(array $submission, bool $include_values, bool $include_actions_log): array
+        {
+        }
+    }
+    class Form_Submissions_Availability
+    {
+        const FORMS_MODULE_NAME = 'forms';
+        /**
+         * @return true|\WP_Error
+         */
+        public static function check()
+        {
+        }
+    }
+    class Popup_Display_Settings_Schema
+    {
+        public const SWITCHER_ON = 'yes';
+        public const SWITCHER_OFF = '';
+        public function get_input_schema(): array
+        {
+        }
+        public function get_writable_controls(\Elementor\Controls_Stack $stack): array
+        {
+        }
+    }
+    class Popup_Display_Settings_Writer
+    {
+        public const DISPLAY_SETTINGS_TYPES = ['triggers', 'timing'];
+        public function __construct(?\ElementorPro\Modules\Mcp\Abilities\Utils\Popup_Display_Settings_Schema $schema = null)
+        {
+        }
+        public function write(\ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document $document, $raw_display_settings)
+        {
+        }
+    }
+    class Submission_Preview
+    {
+        const MAX_LENGTH = 120;
+        const MAX_VALUE_LENGTH = 30;
+        const MAX_LABEL_LENGTH = 20;
+        const SEPARATOR = ' · ';
+        const LABEL_SEPARATOR = ': ';
+        const ELLIPSIS = '…';
+        const SKIPPED_FIELD_TYPES = ['acceptance', 'honeypot', 'recaptcha', 'recaptcha_v3', 'step', 'html'];
+        /**
+         * @param array       $values        Submission values, each with `key` and `value`.
+         * @param array       $form_fields   Form snapshot fields, each with `id`, `type` and `label`.
+         * @param string|null $main_field_id Field already shown as the row's main value.
+         */
+        public static function build(array $values, array $form_fields, ?string $main_field_id): string
+        {
+        }
+        public static function label(array $field, string $field_id): string
+        {
+        }
+    }
     class Template_Conditions_Writer
     {
         public const DEFAULT_CONDITIONS = ['include/general'];
+        public const CONDITION_TYPES = ['include', 'exclude'];
         public function write(\ElementorPro\Modules\ThemeBuilder\Documents\Theme_Document $document, int $post_id, $raw_conditions)
+        {
+        }
+        public function validate($raw_conditions): ?\WP_Error
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\Mcp\Abilities {
+    class Woocommerce_Best_Practices_Ability extends \ElementorPro\Modules\Mcp\Abilities\Abstract_Ability
+    {
+        const URI = 'elementor://woocommerce/best-practices';
+        const FILE_PATH = __DIR__ . '/../static-resources-extra/woocommerce/best-practices.md';
+        protected function get_ability_id(): string
+        {
+        }
+        protected function get_definition(): \ElementorPro\Modules\Mcp\Abilities\Ability_Definition
+        {
+        }
+        public function execute($input = [])
         {
         }
     }
@@ -76123,6 +84424,26 @@ namespace ElementorPro\Modules\Mcp {
         {
         }
         public function register_tool_slugs(array $tools): array
+        {
+        }
+    }
+}
+namespace ElementorPro\Modules\Mcp\Preview {
+    /**
+     * Renders a previewed site part inside the page it applies to. A site part URL on its own
+     * redirects anonymous visitors to the home page, so the preview shows the template's
+     * "Preview Dynamic Content as" target, or the front page, with the template forced into
+     * its location.
+     */
+    class Theme_Template_Preview
+    {
+        public function register(): void
+        {
+        }
+        public function filter_query_vars($query_vars, $post)
+        {
+        }
+        public function filter_force_template_id(): ?int
         {
         }
     }
@@ -81443,6 +89764,13 @@ namespace ElementorPro\Modules\TableOfContents\Widgets {
 namespace ElementorPro\Modules\ThemeBuilder\AdminMenuItems {
     class Theme_Builder_Menu_Item implements \Elementor\Core\Admin\Menu\Interfaces\Admin_Menu_Item
     {
+        /**
+         * Capability required for Theme Builder admin access.
+         * Static so MCP and other call sites can check without instantiating.
+         */
+        public static function get_user_capability(): string
+        {
+        }
         public function get_capability(): string
         {
         }
@@ -82783,9 +91111,6 @@ namespace ElementorPro\Modules\ThemeBuilder {
         {
         }
         public function add_finder_items(array $categories)
-        {
-        }
-        public function print_new_theme_builder_promotion($views)
         {
         }
         /**
@@ -84774,6 +93099,7 @@ namespace ElementorPro\Modules\Woocommerce {
 namespace ElementorPro\Modules\Woocommerce\Settings {
     class Settings_Woocommerce extends \Elementor\Core\Kits\Documents\Tabs\Tab_Base
     {
+        const PAGE_OPTION_NAMES_BY_KIT_KEY = ['woocommerce_cart_page_id' => 'woocommerce_cart_page_id', 'woocommerce_checkout_page_id' => 'woocommerce_checkout_page_id', 'woocommerce_myaccount_page_id' => 'woocommerce_myaccount_page_id', 'woocommerce_terms_page_id' => 'woocommerce_terms_page_id', 'woocommerce_purchase_summary_page_id' => 'elementor_woocommerce_purchase_summary_page_id', 'woocommerce_shop_page_id' => 'woocommerce_shop_page_id'];
         public function get_id()
         {
         }
