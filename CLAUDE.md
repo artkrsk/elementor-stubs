@@ -50,7 +50,6 @@ Follow conventional commits for automatic CHANGELOG categorization:
 - `chore:` → removed or contextual prefix
 - `chore(stubs):` → `changed:` in changelog
 - Add `!` after type for breaking changes (e.g., `feat!:`, `chore!:`)
-```
 
 ## Generating Stubs
 
