@@ -27,7 +27,7 @@
     "php": ">=8.0",
     "php-stubs/woocommerce-stubs": "^10.5 || ^11.0",
     "php-stubs/wordpress-stubs": "^6.9 || ^7.0",
-    "php-stubs/wp-cli-stubs": "^2.12"
+    "php-stubs/wp-cli-stubs": "^2.12.0.1"
   },
   "require-dev": {
     "captainhook/captainhook": "^5.29.3",
